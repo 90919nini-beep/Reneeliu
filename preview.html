@@ -3738,9 +3738,16 @@ function KnitReadChart({grid,onBack}){
   const cols=grid[0]?.length||0;
   const[scale,setScale]=useState(1);
   const[activeRow,setActiveRow]=useState(null);
+  const[pan,setPan]=useState({x:0,y:0});
+  const[grabbing,setGrabbing]=useState(false);
   const canvasRef=useRef(null);
   const containerRef=useRef(null);
+  const dragRef=useRef(null); // {startX,startY,startPanX,startPanY,moved}
+  const suppressClick=useRef(false);
 
+  const resetView=useCallback(()=>{setScale(1);setPan({x:0,y:0});},[]);
+
+  /* ── Draw ── */
   const draw=useCallback(()=>{
     const c=canvasRef.current,cont=containerRef.current;if(!c||!cont)return;
     const ML=28,MT=14,MR=8,MB=8,dpr=window.devicePixelRatio||1;
@@ -3752,14 +3759,20 @@ function KnitReadChart({grid,onBack}){
     c.style.width=W+"px";c.style.height=H+"px";
     const ctx=c.getContext("2d");ctx.scale(dpr,dpr);
     ctx.fillStyle="#FAF8F4";ctx.fillRect(0,0,W,H);
-    // Cell fills
-    for(let y=0;y<rows;y++)for(let x=0;x<cols;x++){
-      if(grid[y]?.[x]){ctx.fillStyle=grid[y][x];ctx.fillRect(ML+x*cellSize,MT+y*cellSize,cellSize,cellSize);}
+    // Cell fills — dim non-active rows when one is highlighted
+    for(let y=0;y<rows;y++){
+      const isAct=y===activeRow;
+      const dimmed=activeRow!==null&&!isAct;
+      if(dimmed){ctx.save();ctx.globalAlpha=0.25;}
+      for(let x=0;x<cols;x++){
+        if(grid[y]?.[x]){ctx.fillStyle=grid[y][x];ctx.fillRect(ML+x*cellSize,MT+y*cellSize,cellSize,cellSize);}
+      }
+      if(dimmed)ctx.restore();
     }
-    // Active row highlight
+    // Active row: subtle tint + bold border
     if(activeRow!==null){
-      ctx.fillStyle="rgba(124,58,237,0.18)";ctx.fillRect(ML,MT+activeRow*cellSize,gW,cellSize);
-      ctx.strokeStyle="#7C3AED";ctx.lineWidth=2;ctx.setLineDash([]);
+      ctx.fillStyle="rgba(124,58,237,0.1)";ctx.fillRect(ML,MT+activeRow*cellSize,gW,cellSize);
+      ctx.strokeStyle="#7C3AED";ctx.lineWidth=2.5;ctx.setLineDash([]);
       ctx.strokeRect(ML,MT+activeRow*cellSize,gW,cellSize);
     }
     // Grid lines
@@ -3775,19 +3788,22 @@ function KnitReadChart({grid,onBack}){
       ctx.beginPath();ctx.moveTo(ML,MT+y*cellSize);ctx.lineTo(ML+gW,MT+y*cellSize);ctx.stroke();
     }
     ctx.strokeStyle="#9A8878";ctx.lineWidth=1.5;ctx.strokeRect(ML,MT,gW,gH);
-    // Row numbers
+    // Row numbers — dimmed for non-active rows, purple+bold for active
     const fs=Math.max(8,Math.min(11,cellSize*0.6));
     ctx.textAlign="right";ctx.textBaseline="middle";
     for(let y=0;y<rows;y++){
-      const rowNum=rows-y; // row 1 = bottom (knitting convention)
+      const rowNum=rows-y; // knitting: row 1 = bottom
       const isAct=y===activeRow;
+      const dimmed=activeRow!==null&&!isAct;
       if(isAct||rowNum%5===0||rowNum===1){
+        ctx.globalAlpha=dimmed?0.25:1;
         ctx.fillStyle=isAct?"#7C3AED":"#8A7A6A";
-        ctx.font=`bold ${isAct?fs+1:fs}px -apple-system,sans-serif`;
+        ctx.font=`bold ${isAct?fs+2:fs}px -apple-system,sans-serif`;
         ctx.fillText(String(rowNum),ML-4,MT+(y+0.5)*cellSize);
       }
     }
     // Col numbers every 5
+    ctx.globalAlpha=1;
     ctx.fillStyle="#8A7A6A";ctx.textAlign="center";ctx.textBaseline="middle";
     ctx.font=`bold ${fs}px -apple-system,sans-serif`;
     for(let x=5;x<=cols;x+=5){ctx.fillText(String(x),ML+(x-0.5)*cellSize,MT/2);}
@@ -3795,7 +3811,30 @@ function KnitReadChart({grid,onBack}){
 
   useLayoutEffect(()=>{draw();},[draw]);
 
+  /* ── Pan: pointer events on the container ── */
+  const onPD=useCallback(e=>{
+    if(scale<=1)return;
+    dragRef.current={startX:e.clientX,startY:e.clientY,startPanX:pan.x,startPanY:pan.y,moved:false};
+    e.currentTarget.setPointerCapture(e.pointerId);
+    setGrabbing(true);
+  },[scale,pan]);
+
+  const onPM=useCallback(e=>{
+    if(!dragRef.current)return;
+    const dx=e.clientX-dragRef.current.startX,dy=e.clientY-dragRef.current.startY;
+    if(Math.abs(dx)+Math.abs(dy)>4)dragRef.current.moved=true;
+    setPan({x:dragRef.current.startPanX+dx,y:dragRef.current.startPanY+dy});
+  },[]);
+
+  const onPU=useCallback(e=>{
+    if(dragRef.current?.moved)suppressClick.current=true;
+    dragRef.current=null;
+    setGrabbing(false);
+  },[]);
+
+  /* ── Row selection on click (suppressed after pan drag) ── */
   const handleClick=useCallback(e=>{
+    if(suppressClick.current){suppressClick.current=false;return;}
     const c=canvasRef.current,cont=containerRef.current;if(!c||!cont)return;
     const ML=28,MT=14,MR=8,MB=8;
     const base=Math.min((cont.clientWidth-ML-MR)/Math.max(cols,1),(cont.clientHeight-MT-MB)/Math.max(rows,1));
@@ -3807,18 +3846,45 @@ function KnitReadChart({grid,onBack}){
     setActiveRow(prev=>prev===y?null:y);
   },[cols,rows,scale]);
 
+  /* ── Row navigation buttons ── */
+  // [+] = higher row number (move up, y-1); [−] = lower row number (move down, y+1)
+  const navRow=useCallback((delta)=>{
+    setActiveRow(prev=>{
+      if(prev===null)return rows-1; // start at Row 1 (bottom) for both buttons
+      return Math.max(0,Math.min(rows-1,prev+delta));
+    });
+  },[rows]);
+  const displayRow=activeRow!==null?rows-activeRow:null;
+
   return(
     <div style={{position:"fixed",inset:0,background:"white",zIndex:100,display:"flex",flexDirection:"column"}}>
-      <div style={{padding:"9px 12px",background:"#F3F0FF",borderBottom:"1px solid #DDD6FE",display:"flex",alignItems:"center",gap:6,flexShrink:0}}>
-        <div style={{fontSize:11,fontWeight:700,color:"#7C3AED",letterSpacing:"0.07em",flex:1}}>READ CHART MODE</div>
-        {activeRow!==null&&<div style={{fontSize:12,fontWeight:700,color:"#7C3AED",background:"white",borderRadius:8,padding:"3px 10px",border:"1.5px solid #DDD6FE"}}>Row {rows-activeRow}</div>}
+      {/* Header */}
+      <div style={{padding:"9px 12px",background:"#F3F0FF",borderBottom:"1px solid #DDD6FE",display:"flex",alignItems:"center",gap:5,flexShrink:0}}>
+        <div style={{fontSize:11,fontWeight:700,color:"#7C3AED",letterSpacing:"0.07em",marginRight:6}}>READ CHART MODE</div>
+        {/* Row navigation: [−] Row N [+] */}
+        <div style={{display:"flex",alignItems:"center",gap:3,marginRight:"auto",background:"white",borderRadius:9,border:"1.5px solid #DDD6FE",padding:"2px 4px"}}>
+          <button onClick={()=>navRow(1)} title="Previous row" style={{width:22,height:22,borderRadius:5,border:"none",background:"transparent",fontSize:14,fontWeight:700,cursor:"pointer",color:"#374151",display:"flex",alignItems:"center",justifyContent:"center"}}>−</button>
+          <div style={{fontSize:12,fontWeight:700,color:"#7C3AED",minWidth:58,textAlign:"center",padding:"0 2px"}}>
+            {displayRow!==null?`Row ${displayRow}`:"— —"}
+          </div>
+          <button onClick={()=>navRow(-1)} title="Next row" style={{width:22,height:22,borderRadius:5,border:"none",background:"transparent",fontSize:14,fontWeight:700,cursor:"pointer",color:"#374151",display:"flex",alignItems:"center",justifyContent:"center"}}>+</button>
+        </div>
+        {/* Zoom controls */}
         <button onClick={()=>setScale(s=>Math.max(0.5,+(s-.25).toFixed(2)))} style={{width:22,height:22,borderRadius:5,border:"1.5px solid #DDD6FE",background:"white",fontSize:14,fontWeight:700,cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center",color:"#374151",flexShrink:0}}>−</button>
-        <button onClick={()=>setScale(1)} style={{minWidth:36,height:22,borderRadius:5,border:"1.5px solid #DDD6FE",background:"white",fontSize:9,fontWeight:800,cursor:"pointer",color:"#374151",flexShrink:0}}>{Math.round(scale*100)}%</button>
+        <button onClick={resetView} title="Reset zoom &amp; pan" style={{minWidth:36,height:22,borderRadius:5,border:"1.5px solid #DDD6FE",background:"white",fontSize:9,fontWeight:800,cursor:"pointer",color:"#374151",flexShrink:0}}>{Math.round(scale*100)}%</button>
         <button onClick={()=>setScale(s=>Math.min(4,+(s+.25).toFixed(2)))} style={{width:22,height:22,borderRadius:5,border:"1.5px solid #DDD6FE",background:"white",fontSize:14,fontWeight:700,cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center",color:"#374151",flexShrink:0}}>+</button>
         <button onClick={onBack} style={{padding:"6px 14px",borderRadius:11,border:"none",background:"#7C3AED",color:"white",fontSize:12,fontWeight:600,cursor:"pointer",marginLeft:4}}>← Back</button>
       </div>
-      <div ref={containerRef} style={{flex:1,overflow:"auto",background:"#FAF8F4",padding:8}}>
-        <canvas ref={canvasRef} onClick={handleClick} style={{cursor:"pointer",display:"block"}}/>
+      {/* Canvas area — overflow:hidden + pointer-driven pan */}
+      <div ref={containerRef}
+        style={{flex:1,overflow:"hidden",background:"#FAF8F4",position:"relative",
+          cursor:scale>1?(grabbing?"grabbing":"grab"):"crosshair",touchAction:"none"}}
+        onPointerDown={onPD} onPointerMove={onPM} onPointerUp={onPU}
+        onClick={handleClick}
+      >
+        <div style={{transform:`translate(${pan.x}px,${pan.y}px)`,display:"inline-block",padding:8}}>
+          <canvas ref={canvasRef} style={{display:"block"}}/>
+        </div>
       </div>
     </div>
   );
