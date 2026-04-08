@@ -3746,6 +3746,8 @@ function KnitReadChart({grid,onBack}){
   const suppressClick=useRef(false);
 
   const resetView=useCallback(()=>{setScale(1);setPan({x:0,y:0});},[]);
+  // Auto-reset pan whenever scale drops to 100% (covers both the % button and the − zoom button)
+  useEffect(()=>{if(scale<=1)setPan({x:0,y:0});},[scale]);
 
   /* ── Draw ── */
   const draw=useCallback(()=>{
