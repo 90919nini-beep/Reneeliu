@@ -3752,7 +3752,7 @@ function KnitReadChart({grid,onBack}){
   /* ── Draw ── */
   const draw=useCallback(()=>{
     const c=canvasRef.current,cont=containerRef.current;if(!c||!cont)return;
-    const ML=28,MT=14,MR=8,MB=8,dpr=window.devicePixelRatio||1;
+    const ML=30,MT=16,MR=30,MB=16,dpr=window.devicePixelRatio||1;
     const base=Math.min((cont.clientWidth-ML-MR)/Math.max(cols,1),(cont.clientHeight-MT-MB)/Math.max(rows,1));
     const cellSize=Math.max(4,base)*scale;
     const gW=cols*cellSize,gH=rows*cellSize;
@@ -3790,9 +3790,9 @@ function KnitReadChart({grid,onBack}){
       ctx.beginPath();ctx.moveTo(ML,MT+y*cellSize);ctx.lineTo(ML+gW,MT+y*cellSize);ctx.stroke();
     }
     ctx.strokeStyle="#9A8878";ctx.lineWidth=1.5;ctx.strokeRect(ML,MT,gW,gH);
-    // Row numbers — dimmed for non-active rows, purple+bold for active
+    // Row numbers on LEFT and RIGHT — every 5th row + active row
     const fs=Math.max(8,Math.min(11,cellSize*0.6));
-    ctx.textAlign="right";ctx.textBaseline="middle";
+    ctx.textBaseline="middle";
     for(let y=0;y<rows;y++){
       const rowNum=rows-y; // knitting: row 1 = bottom
       const isAct=y===activeRow;
@@ -3801,14 +3801,20 @@ function KnitReadChart({grid,onBack}){
         ctx.globalAlpha=dimmed?0.25:1;
         ctx.fillStyle=isAct?"#7C3AED":"#8A7A6A";
         ctx.font=`bold ${isAct?fs+2:fs}px -apple-system,sans-serif`;
-        ctx.fillText(String(rowNum),ML-4,MT+(y+0.5)*cellSize);
+        const cy=MT+(y+0.5)*cellSize;
+        ctx.textAlign="right"; ctx.fillText(String(rowNum),ML-4,cy);  // left side
+        ctx.textAlign="left";  ctx.fillText(String(rowNum),ML+gW+4,cy); // right side
       }
     }
-    // Col numbers every 5
+    // Col numbers on TOP and BOTTOM — every 5th column
     ctx.globalAlpha=1;
-    ctx.fillStyle="#8A7A6A";ctx.textAlign="center";ctx.textBaseline="middle";
+    ctx.fillStyle="#8A7A6A";ctx.textAlign="center";
     ctx.font=`bold ${fs}px -apple-system,sans-serif`;
-    for(let x=5;x<=cols;x+=5){ctx.fillText(String(x),ML+(x-0.5)*cellSize,MT/2);}
+    for(let x=5;x<=cols;x+=5){
+      const cx=ML+(x-0.5)*cellSize;
+      ctx.textBaseline="middle"; ctx.fillText(String(x),cx,MT/2);       // top
+      ctx.textBaseline="middle"; ctx.fillText(String(x),cx,MT+gH+MB/2); // bottom
+    }
   },[grid,rows,cols,scale,activeRow]);
 
   useLayoutEffect(()=>{draw();},[draw]);
@@ -3838,7 +3844,7 @@ function KnitReadChart({grid,onBack}){
   const handleClick=useCallback(e=>{
     if(suppressClick.current){suppressClick.current=false;return;}
     const c=canvasRef.current,cont=containerRef.current;if(!c||!cont)return;
-    const ML=28,MT=14,MR=8,MB=8;
+    const ML=30,MT=16,MR=30,MB=16;
     const base=Math.min((cont.clientWidth-ML-MR)/Math.max(cols,1),(cont.clientHeight-MT-MB)/Math.max(rows,1));
     const cellSize=Math.max(4,base)*scale;
     const r=c.getBoundingClientRect(),dpr=window.devicePixelRatio||1;
