@@ -3732,6 +3732,98 @@ function PatternFormModal({onClose,onSave,initial,yarnLib=[]}){
   , document.body);
 }
 
+/* ── Knit Grid Read Chart ── */
+function KnitReadChart({grid,onBack}){
+  const rows=grid.length;
+  const cols=grid[0]?.length||0;
+  const[scale,setScale]=useState(1);
+  const[activeRow,setActiveRow]=useState(null);
+  const canvasRef=useRef(null);
+  const containerRef=useRef(null);
+
+  const draw=useCallback(()=>{
+    const c=canvasRef.current,cont=containerRef.current;if(!c||!cont)return;
+    const ML=28,MT=14,MR=8,MB=8,dpr=window.devicePixelRatio||1;
+    const base=Math.min((cont.clientWidth-ML-MR)/Math.max(cols,1),(cont.clientHeight-MT-MB)/Math.max(rows,1));
+    const cellSize=Math.max(4,base)*scale;
+    const gW=cols*cellSize,gH=rows*cellSize;
+    const W=ML+gW+MR,H=MT+gH+MB;
+    c.width=Math.round(W*dpr);c.height=Math.round(H*dpr);
+    c.style.width=W+"px";c.style.height=H+"px";
+    const ctx=c.getContext("2d");ctx.scale(dpr,dpr);
+    ctx.fillStyle="#FAF8F4";ctx.fillRect(0,0,W,H);
+    // Cell fills
+    for(let y=0;y<rows;y++)for(let x=0;x<cols;x++){
+      if(grid[y]?.[x]){ctx.fillStyle=grid[y][x];ctx.fillRect(ML+x*cellSize,MT+y*cellSize,cellSize,cellSize);}
+    }
+    // Active row highlight
+    if(activeRow!==null){
+      ctx.fillStyle="rgba(124,58,237,0.18)";ctx.fillRect(ML,MT+activeRow*cellSize,gW,cellSize);
+      ctx.strokeStyle="#7C3AED";ctx.lineWidth=2;ctx.setLineDash([]);
+      ctx.strokeRect(ML,MT+activeRow*cellSize,gW,cellSize);
+    }
+    // Grid lines
+    ctx.setLineDash([]);
+    for(let x=0;x<=cols;x++){
+      const maj=x%10===0,mid=x%5===0;
+      ctx.strokeStyle=maj?"#9A8878":mid?"#C4B4A8":"#D8D0C6";ctx.lineWidth=maj?1.5:mid?1:0.5;
+      ctx.beginPath();ctx.moveTo(ML+x*cellSize,MT);ctx.lineTo(ML+x*cellSize,MT+gH);ctx.stroke();
+    }
+    for(let y=0;y<=rows;y++){
+      const maj=y%10===0,mid=y%5===0;
+      ctx.strokeStyle=maj?"#9A8878":mid?"#C4B4A8":"#D8D0C6";ctx.lineWidth=maj?1.5:mid?1:0.5;
+      ctx.beginPath();ctx.moveTo(ML,MT+y*cellSize);ctx.lineTo(ML+gW,MT+y*cellSize);ctx.stroke();
+    }
+    ctx.strokeStyle="#9A8878";ctx.lineWidth=1.5;ctx.strokeRect(ML,MT,gW,gH);
+    // Row numbers
+    const fs=Math.max(8,Math.min(11,cellSize*0.6));
+    ctx.textAlign="right";ctx.textBaseline="middle";
+    for(let y=0;y<rows;y++){
+      const rowNum=rows-y; // row 1 = bottom (knitting convention)
+      const isAct=y===activeRow;
+      if(isAct||rowNum%5===0||rowNum===1){
+        ctx.fillStyle=isAct?"#7C3AED":"#8A7A6A";
+        ctx.font=`bold ${isAct?fs+1:fs}px -apple-system,sans-serif`;
+        ctx.fillText(String(rowNum),ML-4,MT+(y+0.5)*cellSize);
+      }
+    }
+    // Col numbers every 5
+    ctx.fillStyle="#8A7A6A";ctx.textAlign="center";ctx.textBaseline="middle";
+    ctx.font=`bold ${fs}px -apple-system,sans-serif`;
+    for(let x=5;x<=cols;x+=5){ctx.fillText(String(x),ML+(x-0.5)*cellSize,MT/2);}
+  },[grid,rows,cols,scale,activeRow]);
+
+  useLayoutEffect(()=>{draw();},[draw]);
+
+  const handleClick=useCallback(e=>{
+    const c=canvasRef.current,cont=containerRef.current;if(!c||!cont)return;
+    const ML=28,MT=14,MR=8,MB=8;
+    const base=Math.min((cont.clientWidth-ML-MR)/Math.max(cols,1),(cont.clientHeight-MT-MB)/Math.max(rows,1));
+    const cellSize=Math.max(4,base)*scale;
+    const r=c.getBoundingClientRect(),dpr=window.devicePixelRatio||1;
+    const ry=(e.clientY-r.top)*(c.height/dpr)/r.height;
+    const y=Math.floor((ry-MT)/cellSize);
+    if(y<0||y>=rows)return;
+    setActiveRow(prev=>prev===y?null:y);
+  },[cols,rows,scale]);
+
+  return(
+    <div style={{position:"fixed",inset:0,background:"white",zIndex:100,display:"flex",flexDirection:"column"}}>
+      <div style={{padding:"9px 12px",background:"#F3F0FF",borderBottom:"1px solid #DDD6FE",display:"flex",alignItems:"center",gap:6,flexShrink:0}}>
+        <div style={{fontSize:11,fontWeight:700,color:"#7C3AED",letterSpacing:"0.07em",flex:1}}>READ CHART MODE</div>
+        {activeRow!==null&&<div style={{fontSize:12,fontWeight:700,color:"#7C3AED",background:"white",borderRadius:8,padding:"3px 10px",border:"1.5px solid #DDD6FE"}}>Row {rows-activeRow}</div>}
+        <button onClick={()=>setScale(s=>Math.max(0.5,+(s-.25).toFixed(2)))} style={{width:22,height:22,borderRadius:5,border:"1.5px solid #DDD6FE",background:"white",fontSize:14,fontWeight:700,cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center",color:"#374151",flexShrink:0}}>−</button>
+        <button onClick={()=>setScale(1)} style={{minWidth:36,height:22,borderRadius:5,border:"1.5px solid #DDD6FE",background:"white",fontSize:9,fontWeight:800,cursor:"pointer",color:"#374151",flexShrink:0}}>{Math.round(scale*100)}%</button>
+        <button onClick={()=>setScale(s=>Math.min(4,+(s+.25).toFixed(2)))} style={{width:22,height:22,borderRadius:5,border:"1.5px solid #DDD6FE",background:"white",fontSize:14,fontWeight:700,cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center",color:"#374151",flexShrink:0}}>+</button>
+        <button onClick={onBack} style={{padding:"6px 14px",borderRadius:11,border:"none",background:"#7C3AED",color:"white",fontSize:12,fontWeight:600,cursor:"pointer",marginLeft:4}}>← Back</button>
+      </div>
+      <div ref={containerRef} style={{flex:1,overflow:"auto",background:"#FAF8F4",padding:8}}>
+        <canvas ref={canvasRef} onClick={handleClick} style={{cursor:"pointer",display:"block"}}/>
+      </div>
+    </div>
+  );
+}
+
 /* ── Pattern Detail Modal ── */
 function PatternDetailModal({pat,onClose,onEdit,onDelete,onUpdate,yarnLib=[]}){
   const{t}=useLang();
@@ -3739,6 +3831,8 @@ function PatternDetailModal({pat,onClose,onEdit,onDelete,onUpdate,yarnLib=[]}){
   const[openRoundsMaker,setOpenRoundsMaker]=useState(false);
   const[imgFull,setImgFull]=useState(false);
   const[showChartView,setShowChartView]=useState(false);
+  const[showRoundsRead,setShowRoundsRead]=useState(false);
+  const[showKnitRead,setShowKnitRead]=useState(false);
   const[editNotes,setEditNotes]=useState(false);
   const[notesVal,setNotesVal]=useState(pat.notes||"");
   const[showPatMore,setShowPatMore]=useState(false);
@@ -3784,6 +3878,18 @@ function PatternDetailModal({pat,onClose,onEdit,onDelete,onUpdate,yarnLib=[]}){
       onSaveRowNotes={rn=>onUpdate({...pat,designData:{...pat.designData,rowNotes:rn}})}
     />
   );
+  if(showRoundsRead) return(
+    <div style={{position:"fixed",inset:0,background:"white",zIndex:100,display:"flex",flexDirection:"column"}}>
+      <div style={{padding:"9px 12px",background:"#F3F0FF",borderBottom:"1px solid #DDD6FE",display:"flex",alignItems:"center",gap:6,flexShrink:0}}>
+        <div style={{fontSize:11,fontWeight:700,color:"#7C3AED",letterSpacing:"0.07em",flex:1}}>READ CHART MODE · ROUNDS</div>
+        <button onClick={()=>setShowRoundsRead(false)} style={{padding:"6px 14px",borderRadius:11,border:"none",background:"#7C3AED",color:"white",fontSize:12,fontWeight:600,cursor:"pointer"}}>← Back</button>
+      </div>
+      <CPM_RoundsReader pattern={pat.designData} themeColor={accentColor}/>
+    </div>
+  );
+  if(showKnitRead) return(
+    <KnitReadChart grid={pat.designData?.grid||[]} onBack={()=>setShowKnitRead(false)}/>
+  );
 
   return createPortal(
     <>
@@ -3823,16 +3929,24 @@ function PatternDetailModal({pat,onClose,onEdit,onDelete,onUpdate,yarnLib=[]}){
                       📖 Read Chart
                     </button>
                   )}
-                  {isRoundsDesign&&(
+                  {isRoundsDesign&&(<>
+                    <button onClick={()=>setShowRoundsRead(true)} style={{fontSize:11,fontWeight:700,color:"#92400e",background:"rgba(245,158,11,0.12)",border:"none",borderRadius:8,padding:"4px 10px",cursor:"pointer"}}>
+                      📖 Read Chart
+                    </button>
                     <button onClick={()=>setOpenRoundsMaker(true)} style={{fontSize:11,fontWeight:700,color:"#7C3AED",background:"#F3F0FF",border:"none",borderRadius:8,padding:"4px 10px",cursor:"pointer"}}>
                       ✏️ Edit Rounds
                     </button>
-                  )}
-                  {!isRoundsDesign&&(
+                  </>)}
+                  {!isRoundsDesign&&(<>
+                    {pat.designData?.type==="knit"&&(
+                      <button onClick={()=>setShowKnitRead(true)} style={{fontSize:11,fontWeight:700,color:"#92400e",background:"rgba(245,158,11,0.12)",border:"none",borderRadius:8,padding:"4px 10px",cursor:"pointer"}}>
+                        📖 Read Chart
+                      </button>
+                    )}
                     <button onClick={()=>setOpenMaker(true)} style={{fontSize:11,fontWeight:700,color:accentColor,background:accentColor+"12",border:"none",borderRadius:8,padding:"4px 10px",cursor:"pointer"}}>
                       ✏️ Edit Design
                     </button>
-                  )}
+                  </>)}
                 </div>
               </div>
               {isRoundsDesign?(
@@ -4305,7 +4419,7 @@ function PatternLibPage({patterns,setPatterns,projects=[],yarnLib=[]}){
           const hasRounds=patData?.type==="rounds"&&patData?.rounds?.length;
           const palette=getEffectivePalette(pat,patData);
           return(
-            <div key={pat.id} className="shadow-card" onClick={()=>{if(pat._fromProject){setPatternView(pat._patternData);}else if(hasRounds&&!pat._fromProject){setReadingRounds(pat);}else{setViewing(pat);}}} style={{background:"white",borderRadius:20,overflow:"hidden",cursor:"pointer"}}>
+            <div key={pat.id} className="shadow-card" onClick={()=>{if(pat._fromProject){setPatternView(pat._patternData);}else{setViewing(pat);}}} style={{background:"white",borderRadius:20,overflow:"hidden",cursor:"pointer"}}>
               {/* Thumbnail area */}
               {hasRounds?(
                 <div style={{padding:"10px 10px 0"}}>
@@ -5097,6 +5211,39 @@ function SettingToggle({label, value, onChange}) {
 }
 
 
+function DefaultStitchesSetting(){
+  const[rowPins,setRowPins]=useState(()=>{
+    try{return JSON.parse(localStorage.getItem("cc_rows_pins"))||ROWS_DEFAULT_PINS;}
+    catch{return ROWS_DEFAULT_PINS;}
+  });
+  const togglePin=(id)=>setRowPins(prev=>{
+    const next=prev.includes(id)?prev.filter(x=>x!==id):[...prev,id].slice(0,TOOLBAR_MAX);
+    localStorage.setItem("cc_rows_pins",JSON.stringify(next));
+    return next;
+  });
+  return(
+    <SectionCard title="Default Crochet Stitches">
+      <div style={{fontSize:12,color:"#6B7280",marginBottom:10,lineHeight:1.5}}>
+        Choose which stitches appear in the crochet toolbar by default. (Max {TOOLBAR_MAX})
+      </div>
+      <div style={{display:"flex",flexWrap:"wrap",gap:6}}>
+        {ROWS_ALL_SYMS.filter(s=>s.category==="basic"||s.category==="advanced").map(s=>{
+          const on=rowPins.includes(s.id);
+          return(
+            <button key={s.id} onClick={()=>togglePin(s.id)}
+              style={{padding:"5px 10px",borderRadius:8,border:`1.5px solid ${on?"#7C3AED":"#E5E7EB"}`,
+                background:on?"#EDE9FE":"#F9FAFB",color:on?"#7C3AED":"#6B7280",
+                fontSize:12,fontWeight:700,cursor:"pointer",transition:"all 0.15s"}}>
+              {s.label}
+            </button>
+          );
+        })}
+      </div>
+      <div style={{fontSize:11,color:"#9CA3AF",marginTop:6}}>{rowPins.length}/{TOOLBAR_MAX} selected</div>
+    </SectionCard>
+  );
+}
+
 function SettingsPage({settings, setSettings, lang, setLang, onBack}) {
   const {t} = useLang();
   const set = (k, v) => setSettings(s => ({...s, [k]: v}));
@@ -5184,6 +5331,9 @@ function SettingsPage({settings, setSettings, lang, setLang, onBack}) {
             </select>
           </SettingRow>
         </SectionCard>
+
+        {/* Default Crochet Toolbar Stitches */}
+        <DefaultStitchesSetting/>
 
         {/* About */}
         <SectionCard title="About / Help">
