@@ -1,0 +1,8 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(start \"C:/Users/Ali/Desktop/renee/preview.html\")",
+      "Bash(powershell -Command \"\n\\\\$lines = Get-Content 'C:/Users/Ali/Desktop/renee/preview.html' -Encoding UTF8\n\\\\$before = \\\\$lines[0..4892]\n\\\\$after  = \\\\$lines[4942..\\(\\\\$lines.Count-1\\)]\n\\\\$before | Set-Content 'C:/Users/Ali/Desktop/renee/preview_before.tmp' -Encoding UTF8\n\\\\$after  | Set-Content 'C:/Users/Ali/Desktop/renee/preview_after.tmp' -Encoding UTF8\nWrite-Host 'Split done. Before:' \\\\$before.Count 'After:' \\\\$after.Count\n\")"
+    ]
+  }
+}
