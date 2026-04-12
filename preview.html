@@ -6623,6 +6623,9 @@ function CPM_Editor({pattern,setPattern,onPreview,onSave=null,themeColor="#11111
     return()=>window.removeEventListener("keydown",h);
   },[cpmHistory,cpmFuture]);
 
+  /* ── Snap toggle ── */
+  const[snapToPrev,setSnapToPrev]=useState(true);
+
   /* ── Ghost preview ── */
   const[ghostPos,setGhostPos]=useState(null);
 
@@ -6934,6 +6937,10 @@ function CPM_Editor({pattern,setPattern,onPreview,onSave=null,themeColor="#11111
               style={{width:26,height:26,borderRadius:6,border:"1.5px solid #E5E7EB",background:"white",cursor:cpmFuture.length?"pointer":"default",opacity:cpmFuture.length?1:0.3,fontSize:13,display:"flex",alignItems:"center",justifyContent:"center"}}>↪</button>
             <button type="button" onClick={clearPattern} title="Clear all rounds"
               style={{width:26,height:26,borderRadius:6,border:"1.5px solid #E5E7EB",background:"white",cursor:"pointer",fontSize:12,display:"flex",alignItems:"center",justifyContent:"center",color:"#FCA5A5"}}>✕</button>
+            <button type="button" onClick={()=>setSnapToPrev(v=>!v)} title={snapToPrev?"Snap on — click to switch to free mode":"Free mode — click to enable snap"}
+              style={{height:22,padding:"0 7px",borderRadius:5,border:`1.5px solid ${snapToPrev?"#A8BFC9":"#E5E7EB"}`,background:snapToPrev?"#EEF5F8":"#F9FAFB",cursor:"pointer",fontSize:9,fontWeight:800,color:snapToPrev?"#5A8FA3":"#9CA3AF",flexShrink:0}}>
+              {snapToPrev?"⊙ Snap":"· Free"}
+            </button>
             {/* Zoom controls — inline in toolbar, same style as Row Pattern Maker */}
             <div style={{width:1,height:18,background:"#E5E7EB",marginLeft:2,marginRight:2,flexShrink:0}}/>
             <button type="button" onClick={()=>setScale(s=>Math.max(0.28,+(s-.15).toFixed(2)))} title="Zoom out" style={{width:22,height:22,borderRadius:5,border:"1.5px solid #E5E7EB",background:"#F9FAFB",fontSize:14,fontWeight:700,cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center",color:"#374151",flexShrink:0}}>−</button>
@@ -7089,36 +7096,58 @@ function CPM_Editor({pattern,setPattern,onPreview,onSave=null,themeColor="#11111
             {/* Ghost preview — only show when near a valid ring or creating a new outer ring */}
             {toolActive&&ghostPos&&ghostPos.symbolType===selType&&(ghostPos.snapping||ghostPos.isNew)&&(
               <g pointerEvents="none">
-                {ghostPos.snapping&&(
-                  <circle cx={ghostPos.gx} cy={ghostPos.gy} r={14}
-                    fill={themeColor} fillOpacity={0.15}
-                    stroke={themeColor} strokeOpacity={0.6} strokeWidth={1.5}/>
-                )}
-                {/* Anchor snap indicator: dashed line toward center (prev-round anchor) */}
-                {ghostPos.anchorId&&(()=>{
-                  // Draw a short dashed line from ghost toward the center indicating attachment
+                {/* Guide line glow — snap mode only, single element IIFE */}
+                {snapToPrev&&ghostPos.snapping&&(()=>{
                   const ang=ghostPos.angle;
-                  const r1=ghostPos.ghostRadius-28,r2=ghostPos.ghostRadius-14;
-                  const x1=CPM_CX+Math.cos(ang)*r1, y1=CPM_CY+Math.sin(ang)*r1;
-                  const x2=CPM_CX+Math.cos(ang)*r2, y2=CPM_CY+Math.sin(ang)*r2;
-                  return <line x1={x1} y1={y1} x2={x2} y2={y2} stroke={themeColor} strokeOpacity={0.55} strokeWidth={1.2} strokeDasharray="2 2"/>;
+                  const prevR=ghostPos.anchorId?(radii[ghostPos.nearestRi-1]??0):Math.max(0,ghostPos.ghostRadius-22);
+                  const x1=CPM_CX+Math.cos(ang)*prevR, y1=CPM_CY+Math.sin(ang)*prevR;
+                  const x2=CPM_CX+Math.cos(ang)*(ghostPos.ghostRadius+20), y2=CPM_CY+Math.sin(ang)*(ghostPos.ghostRadius+20);
+                  return <line x1={x1} y1={y1} x2={x2} y2={y2} stroke="#A8BFC9" strokeOpacity={0.18} strokeWidth={6} strokeLinecap="round"/>;
                 })()}
-                {/* Small dot when angle-snapping to an existing stitch */}
-                {ghostPos.angleSnapped&&(
-                  <circle cx={ghostPos.gx} cy={ghostPos.gy} r={4}
-                    fill={themeColor} fillOpacity={0.7}/>
+                {/* Guide line dashed — snap mode only, single element IIFE */}
+                {snapToPrev&&ghostPos.snapping&&(()=>{
+                  const ang=ghostPos.angle;
+                  const prevR=ghostPos.anchorId?(radii[ghostPos.nearestRi-1]??0):Math.max(0,ghostPos.ghostRadius-22);
+                  const x1=CPM_CX+Math.cos(ang)*prevR, y1=CPM_CY+Math.sin(ang)*prevR;
+                  const x2=CPM_CX+Math.cos(ang)*(ghostPos.ghostRadius+20), y2=CPM_CY+Math.sin(ang)*(ghostPos.ghostRadius+20);
+                  return <line x1={x1} y1={y1} x2={x2} y2={y2} stroke="#A8BFC9" strokeOpacity={0.52} strokeWidth={1.5} strokeLinecap="round" strokeDasharray="5 3"/>;
+                })()}
+                {/* Snap ring — snap mode only */}
+                {snapToPrev&&ghostPos.snapping&&(
+                  <circle cx={ghostPos.gx} cy={ghostPos.gy} r={13}
+                    fill="#A8BFC9" fillOpacity={0.18}
+                    stroke="#A8BFC9" strokeOpacity={0.75} strokeWidth={1.5}/>
                 )}
-                <g transform={`translate(${ghostPos.gx},${ghostPos.gy}) rotate(${ghostPos.rotation})`} opacity={0.4}>
+                {/* Snap center dot — snap mode only */}
+                {snapToPrev&&ghostPos.snapping&&(
+                  <circle cx={ghostPos.gx} cy={ghostPos.gy} r={2.5}
+                    fill="#A8BFC9" fillOpacity={0.88}/>
+                )}
+                {/* Angle-snap outer ring — snap mode only */}
+                {snapToPrev&&ghostPos.angleSnapped&&(
+                  <circle cx={ghostPos.gx} cy={ghostPos.gy} r={9}
+                    fill="none" stroke="#A8BFC9" strokeOpacity={0.45} strokeWidth={1.5}/>
+                )}
+                {/* Angle-snap inner dot — snap mode only */}
+                {snapToPrev&&ghostPos.angleSnapped&&(
+                  <circle cx={ghostPos.gx} cy={ghostPos.gy} r={4.5}
+                    fill="#A8BFC9" fillOpacity={0.88}/>
+                )}
+                <g transform={`translate(${ghostPos.gx},${ghostPos.gy}) rotate(${ghostPos.rotation})`} opacity={0.45}>
                   {ccSym(ghostPos.symbolType,28,themeColor)}
                 </g>
               </g>
             )}
 
-            {/* Drag preview halo */}
+            {/* Drag halo */}
             {isDraggingStitch&&dragPreview&&(
-              <circle cx={dragPreview.gx} cy={dragPreview.gy} r={14}
-                fill={themeColor} fillOpacity={0.15}
-                stroke={themeColor} strokeOpacity={0.6} strokeWidth={1.5} pointerEvents="none"/>
+              <g pointerEvents="none">
+                <circle cx={dragPreview.gx} cy={dragPreview.gy} r={13}
+                  fill="#A8BFC9" fillOpacity={0.18}
+                  stroke="#A8BFC9" strokeOpacity={0.75} strokeWidth={1.5}/>
+                <circle cx={dragPreview.gx} cy={dragPreview.gy} r={2.5}
+                  fill="#A8BFC9" fillOpacity={0.88}/>
+              </g>
             )}
           </g>
         </svg>
