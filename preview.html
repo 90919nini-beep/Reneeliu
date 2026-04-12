@@ -4185,12 +4185,12 @@ function KnitGridThumbCanvas({grid}){
 
 /* ── Fixed 332×248 pattern card preview — scales to fit, centers, never crops ── */
 const PREV_H=248,PREV_PAD=14;
-function PatternCardPreview({patData,accent="#7C3AED"}){
+function PatternCardPreview({patData,accent="#7C3AED",height=PREV_H}){
   const ref=useRef(null);
   useEffect(()=>{
     const canvas=ref.current;if(!canvas||!patData)return;
     const W=canvas.offsetWidth||332;
-    const H=PREV_H;
+    const H=height;
     const dpr=window.devicePixelRatio||1;
     canvas.width=W*dpr;canvas.height=H*dpr;
     const ctx=canvas.getContext("2d");
