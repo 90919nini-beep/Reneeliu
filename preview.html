@@ -4,10 +4,14 @@
   <meta charset="UTF-8"/>
   <meta name="viewport" content="width=device-width,initial-scale=1.0"/>
   <title>mitime</title>
+  <link rel="icon" type="image/png" href="browsertab.png"/>
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://unpkg.com/react@18/umd/react.development.js"></script>
   <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
   <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
   <style>
     *{-webkit-font-smoothing:antialiased;box-sizing:border-box;}
     body{background:#F2F2F7;font-family:-apple-system,BlinkMacSystemFont,'SF Pro Display','Hiragino Sans','Segoe UI',sans-serif;margin:0;}
@@ -71,6 +75,71 @@
 <script type="text/babel">
 const{useState,useEffect,useLayoutEffect,useRef,useContext,createContext,useCallback,useMemo}=React;
 const{createPortal}=ReactDOM;
+
+/* ─── Supabase ─────────────────────────────────────────────────────────────── */
+// Replace these with your Supabase project URL and anon key before using parties.
+const SUPABASE_URL="https://ebpealpuihlqnppptglb.supabase.co";
+const SUPABASE_ANON_KEY="sb_publishable_it868aWdTc9nlSbFlNzNww_C72DHfsi";
+let sb=null;
+try{
+  if(SUPABASE_URL!=="YOUR_SUPABASE_URL"&&typeof supabase!=="undefined"){
+    sb=supabase.createClient(SUPABASE_URL,SUPABASE_ANON_KEY);
+  }
+}catch(_){}
+
+/* ─── Location utilities ───────────────────────────────────────────────────── */
+function parseGoogleMapsUrl(url){
+  let m=url.match(/@(-?\d+\.?\d*),(-?\d+\.?\d*)/);
+  if(m)return{lat:parseFloat(m[1]),lng:parseFloat(m[2])};
+  m=url.match(/[?&]q=(-?\d+\.?\d*),(-?\d+\.?\d*)/);
+  if(m)return{lat:parseFloat(m[1]),lng:parseFloat(m[2])};
+  return null;
+}
+async function geocodeAddress(query){
+  const r=await fetch(`https://nominatim.openstreetmap.org/search?format=json&addressdetails=1&q=${encodeURIComponent(query)}&limit=1`,{headers:{"Accept-Language":"en"}});
+  const d=await r.json();
+  if(!d.length)return null;
+  return{lat:parseFloat(d[0].lat),lng:parseFloat(d[0].lon),display_name:d[0].display_name,name:d[0].name||"",address:d[0].address||{}};
+}
+// Parse announcement column — supports new JSON array [{text,ts}] and legacy plain string
+function parseAnnouncements(raw){
+  if(!raw)return[];
+  try{const a=JSON.parse(raw);if(Array.isArray(a))return a;}catch{}
+  return[{text:raw,ts:null}];
+}
+function latestAnnouncement(raw){const a=parseAnnouncements(raw);return a.length?a[0].text:null;}
+
+function extractVenueName(addr,fallbackName){
+  // POI-type fields Nominatim puts in address — check in order of specificity
+  return addr?.amenity||addr?.shop||addr?.restaurant||addr?.cafe||addr?.fast_food||addr?.bar||addr?.pub||addr?.hotel||addr?.tourism||addr?.leisure||addr?.building||fallbackName||"";
+}
+function buildShortAddress(addr){
+  const street=[addr?.house_number,addr?.road].filter(Boolean).join(" ");
+  const city=addr?.city||addr?.town||addr?.village||addr?.county||"";
+  return[street,city].filter(Boolean).join(", ");
+}
+async function resolveLocation(input){
+  if(!input||!input.trim())return null;
+  const coords=parseGoogleMapsUrl(input);
+  if(coords){
+    const r=await fetch(`https://nominatim.openstreetmap.org/reverse?format=json&addressdetails=1&lat=${coords.lat}&lon=${coords.lng}`,{headers:{"Accept-Language":"en"}});
+    const d=await r.json();
+    const city=d.address?.city||d.address?.town||d.address?.village||d.address?.county||"";
+    const place_name=extractVenueName(d.address,d.name);
+    const formatted_address=buildShortAddress(d.address)||d.display_name||input;
+    return{latitude:coords.lat,longitude:coords.lng,place_name,formatted_address,city};
+  }
+  const geo=await geocodeAddress(input);
+  if(!geo)return null;
+  const city=geo.address?.city||geo.address?.town||geo.address?.village||geo.address?.county||"";
+  const place_name=extractVenueName(geo.address,geo.name)||geo.display_name.split(",")[0]?.trim()||"";
+  const formatted_address=buildShortAddress(geo.address)||geo.display_name;
+  return{latitude:geo.lat,longitude:geo.lng,place_name,formatted_address,city};
+}
+
+/* ─── Countries list ───────────────────────────────────────────────────────── */
+const TIME_OPTIONS=(()=>{const o=[];for(let h=0;h<24;h++){for(let m of[0,15,30,45]){const hh=String(h).padStart(2,"0"),mm=String(m).padStart(2,"0"),ampm=h<12?"AM":"PM",h12=h%12||12;o.push({value:`${hh}:${mm}`,label:`${h12}:${mm} ${ampm}`});}}return o;})();
+const COUNTRIES=["Afghanistan","Albania","Algeria","Argentina","Australia","Austria","Bangladesh","Belgium","Bolivia","Brazil","Cambodia","Canada","Chile","China","Colombia","Croatia","Czech Republic","Denmark","Ecuador","Egypt","Ethiopia","Finland","France","Germany","Ghana","Greece","Guatemala","Hungary","India","Indonesia","Iran","Iraq","Ireland","Israel","Italy","Japan","Jordan","Kenya","Malaysia","Mexico","Morocco","Myanmar","Nepal","Netherlands","New Zealand","Nigeria","Norway","Pakistan","Peru","Philippines","Poland","Portugal","Romania","Russia","Saudi Arabia","Senegal","Serbia","Singapore","South Africa","South Korea","Spain","Sri Lanka","Sweden","Switzerland","Taiwan","Tanzania","Thailand","Tunisia","Turkey","Uganda","Ukraine","United Arab Emirates","United Kingdom","United States","Uruguay","Venezuela","Vietnam","Zimbabwe"].sort();
 
 /* ─── Constants ───────────────────────────────────────────────────────────── */
 const FIBRES=["Merino Wool","Wool","Alpaca","Cotton","Acrylic","Linen","Silk","Bamboo","Mohair","Cashmere","Mixed","Unknown"];
@@ -200,17 +269,18 @@ const T={
     toolBrand:"Brand",toolQty:"Quantity",toolCondition:"Condition",toolNotes:"Notes",
     noTools:"No tools yet",addToolHint:"Add hooks and needles to your library",
     addToolTitle:"Add Tool",addToolBtn:"Add Tool",
-    navProjects:"Projects",navYarnLib:"Yarn",navTools:"Tools",navLibrary:"Library",navDashboard:"Dashboard",navSettings:"Settings",navChart:"Chart",
+    navProjects:"Projects",navYarnLib:"Yarn",navTools:"Tools",navLibrary:"Library",navDashboard:"Dashboard",navSettings:"Settings",navChart:"Chart",navParties:"Parties",
     markComplete:"Mark as Complete",duplicate:"Duplicate",cancel:"Cancel",shareCopied:"Copied to clipboard!",
     designPattern:"Design Pattern",required:"Required",
-    dashTitle:"Dashboard",dashTotal:"Total Projects",dashInProgress:"In Progress",dashCompleted:"Completed",dashYarns:"Yarns in Stash",dashOnHold:"On Hold",dashRecent:"Recent Projects",
+    dashTitle:"Dashboard",dashTotal:"Total Projects",dashInProgress:"In Progress",dashCompleted:"Completed",dashYarns:"Yarns in Stash",dashOnHold:"On Hold",dashRecent:"Recent Projects",dashCustomize:"Customize Layout",dashLayoutDone:"Done",dashLayoutReset:"Reset",dashSecStickers:"Finished Projects",dashSecStats:"Stats Overview",dashSecProgress:"Overall Progress",dashSecRecent:"Recent Projects",dashSecLibrary:"Library Summary",dashSecParties:"Craft Parties",dashHidden:"Hidden",
     patternLib:"Patterns",addPattern:"Add Pattern",patternName2:"Pattern Name",patternCategory:"Category",patternCraft:"Craft",patternDifficulty:"Difficulty",patternSource:"Source URL",patternNotes:"Notes",
     noPatterns:"No patterns yet",addPatternHint:"Save your favourite patterns here",addPatternTitle:"Add Pattern",addPatternBtn:"Add Pattern",patternTags:"Tags (comma separated)",
     chooseLayout:"Choose Pattern Layout",chooseLayoutHint:"How is this pattern constructed?",
     layoutRoundsLabel:"Rounds",layoutRoundsDesc:"Expanding circular rounds from a center magic ring outward.",
     layoutRowsLabel:"Back-and-forth Rows",layoutRowsDesc:"Symbols placed left-to-right in rows stacked on top of each other.",
     settingsTitle:"Settings",
-    settingsProfile:"Profile",settingsName:"Name",settingsNamePh:"Your name",settingsBio:"Bio",settingsBioPh:"Short bio",
+    settingsProfile:"Profile",settingsName:"Name",settingsNamePh:"Your name",settingsBio:"Bio",settingsBioPh:"Short bio",settingsCountry:"Country",settingsCountryPh:"Select your country",
+    partySection:"Craft Parties",partyHost:"Host",partyJoin:"Join",partyMyParties:"My Parties",partyJoined:"Joined",partyCreate:"Host a Party",partyJoinTitle:"Join a Party",partyTitle:"Party Name",partyDesc:"Description",partyDate:"Date",partyTime:"Time",partyLocation:"Location",partyCraftType:"Craft",partyMaxAttendees:"Max Attendees",partyCode:"Party Code",partyCodeHint:"Share this code so others can join",partyEnterCode:"Enter party code (UUID)",partyAttendees:"Attendees",partyFull:"Party is full",partyYouIn:"You're in!",partyManage:"Manage",partyCraftCrochet:"Crochet",partyCraftKnit:"Knitting",partyCraftBoth:"Both",partyNoParties:"No parties yet — host one!",partyNoJoined:"Haven't joined any parties yet",partyErrTitle:"Party name is required.",partyErrCode:"Please enter a party code.",partyNotFound:"Party not found. Check the code and try again.",partySuccess:"Party created!",partyJoinSuccess:"You're in!",partyCopy:"Copy Code",partyCopied:"Copied!",partyLoading:"Loading...",partyAttendeesOf:"Attendees of",partyNoAttendees:"No one has joined yet.",partyHostedBy:"Hosted by",partyAddName:"Your name",partyPublic:"Make this party public (visible to local crafters)",partyLocal:"Local Parties",partyLocalEmpty:"No public parties in your area yet",partyTabAttendees:"Attendees",partyTabEdit:"Edit Details",partyTabAnnounce:"Announcement",partyEditSave:"Save Changes",partyEditSaved:"Saved!",partyDelete:"Delete Party",partyDeleteConfirm:"Are you sure? This will remove the party and all sign-ups permanently.",partyDeleteConfirmBtn:"Yes, Delete",partyAnnounce:"Post an Update",partyAnnouncePh:"e.g. Change of venue — we're now meeting at the park entrance!",partyAnnouncePost:"Post Update",partyAnnouncePosted:"Posted!",partyAnnounceClear:"Clear",partyUpdateBanner:"📢 Update from host:",
     settingsLinkedAccounts:"Linked Accounts",settingsConnected:"connected",settingsDisconnect:"Disconnect",
     settingsSignInWith:"Sign in with",settingsEnterEmail:"Enter your",settingsEmailTo:"email to connect",settingsContinue:"Continue",
     settingsSignedIn:"Signed in!",settingsLocalOnly:"This app stores your account info locally only. No data is sent to any server.",
@@ -262,17 +332,18 @@ const T={
     toolBrand:"Marque",toolQty:"Quantité",toolCondition:"État",toolNotes:"Notes",
     noTools:"Aucun outil",addToolHint:"Ajoutez vos aiguilles et crochets",
     addToolTitle:"Ajouter un outil",addToolBtn:"Ajouter",
-    navProjects:"Projets",navYarnLib:"Fils",navTools:"Outils",navLibrary:"Bibliothèque",navDashboard:"Tableau",navSettings:"Paramètres",navChart:"Carte",
+    navProjects:"Projets",navYarnLib:"Fils",navTools:"Outils",navLibrary:"Bibliothèque",navDashboard:"Tableau",navSettings:"Paramètres",navChart:"Carte",navParties:"Ateliers",
     markComplete:"Marquer terminé",duplicate:"Dupliquer",cancel:"Annuler",shareCopied:"Copié !",
     designPattern:"Créer patron",required:"Requis",
-    dashTitle:"Tableau de bord",dashTotal:"Total projets",dashInProgress:"En cours",dashCompleted:"Terminés",dashYarns:"Fils en stock",dashOnHold:"En pause",dashRecent:"Projets récents",
+    dashTitle:"Tableau de bord",dashTotal:"Total projets",dashInProgress:"En cours",dashCompleted:"Terminés",dashYarns:"Fils en stock",dashOnHold:"En pause",dashRecent:"Projets récents",dashCustomize:"Personnaliser",dashLayoutDone:"Terminé",dashLayoutReset:"Réinitialiser",dashSecStickers:"Projets terminés",dashSecStats:"Statistiques",dashSecProgress:"Progression globale",dashSecRecent:"Projets récents",dashSecLibrary:"Résumé bibliothèque",dashSecParties:"Ateliers Craft",dashHidden:"Masqué",
     patternLib:"Patrons",addPattern:"Ajouter",patternName2:"Nom du patron",patternCategory:"Catégorie",patternCraft:"Technique",patternDifficulty:"Difficulté",patternSource:"URL source",patternNotes:"Notes",
     noPatterns:"Aucun patron",addPatternHint:"Sauvegardez vos patrons favoris ici",addPatternTitle:"Ajouter un patron",addPatternBtn:"Ajouter",patternTags:"Étiquettes (virgule)",
     chooseLayout:"Choisir la disposition",chooseLayoutHint:"Comment ce patron est-il construit ?",
     layoutRoundsLabel:"Ronds",layoutRoundsDesc:"Rangs circulaires depuis un anneau magique central.",
     layoutRowsLabel:"Rangs aller-retour",layoutRowsDesc:"Symboles placés de gauche à droite en rangs empilés.",
     settingsTitle:"Paramètres",
-    settingsProfile:"Profil",settingsName:"Nom",settingsNamePh:"Votre nom",settingsBio:"Bio",settingsBioPh:"Courte bio",
+    settingsProfile:"Profil",settingsName:"Nom",settingsNamePh:"Votre nom",settingsBio:"Bio",settingsBioPh:"Courte bio",settingsCountry:"Pays",settingsCountryPh:"Sélectionnez votre pays",
+    partySection:"Ateliers Craft",partyHost:"Organiser",partyJoin:"Rejoindre",partyMyParties:"Mes ateliers",partyJoined:"Rejoints",partyCreate:"Organiser un atelier",partyJoinTitle:"Rejoindre un atelier",partyTitle:"Nom de l'atelier",partyDesc:"Description",partyDate:"Date",partyTime:"Heure",partyLocation:"Lieu",partyCraftType:"Technique",partyMaxAttendees:"Participants max",partyCode:"Code de l'atelier",partyCodeHint:"Partagez ce code pour que d'autres rejoignent",partyEnterCode:"Entrez le code de l'atelier",partyAttendees:"Participants",partyFull:"Atelier complet",partyYouIn:"Vous êtes inscrit !",partyManage:"Gérer",partyCraftCrochet:"Crochet",partyCraftKnit:"Tricot",partyCraftBoth:"Les deux",partyNoParties:"Aucun atelier — organisez-en un !",partyNoJoined:"Vous n'avez rejoint aucun atelier",partyErrTitle:"Le nom est requis.",partyErrCode:"Veuillez entrer un code.",partyNotFound:"Atelier introuvable. Vérifiez le code.",partySuccess:"Atelier créé !",partyJoinSuccess:"Inscrit !",partyCopy:"Copier",partyCopied:"Copié !",partyLoading:"Chargement...",partyAttendeesOf:"Participants de",partyNoAttendees:"Personne n'a encore rejoint.",partyHostedBy:"Organisé par",partyAddName:"Votre nom",partyPublic:"Rendre cet atelier public (visible aux artisans locaux)",partyLocal:"Ateliers locaux",partyLocalEmpty:"Aucun atelier public dans votre région pour l'instant",partyTabAttendees:"Participants",partyTabEdit:"Modifier",partyTabAnnounce:"Annonce",partyEditSave:"Enregistrer",partyEditSaved:"Enregistré !",partyDelete:"Supprimer l'atelier",partyDeleteConfirm:"Êtes-vous sûr ? Cela supprimera l'atelier et toutes les inscriptions.",partyDeleteConfirmBtn:"Oui, supprimer",partyAnnounce:"Publier une mise à jour",partyAnnouncePh:"ex. Changement de lieu — on se retrouve maintenant à l'entrée du parc !",partyAnnouncePost:"Publier",partyAnnouncePosted:"Publié !",partyAnnounceClear:"Effacer",partyUpdateBanner:"📢 Mise à jour de l'hôte :",
     settingsLinkedAccounts:"Comptes liés",settingsConnected:"connecté",settingsDisconnect:"Déconnecter",
     settingsSignInWith:"Se connecter avec",settingsEnterEmail:"Entrez votre adresse",settingsEmailTo:"pour vous connecter",settingsContinue:"Continuer",
     settingsSignedIn:"Connecté !",settingsLocalOnly:"Les informations de votre compte sont stockées localement. Aucune donnée n'est envoyée.",
@@ -324,17 +395,18 @@ const T={
     toolBrand:"ブランド",toolQty:"数量",toolCondition:"状態",toolNotes:"メモ",
     noTools:"道具がありません",addToolHint:"かぎ針や棒針を追加しましょう",
     addToolTitle:"道具を追加",addToolBtn:"追加する",
-    navProjects:"プロジェクト",navYarnLib:"毛糸",navTools:"道具",navLibrary:"ライブラリ",navDashboard:"概要",navSettings:"設定",navChart:"チャート",
+    navProjects:"プロジェクト",navYarnLib:"毛糸",navTools:"道具",navLibrary:"ライブラリ",navDashboard:"概要",navSettings:"設定",navChart:"チャート",navParties:"パーティー",
     markComplete:"完了にする",duplicate:"複製",cancel:"キャンセル",shareCopied:"コピーしました",
     designPattern:"パターン作成",required:"必須",
-    dashTitle:"ダッシュボード",dashTotal:"総プロジェクト",dashInProgress:"進行中",dashCompleted:"完了",dashYarns:"毛糸在庫",dashOnHold:"保留中",dashRecent:"最近のプロジェクト",
+    dashTitle:"ダッシュボード",dashTotal:"総プロジェクト",dashInProgress:"進行中",dashCompleted:"完了",dashYarns:"毛糸在庫",dashOnHold:"保留中",dashRecent:"最近のプロジェクト",dashCustomize:"レイアウト編集",dashLayoutDone:"完了",dashLayoutReset:"リセット",dashSecStickers:"完成プロジェクト",dashSecStats:"統計",dashSecProgress:"全体の進捗",dashSecRecent:"最近のプロジェクト",dashSecLibrary:"ライブラリ",dashSecParties:"パーティー",dashHidden:"非表示",
     patternLib:"パターン",addPattern:"追加",patternName2:"パターン名",patternCategory:"カテゴリ",patternCraft:"技法",patternDifficulty:"難易度",patternSource:"ソースURL",patternNotes:"メモ",
     noPatterns:"パターンなし",addPatternHint:"お気に入りのパターンを保存しましょう",addPatternTitle:"パターンを追加",addPatternBtn:"追加する",patternTags:"タグ（カンマ区切り）",
     chooseLayout:"パターンレイアウトを選択",chooseLayoutHint:"このパターンはどのように構成されていますか？",
     layoutRoundsLabel:"円編み",layoutRoundsDesc:"中心のマジックリングから外側に広がる円形のラウンド。",
     layoutRowsLabel:"往復編み",layoutRowsDesc:"段を重ねて左右に記号を配置します。",
     settingsTitle:"設定",
-    settingsProfile:"プロフィール",settingsName:"名前",settingsNamePh:"お名前",settingsBio:"自己紹介",settingsBioPh:"短い自己紹介",
+    settingsProfile:"プロフィール",settingsName:"名前",settingsNamePh:"お名前",settingsBio:"自己紹介",settingsBioPh:"短い自己紹介",settingsCountry:"国",settingsCountryPh:"国を選択",
+    partySection:"編み物パーティー",partyHost:"主催",partyJoin:"参加",partyMyParties:"マイパーティー",partyJoined:"参加済み",partyCreate:"パーティーを主催",partyJoinTitle:"パーティーに参加",partyTitle:"パーティー名",partyDesc:"説明",partyDate:"日付",partyTime:"時間",partyLocation:"場所",partyCraftType:"技法",partyMaxAttendees:"最大参加者数",partyCode:"パーティーコード",partyCodeHint:"このコードを共有して参加を募りましょう",partyEnterCode:"パーティーコードを入力",partyAttendees:"参加者",partyFull:"満員です",partyYouIn:"参加中！",partyManage:"管理",partyCraftCrochet:"かぎ針",partyCraftKnit:"棒針",partyCraftBoth:"両方",partyNoParties:"パーティーがありません — 主催しましょう！",partyNoJoined:"まだ参加していません",partyErrTitle:"パーティー名が必要です。",partyErrCode:"コードを入力してください。",partyNotFound:"見つかりません。コードを確認してください。",partySuccess:"パーティーを作成しました！",partyJoinSuccess:"参加しました！",partyCopy:"コピー",partyCopied:"コピー済み！",partyLoading:"読み込み中...",partyAttendeesOf:"参加者",partyNoAttendees:"まだ誰も参加していません。",partyHostedBy:"主催者",partyAddName:"お名前",partyPublic:"このパーティーを公開する（近くの編み物仲間に表示）",partyLocal:"地元のパーティー",partyLocalEmpty:"近くに公開パーティーはまだありません",partyTabAttendees:"参加者",partyTabEdit:"詳細を編集",partyTabAnnounce:"お知らせ",partyEditSave:"保存",partyEditSaved:"保存しました！",partyDelete:"パーティーを削除",partyDeleteConfirm:"本当に削除しますか？パーティーと全ての参加情報が消えます。",partyDeleteConfirmBtn:"はい、削除",partyAnnounce:"更新を投稿",partyAnnouncePh:"例：会場が変更になりました — 公園の入口で待ち合わせ！",partyAnnouncePost:"投稿",partyAnnouncePosted:"投稿しました！",partyAnnounceClear:"クリア",partyUpdateBanner:"📢 主催者からのお知らせ：",
     settingsLinkedAccounts:"連携アカウント",settingsConnected:"連携済み",settingsDisconnect:"解除",
     settingsSignInWith:"でサインイン",settingsEnterEmail:"メールアドレスを入力",settingsEmailTo:"で接続する",settingsContinue:"続ける",
     settingsSignedIn:"サインイン完了！",settingsLocalOnly:"アカウント情報はローカルにのみ保存されます。データは送信されません。",
@@ -386,17 +458,18 @@ const T={
     toolBrand:"品牌",toolQty:"數量",toolCondition:"狀態",toolNotes:"備註",
     noTools:"尚無工具",addToolHint:"新增鉤針和棒針至您的工具庫",
     addToolTitle:"新增工具",addToolBtn:"新增",
-    navProjects:"專案",navYarnLib:"毛線",navTools:"工具",navLibrary:"素材庫",navDashboard:"總覽",navSettings:"設定",navChart:"圖表",
+    navProjects:"專案",navYarnLib:"毛線",navTools:"工具",navLibrary:"素材庫",navDashboard:"總覽",navSettings:"設定",navChart:"圖表",navParties:"聚會",
     markComplete:"標為完成",duplicate:"複製",cancel:"取消",shareCopied:"已複製！",
     designPattern:"設計花樣",required:"必填",
-    dashTitle:"儀表板",dashTotal:"總專案",dashInProgress:"進行中",dashCompleted:"已完成",dashYarns:"毛線存量",dashOnHold:"暫停中",dashRecent:"最近專案",
+    dashTitle:"儀表板",dashTotal:"總專案",dashInProgress:"進行中",dashCompleted:"已完成",dashYarns:"毛線存量",dashOnHold:"暫停中",dashRecent:"最近專案",dashCustomize:"自訂版面",dashLayoutDone:"完成",dashLayoutReset:"重設",dashSecStickers:"完成專案",dashSecStats:"統計概覽",dashSecProgress:"整體進度",dashSecRecent:"最近專案",dashSecLibrary:"資料庫摘要",dashSecParties:"編織聚會",dashHidden:"已隱藏",
     patternLib:"花樣庫",addPattern:"新增",patternName2:"花樣名稱",patternCategory:"類別",patternCraft:"技法",patternDifficulty:"難度",patternSource:"來源URL",patternNotes:"備註",
     noPatterns:"尚無花樣",addPatternHint:"在此儲存您喜愛的花樣",addPatternTitle:"新增花樣",addPatternBtn:"新增",patternTags:"標籤（逗號分隔）",
     chooseLayout:"選擇花樣版型",chooseLayoutHint:"這個花樣是如何構成的？",
     layoutRoundsLabel:"環形編織",layoutRoundsDesc:"從中心魔術環向外展開的圓形編織。",
     layoutRowsLabel:"往復編織",layoutRowsDesc:"符號從左到右按行排列堆疊。",
     settingsTitle:"設定",
-    settingsProfile:"個人資料",settingsName:"姓名",settingsNamePh:"您的姓名",settingsBio:"簡介",settingsBioPh:"簡短介紹",
+    settingsProfile:"個人資料",settingsName:"姓名",settingsNamePh:"您的姓名",settingsBio:"簡介",settingsBioPh:"簡短介紹",settingsCountry:"國家",settingsCountryPh:"選擇您的國家",
+    partySection:"編織聚會",partyHost:"主辦",partyJoin:"加入",partyMyParties:"我的聚會",partyJoined:"已加入",partyCreate:"主辦聚會",partyJoinTitle:"加入聚會",partyTitle:"聚會名稱",partyDesc:"描述",partyDate:"日期",partyTime:"時間",partyLocation:"地點",partyCraftType:"技法",partyMaxAttendees:"最多人數",partyCode:"聚會代碼",partyCodeHint:"分享此代碼讓其他人加入",partyEnterCode:"輸入聚會代碼",partyAttendees:"參加者",partyFull:"已額滿",partyYouIn:"已加入！",partyManage:"管理",partyCraftCrochet:"鉤針",partyCraftKnit:"棒針",partyCraftBoth:"兩者",partyNoParties:"尚無聚會 — 來主辦一個！",partyNoJoined:"尚未加入任何聚會",partyErrTitle:"請輸入聚會名稱。",partyErrCode:"請輸入代碼。",partyNotFound:"找不到聚會，請確認代碼。",partySuccess:"聚會已建立！",partyJoinSuccess:"已加入！",partyCopy:"複製",partyCopied:"已複製！",partyLoading:"載入中...",partyAttendeesOf:"參加者",partyNoAttendees:"尚無人加入。",partyHostedBy:"主辦人",partyAddName:"您的姓名",partyPublic:"公開此聚會（讓當地編織愛好者看到）",partyLocal:"本地聚會",partyLocalEmpty:"您所在地區目前沒有公開聚會",partyTabAttendees:"參加者",partyTabEdit:"編輯詳情",partyTabAnnounce:"公告",partyEditSave:"儲存",partyEditSaved:"已儲存！",partyDelete:"刪除聚會",partyDeleteConfirm:"確定嗎？這將永久刪除聚會及所有報名資料。",partyDeleteConfirmBtn:"是的，刪除",partyAnnounce:"發布更新",partyAnnouncePh:"例：地點更改 — 現在在公園入口集合！",partyAnnouncePost:"發布",partyAnnouncePosted:"已發布！",partyAnnounceClear:"清除",partyUpdateBanner:"📢 主辦人通知：",
     settingsLinkedAccounts:"連結帳號",settingsConnected:"已連結",settingsDisconnect:"解除連結",
     settingsSignInWith:"使用登入",settingsEnterEmail:"輸入您的",settingsEmailTo:"電子郵件以連結",settingsContinue:"繼續",
     settingsSignedIn:"已登入！",settingsLocalOnly:"帳號資訊僅儲存於本機，不傳送至任何伺服器。",
@@ -448,17 +521,18 @@ const T={
     toolBrand:"브랜드",toolQty:"수량",toolCondition:"상태",toolNotes:"메모",
     noTools:"도구 없음",addToolHint:"코바늘과 대바늘을 추가하세요",
     addToolTitle:"도구 추가",addToolBtn:"추가",
-    navProjects:"프로젝트",navYarnLib:"실",navTools:"도구",navLibrary:"라이브러리",navDashboard:"대시보드",navSettings:"설정",navChart:"차트",
+    navProjects:"프로젝트",navYarnLib:"실",navTools:"도구",navLibrary:"라이브러리",navDashboard:"대시보드",navSettings:"설정",navChart:"차트",navParties:"파티",
     markComplete:"완료로 표시",duplicate:"복제",cancel:"취소",shareCopied:"복사되었습니다!",
     designPattern:"패턴 디자인",required:"필수",
-    dashTitle:"대시보드",dashTotal:"총 프로젝트",dashInProgress:"진행 중",dashCompleted:"완료",dashYarns:"실 재고",dashOnHold:"보류 중",dashRecent:"최근 프로젝트",
+    dashTitle:"대시보드",dashTotal:"총 프로젝트",dashInProgress:"진행 중",dashCompleted:"완료",dashYarns:"실 재고",dashOnHold:"보류 중",dashRecent:"최근 프로젝트",dashCustomize:"레이아웃 편집",dashLayoutDone:"완료",dashLayoutReset:"초기화",dashSecStickers:"완성 프로젝트",dashSecStats:"통계 개요",dashSecProgress:"전체 진행도",dashSecRecent:"최근 프로젝트",dashSecLibrary:"라이브러리",dashSecParties:"뜨개질 파티",dashHidden:"숨김",
     patternLib:"패턴",addPattern:"추가",patternName2:"패턴 이름",patternCategory:"카테고리",patternCraft:"기법",patternDifficulty:"난이도",patternSource:"소스 URL",patternNotes:"메모",
     noPatterns:"패턴 없음",addPatternHint:"즐겨찾는 패턴을 여기에 저장하세요",addPatternTitle:"패턴 추가",addPatternBtn:"추가",patternTags:"태그 (쉼표 구분)",
     chooseLayout:"패턴 레이아웃 선택",chooseLayoutHint:"이 패턴은 어떻게 구성되어 있나요?",
     layoutRoundsLabel:"원형 뜨기",layoutRoundsDesc:"중심 매직링에서 바깥쪽으로 확장하는 원형 라운드.",
     layoutRowsLabel:"왕복 뜨기",layoutRowsDesc:"기호를 좌우로 배치하여 단을 쌓아 올립니다.",
     settingsTitle:"설정",
-    settingsProfile:"프로필",settingsName:"이름",settingsNamePh:"이름 입력",settingsBio:"소개",settingsBioPh:"짧은 소개",
+    settingsProfile:"프로필",settingsName:"이름",settingsNamePh:"이름 입력",settingsBio:"소개",settingsBioPh:"짧은 소개",settingsCountry:"국가",settingsCountryPh:"국가 선택",
+    partySection:"뜨개질 파티",partyHost:"주최",partyJoin:"참여",partyMyParties:"내 파티",partyJoined:"참여 중",partyCreate:"파티 주최",partyJoinTitle:"파티 참여",partyTitle:"파티 이름",partyDesc:"설명",partyDate:"날짜",partyTime:"시간",partyLocation:"장소",partyCraftType:"기법",partyMaxAttendees:"최대 참가자",partyCode:"파티 코드",partyCodeHint:"이 코드를 공유하여 참가자를 모집하세요",partyEnterCode:"파티 코드 입력",partyAttendees:"참가자",partyFull:"마감되었습니다",partyYouIn:"참여 중!",partyManage:"관리",partyCraftCrochet:"코바늘",partyCraftKnit:"대바늘",partyCraftBoth:"둘 다",partyNoParties:"파티가 없습니다 — 주최해보세요!",partyNoJoined:"아직 참여한 파티가 없습니다",partyErrTitle:"파티 이름을 입력하세요.",partyErrCode:"코드를 입력하세요.",partyNotFound:"파티를 찾을 수 없습니다. 코드를 확인하세요.",partySuccess:"파티가 생성되었습니다!",partyJoinSuccess:"참여했습니다!",partyCopy:"복사",partyCopied:"복사됨!",partyLoading:"로딩 중...",partyAttendeesOf:"참가자",partyNoAttendees:"아직 아무도 참여하지 않았습니다.",partyHostedBy:"주최자",partyAddName:"이름",partyPublic:"이 파티를 공개하기 (지역 뜨개질 친구들에게 표시)",partyLocal:"지역 파티",partyLocalEmpty:"아직 근처에 공개된 파티가 없습니다",partyTabAttendees:"참가자",partyTabEdit:"상세 편집",partyTabAnnounce:"공지",partyEditSave:"저장",partyEditSaved:"저장됨！",partyDelete:"파티 삭제",partyDeleteConfirm:"정말 삭제하시겠습니까? 파티와 모든 참가 정보가 영구 삭제됩니다.",partyDeleteConfirmBtn:"예, 삭제",partyAnnounce:"업데이트 게시",partyAnnouncePh:"예: 장소 변경 — 이제 공원 입구에서 만납니다！",partyAnnouncePost:"게시",partyAnnouncePosted:"게시됨！",partyAnnounceClear:"지우기",partyUpdateBanner:"📢 주최자 공지：",
     settingsLinkedAccounts:"연결된 계정",settingsConnected:"연결됨",settingsDisconnect:"연결 해제",
     settingsSignInWith:"로 로그인",settingsEnterEmail:"이메일 주소 입력",settingsEmailTo:"로 연결하기",settingsContinue:"계속",
     settingsSignedIn:"로그인 완료!",settingsLocalOnly:"계정 정보는 기기에만 저장됩니다. 서버로 전송되지 않습니다.",
@@ -2958,8 +3032,8 @@ function StitchCounter() {
   const [panelPos, setPanelPos] = useState(null);
   const dragRef = useRef(null); // {startClientX, startClientY, startPosX, startPosY, moved, target:"fab"|"panel"}
 
-  const FAB_W = 48, FAB_H = 48;
-  const PANEL_W = 300, PANEL_H = 220;
+  const FAB_W = 44, FAB_H = 44;
+  const PANEL_W = 228, PANEL_H = 167;
   const PAD = 8;
 
   const getFabXY = () => fabPos ?? {
@@ -3040,15 +3114,15 @@ function StitchCounter() {
     });
     return (
       <div style={{display:"flex", flexDirection:"column", alignItems:"center", gap:8, flex:1, minWidth:0}}>
-        <div style={{fontSize:10, fontWeight:800, color, letterSpacing:"0.1em", textTransform:"uppercase"}}>{label}</div>
-        <div style={{fontSize:44, fontWeight:900, color:"#111", lineHeight:1, letterSpacing:"-1px", minWidth:70, textAlign:"center"}}>{value}</div>
-        <div style={{display:"flex", gap:8, alignItems:"center"}}>
+        <div style={{fontSize:8, fontWeight:800, color, letterSpacing:"0.1em", textTransform:"uppercase"}}>{label}</div>
+        <div style={{fontSize:33, fontWeight:900, color:"#111", lineHeight:1, letterSpacing:"-1px", minWidth:53, textAlign:"center"}}>{value}</div>
+        <div style={{display:"flex", gap:6, alignItems:"center"}}>
           <button type="button" onClick={dec} onMouseDown={press} onMouseUp={release} onMouseLeave={release}
-            style={{...btn(value===0?"#F3F4F6":"#FEE2E2", value===0?"#D1D5DB":"#EF4444"), width:36, height:36, fontSize:20}}>−</button>
+            style={{...btn(value===0?"#F3F4F6":"#FEE2E2", value===0?"#D1D5DB":"#EF4444"), width:28, height:28, fontSize:15}}>−</button>
           <button type="button" onClick={inc} onMouseDown={press} onMouseUp={release} onMouseLeave={release}
-            style={{...btn("#D6EAF4","#247BA0"), width:44, height:44, fontSize:26}}>+</button>
+            style={{...btn("#D6EAF4","#247BA0"), width:33, height:33, fontSize:20}}>+</button>
           <button type="button" onClick={rst} onMouseDown={press} onMouseUp={release} onMouseLeave={release}
-            style={{...btn("#F3F4F6","#9CA3AF"), width:32, height:32, fontSize:14, borderRadius:10}}>↺</button>
+            style={{...btn("#F3F4F6","#9CA3AF"), width:25, height:25, fontSize:10, borderRadius:8}}>↺</button>
         </div>
       </div>
     );
@@ -3067,9 +3141,9 @@ function StitchCounter() {
         <div style={{
           position:"fixed", left:panelPos.x, top:panelPos.y, zIndex:500,
           width:PANEL_W, boxSizing:"border-box",
-          background:"white", borderRadius:24, padding:"18px 20px 20px",
+          background:"white", borderRadius:19, padding:"13px 15px 15px",
           boxShadow:"0 8px 32px rgba(0,0,0,0.18)", border:"1.5px solid #E8F4FB",
-          display:"flex", flexDirection:"column", gap:14,
+          display:"flex", flexDirection:"column", gap:10,
           animation:"fadeIn .2s cubic-bezier(.4,0,.2,1)",
         }}>
           <div style={{display:"flex", alignItems:"center", justifyContent:"space-between"}}>
@@ -3087,17 +3161,17 @@ function StitchCounter() {
                   </div>
                 ))}
               </div>
-              <div style={{fontSize:10, fontWeight:800, color:"#247BA0", letterSpacing:"0.1em", textTransform:"uppercase"}}>Counter</div>
+              <div style={{fontSize:8, fontWeight:800, color:"#247BA0", letterSpacing:"0.1em", textTransform:"uppercase"}}>Counter</div>
             </div>
             <div style={{display:"flex", alignItems:"center", gap:6}}>
               <button type="button" onClick={()=>{setRows(0);setStiches(0);}}
-                style={{fontSize:11, fontWeight:700, color:"#9CA3AF", background:"none", border:"none",
-                        cursor:"pointer", padding:"3px 8px", borderRadius:8}}>Reset All</button>
+                style={{fontSize:9, fontWeight:700, color:"#9CA3AF", background:"none", border:"none",
+                        cursor:"pointer", padding:"2px 6px", borderRadius:7}}>Reset All</button>
               <button type="button" onClick={()=>setOpen(false)}
-                style={{width:26, height:26, borderRadius:"50%", border:"none",
+                style={{width:21, height:21, borderRadius:"50%", border:"none",
                         background:"#F3F4F6", color:"#6B7280", flexShrink:0,
                         display:"flex", alignItems:"center", justifyContent:"center",
-                        cursor:"pointer", fontSize:14, fontWeight:900, lineHeight:1}}>×</button>
+                        cursor:"pointer", fontSize:11, fontWeight:900, lineHeight:1}}>×</button>
             </div>
           </div>
           <div style={{display:"flex", gap:0, alignItems:"stretch"}}>
@@ -3425,6 +3499,7 @@ function CongratsOverlay({onDone}) {
 function Card({project,onDelete,onEdit,onPickPattern,onDuplicate,onMarkComplete,onUpdateRows,onUpdatePattern,onFinishedPhoto,onArchive,isArchived=false}){
   const{lang,t}=useLang();
   const{canvasBg="#FDFAF6"}=useSettings();
+  const[expanded,setExpanded]=useState(false);
   const[saved,setSaved]=useState(false);
   const[notesOpen,setNotesOpen]=useState(false);
   const[checked,setChecked]=useState([]);
@@ -3466,233 +3541,257 @@ function Card({project,onDelete,onEdit,onPickPattern,onDuplicate,onMarkComplete,
     {showCongrats&&<CongratsOverlay onDone={()=>setShowCongrats(false)}/>}
     {showPatternView&&project.pattern&&<PatternViewModal pattern={project.pattern} notes={project.notes} onClose={()=>setShowPatternView(false)} onSaveRowNotes={onUpdatePattern?(rn=>onUpdatePattern({...project.pattern,rowNotes:rn})):undefined}/>}
     <div className="shadow-card bg-white rounded-3xl overflow-hidden w-full">
-      <div style={{height:4,background:`linear-gradient(90deg,${primaryColor},${primaryColor}88)`}}/>
-      {/* Header */}
-      <div style={{padding:"14px 18px 10px"}}>
-        <div style={{display:"flex",alignItems:"flex-start",justifyContent:"space-between"}}>
-          <div style={{display:"flex",alignItems:"center",gap:10,minWidth:0}}>
-            <div style={{display:"flex",flexShrink:0}}>
-              {(project.yarns||[]).slice(0,3).map((y,i)=>(
-                <div key={i} style={{width:36,height:36,borderRadius:11,background:y.color||"#ccc",border:"2px solid white",marginLeft:i>0?-10:0,boxShadow:`0 3px 8px ${y.color||"#ccc"}44`,zIndex:3-i}}/>
-              ))}
-              {(project.yarns||[]).length>3&&<div style={{width:28,height:28,borderRadius:9,background:"#F3F4F6",border:"2px solid white",marginLeft:-10,display:"flex",alignItems:"center",justifyContent:"center",fontSize:10,fontWeight:700,color:"#6B7280"}}>+{project.yarns.length-3}</div>}
+
+      {/* ── Always-visible collapsed view ── */}
+      <div onClick={()=>setExpanded(e=>!e)} style={{cursor:"pointer"}}>
+        <div style={{height:4,background:`linear-gradient(90deg,${primaryColor},${primaryColor}88)`}}/>
+        {/* Header */}
+        <div style={{padding:"14px 18px 10px"}}>
+          <div style={{display:"flex",alignItems:"flex-start",justifyContent:"space-between"}}>
+            <div style={{display:"flex",alignItems:"center",gap:10,minWidth:0}}>
+              <div style={{display:"flex",flexShrink:0}}>
+                {(project.yarns||[]).slice(0,3).map((y,i)=>(
+                  <div key={i} style={{width:36,height:36,borderRadius:11,background:y.color||"#ccc",border:"2px solid white",marginLeft:i>0?-10:0,boxShadow:`0 3px 8px ${y.color||"#ccc"}44`,zIndex:3-i}}/>
+                ))}
+                {(project.yarns||[]).length>3&&<div style={{width:28,height:28,borderRadius:9,background:"#F3F4F6",border:"2px solid white",marginLeft:-10,display:"flex",alignItems:"center",justifyContent:"center",fontSize:10,fontWeight:700,color:"#6B7280"}}>+{project.yarns.length-3}</div>}
+              </div>
+              <div style={{minWidth:0}}>
+                <div style={{fontSize:16,fontWeight:700,color:"#111",overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap",maxWidth:185}}>{project.title}</div>
+                <div style={{fontSize:11,color:"#9CA3AF",marginTop:1}}>{(project.yarns||[]).map(y=>y.brand||y.name).filter(Boolean).join(", ")||"—"}</div>
+              </div>
             </div>
-            <div style={{minWidth:0}}>
-              <div style={{fontSize:16,fontWeight:700,color:"#111",overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap",maxWidth:185}}>{project.title}</div>
-              <div style={{fontSize:11,color:"#9CA3AF",marginTop:1}}>{(project.yarns||[]).map(y=>y.brand||y.name).filter(Boolean).join(", ")||"—"}</div>
+            <div style={{display:"flex",gap:4,flexShrink:0}}>
+              <button onClick={e=>{e.stopPropagation();setSaved(s=>!s);}} style={{color:saved?"#7AC2E1":"#D1D5DB",background:"none",border:"none",cursor:"pointer",padding:2}}>
+                <svg width="17" height="17" viewBox="0 0 24 24" fill={saved?"currentColor":"none"} stroke="currentColor" strokeWidth="2"><path strokeLinecap="round" strokeLinejoin="round" d="M5 5a2 2 0 012-2h10a2 2 0 012 2v16l-7-3.5L5 21V5z"/></svg>
+              </button>
             </div>
           </div>
-          <div style={{display:"flex",gap:4,flexShrink:0}}>
-            <button onClick={()=>setSaved(s=>!s)} style={{color:saved?"#7AC2E1":"#D1D5DB",background:"none",border:"none",cursor:"pointer",padding:2}}>
-              <svg width="17" height="17" viewBox="0 0 24 24" fill={saved?"currentColor":"none"} stroke="currentColor" strokeWidth="2"><path strokeLinecap="round" strokeLinejoin="round" d="M5 5a2 2 0 012-2h10a2 2 0 012 2v16l-7-3.5L5 21V5z"/></svg>
-            </button>
+          <div style={{display:"flex",gap:5,marginTop:9,flexWrap:"wrap",alignItems:"center"}}>
+            <span style={{display:"inline-flex",alignItems:"center",gap:4,padding:"3px 9px",borderRadius:999,fontSize:11,fontWeight:600,background:st.bg,color:st.color}}>
+              <span style={{width:5,height:5,borderRadius:999,background:st.dot,display:"inline-block"}}/>{statusLabel}
+            </span>
+            <span style={{display:"inline-flex",alignItems:"center",padding:"3px 9px",borderRadius:999,fontSize:11,fontWeight:600,background:"#F5FBFE",color:priColor}}>{priLabel}</span>
+            {days!==null&&<span style={{marginLeft:"auto",display:"inline-flex",alignItems:"center",padding:"3px 9px",borderRadius:999,fontSize:11,fontWeight:600,background:dueBg,color:dueColor}}>{dueLabel}</span>}
           </div>
         </div>
-        <div style={{display:"flex",gap:5,marginTop:9,flexWrap:"wrap",alignItems:"center"}}>
-          <span style={{display:"inline-flex",alignItems:"center",gap:4,padding:"3px 9px",borderRadius:999,fontSize:11,fontWeight:600,background:st.bg,color:st.color}}>
-            <span style={{width:5,height:5,borderRadius:999,background:st.dot,display:"inline-block"}}/>{statusLabel}
-          </span>
-          <span style={{display:"inline-flex",alignItems:"center",padding:"3px 9px",borderRadius:999,fontSize:11,fontWeight:600,background:"#F5FBFE",color:priColor}}>{priLabel}</span>
-          {days!==null&&<span style={{marginLeft:"auto",display:"inline-flex",alignItems:"center",padding:"3px 9px",borderRadius:999,fontSize:11,fontWeight:600,background:dueBg,color:dueColor}}>{dueLabel}</span>}
-        </div>
-      </div>
-      <div style={{height:1,background:"#F3F4F6",margin:"0 18px"}}/>
-      {/* Stats */}
-      <div style={{display:"grid",gridTemplateColumns:"1fr 1fr 1fr",borderBottom:"1px solid #F3F4F6"}}>
-        {[[t.hook,project.hookSize||"—"],[t.weight,project.weight||"—"],[t.balls,(project.yarns||[]).reduce((a,y)=>a+(Number(y.balls)||0),0)]].map(([l,v],i)=>(
-          <div key={l} style={{display:"flex",flexDirection:"column",alignItems:"center",padding:"10px 0",borderRight:i<2?"1px solid #F3F4F6":"none"}}>
-            <span style={{fontSize:14,fontWeight:700,color:"#111"}}>{v}</span>
-            <span style={{fontSize:10,color:"#9CA3AF",marginTop:1}}>{l}</span>
-          </div>
-        ))}
-      </div>
-      {/* Progress */}
-      <div style={{padding:"14px 18px",display:"flex",alignItems:"center",gap:12}}>
-        <ProgressRing pct={project.progress||0} color={primaryColor}/>
-        <div style={{flex:1}}>
+        {/* Slim progress bar */}
+        <div style={{padding:"0 18px 10px"}}>
           <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:5}}>
-            <span style={{fontSize:12,fontWeight:600,color:"#374151"}}>{t.rows}</span>
-            <div style={{display:"flex",alignItems:"center",gap:6}}>
-              <button onClick={()=>{const r=Math.max(0,(project.rowsCompleted||0)-1);onUpdateRows(r);}} style={{width:22,height:22,borderRadius:7,border:"1.5px solid #E5E7EB",background:"#F9FAFB",color:"#6B7280",fontSize:14,fontWeight:700,cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center",lineHeight:1,padding:0}} disabled={!project.rowsCompleted}>−</button>
-              <span style={{fontSize:12,fontWeight:700,color:primaryColor,minWidth:60,textAlign:"center"}}>{project.rowsCompleted||0} / {project.totalRows||0}</span>
-              <button onClick={()=>{const r=Math.min(project.totalRows||0,(project.rowsCompleted||0)+1);onUpdateRows(r);}} style={{width:22,height:22,borderRadius:7,border:"1.5px solid #E5E7EB",background:"#F9FAFB",color:"#6B7280",fontSize:14,fontWeight:700,cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center",lineHeight:1,padding:0}} disabled={(project.rowsCompleted||0)>=(project.totalRows||0)}>+</button>
-            </div>
+            <span style={{fontSize:11,color:"#9CA3AF",fontWeight:600}}>{project.rowsCompleted||0} / {project.totalRows||0} {t.rows}</span>
+            <span style={{fontSize:11,fontWeight:700,color:primaryColor}}>{project.progress||0}%</span>
           </div>
           <div style={{height:5,borderRadius:999,background:"#F3F4F6",overflow:"hidden"}}>
             <div style={{height:"100%",borderRadius:999,width:`${project.progress||0}%`,background:`linear-gradient(90deg,${primaryColor}cc,${primaryColor})`,transition:"width .6s"}}/>
           </div>
-          {project.checklist?.length>0&&(
-            <div style={{marginTop:8,display:"flex",flexDirection:"column",gap:5}}>
-              {project.checklist.map((item,i)=>(
-                <button key={i} onClick={()=>setChecked(p=>p.includes(i)?p.filter(x=>x!==i):[...p,i])} style={{display:"flex",alignItems:"center",gap:6,background:"none",border:"none",cursor:"pointer",textAlign:"left",padding:0}}>
-                  <div style={{width:15,height:15,borderRadius:4,flexShrink:0,border:checked.includes(i)?"none":"1.5px solid #D1D5DB",background:checked.includes(i)?primaryColor:"transparent",display:"flex",alignItems:"center",justifyContent:"center"}}>
-                    {checked.includes(i)&&<svg width="9" height="9" viewBox="0 0 10 10" fill="none"><path d="M2 5l2.5 2.5L8 3" stroke="white" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/></svg>}
+        </div>
+        {/* Expand chevron */}
+        <div style={{display:"flex",justifyContent:"center",padding:"2px 0 8px"}}>
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#D1D5DB" strokeWidth="2.5" style={{transform:expanded?"rotate(180deg)":"rotate(0deg)",transition:"transform .25s"}}><path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7"/></svg>
+        </div>
+      </div>
+
+      {/* ── Expanded content ── */}
+      {expanded&&(
+        <>
+          <div style={{height:1,background:"#F3F4F6"}}/>
+          {/* Stats grid */}
+          <div style={{display:"grid",gridTemplateColumns:"1fr 1fr 1fr",borderBottom:"1px solid #F3F4F6"}}>
+            {[[t.hook,project.hookSize||"—"],[t.weight,project.weight||"—"],[t.balls,(project.yarns||[]).reduce((a,y)=>a+(Number(y.balls)||0),0)]].map(([l,v],i)=>(
+              <div key={l} style={{display:"flex",flexDirection:"column",alignItems:"center",padding:"10px 0",borderRight:i<2?"1px solid #F3F4F6":"none"}}>
+                <span style={{fontSize:14,fontWeight:700,color:"#111"}}>{v}</span>
+                <span style={{fontSize:10,color:"#9CA3AF",marginTop:1}}>{l}</span>
+              </div>
+            ))}
+          </div>
+          {/* Full progress with ring + row counter + checklist */}
+          <div style={{padding:"14px 18px",display:"flex",alignItems:"center",gap:12}}>
+            <ProgressRing pct={project.progress||0} color={primaryColor}/>
+            <div style={{flex:1}}>
+              <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:5}}>
+                <span style={{fontSize:12,fontWeight:600,color:"#374151"}}>{t.rows}</span>
+                <div style={{display:"flex",alignItems:"center",gap:6}}>
+                  <button onClick={e=>{e.stopPropagation();const r=Math.max(0,(project.rowsCompleted||0)-1);onUpdateRows(r);}} style={{width:22,height:22,borderRadius:7,border:"1.5px solid #E5E7EB",background:"#F9FAFB",color:"#6B7280",fontSize:14,fontWeight:700,cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center",lineHeight:1,padding:0}} disabled={!project.rowsCompleted}>−</button>
+                  <span style={{fontSize:12,fontWeight:700,color:primaryColor,minWidth:60,textAlign:"center"}}>{project.rowsCompleted||0} / {project.totalRows||0}</span>
+                  <button onClick={e=>{e.stopPropagation();const r=Math.min(project.totalRows||0,(project.rowsCompleted||0)+1);onUpdateRows(r);}} style={{width:22,height:22,borderRadius:7,border:"1.5px solid #E5E7EB",background:"#F9FAFB",color:"#6B7280",fontSize:14,fontWeight:700,cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center",lineHeight:1,padding:0}} disabled={(project.rowsCompleted||0)>=(project.totalRows||0)}>+</button>
+                </div>
+              </div>
+              <div style={{height:5,borderRadius:999,background:"#F3F4F6",overflow:"hidden"}}>
+                <div style={{height:"100%",borderRadius:999,width:`${project.progress||0}%`,background:`linear-gradient(90deg,${primaryColor}cc,${primaryColor})`,transition:"width .6s"}}/>
+              </div>
+              {project.checklist?.length>0&&(
+                <div style={{marginTop:8,display:"flex",flexDirection:"column",gap:5}}>
+                  {project.checklist.map((item,i)=>(
+                    <button key={i} onClick={e=>{e.stopPropagation();setChecked(p=>p.includes(i)?p.filter(x=>x!==i):[...p,i]);}} style={{display:"flex",alignItems:"center",gap:6,background:"none",border:"none",cursor:"pointer",textAlign:"left",padding:0}}>
+                      <div style={{width:15,height:15,borderRadius:4,flexShrink:0,border:checked.includes(i)?"none":"1.5px solid #D1D5DB",background:checked.includes(i)?primaryColor:"transparent",display:"flex",alignItems:"center",justifyContent:"center"}}>
+                        {checked.includes(i)&&<svg width="9" height="9" viewBox="0 0 10 10" fill="none"><path d="M2 5l2.5 2.5L8 3" stroke="white" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/></svg>}
+                      </div>
+                      <span style={{fontSize:11,color:checked.includes(i)?"#9CA3AF":"#374151",textDecoration:checked.includes(i)?"line-through":"none"}}>{item}</span>
+                    </button>
+                  ))}
+                </div>
+              )}
+            </div>
+          </div>
+          <div style={{height:1,background:"#F3F4F6",margin:"0 18px"}}/>
+          {/* Pattern row */}
+          <div style={{padding:"10px 18px",display:"flex",alignItems:"center",justifyContent:"space-between"}}>
+            <div style={{display:"flex",alignItems:"center",gap:8}}>
+              {project.pattern?(
+                <>
+                  {project.pattern.type==="knit"&&(
+                    <canvas ref={patternPreviewRef} onClick={e=>{e.stopPropagation();setShowPatternView(true);}} style={{width:36,height:36,borderRadius:6,border:"1px solid #E5E7EB",cursor:"zoom-in",flexShrink:0}}/>
+                  )}
+                  {project.pattern.type==="crochet"&&(
+                    <span onClick={e=>{e.stopPropagation();setShowPatternView(true);}} style={{fontSize:22,cursor:"zoom-in",lineHeight:1,flexShrink:0}} title="View crochet pattern">🪝</span>
+                  )}
+                  <div onClick={e=>{e.stopPropagation();setShowPatternView(true);}} style={{cursor:"zoom-in",minWidth:0}}>
+                    <div style={{fontSize:13,fontWeight:600,color:"#374151",overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap",maxWidth:150}}>
+                      {project.linkedPatternName||(project.pattern.type==="knit"?"Knit Grid":"Crochet Pattern")}
+                    </div>
+                    <div style={{fontSize:10,color:"#9CA3AF",marginTop:1}}>{project.pattern.type==="knit"?"🧶 Knit":"🪝 Crochet"}</div>
                   </div>
-                  <span style={{fontSize:11,color:checked.includes(i)?"#9CA3AF":"#374151",textDecoration:checked.includes(i)?"line-through":"none"}}>{item}</span>
-                </button>
-              ))}
+                </>
+              ):<span style={{fontSize:12,color:"#D1D5DB"}}>{t.noPattern}</span>}
+            </div>
+            <div style={{display:"flex",gap:5}}>
+              <button onClick={e=>{e.stopPropagation();onPickPattern();}} style={{padding:"4px 10px",borderRadius:8,border:"1.5px solid #E5E7EB",background:"#F9FAFB",color:"#6B7280",fontSize:11,fontWeight:600,cursor:"pointer"}}>📚 Library</button>
+            </div>
+          </div>
+          {/* Notes */}
+          <div style={{height:1,background:"#F3F4F6",margin:"0 18px"}}/>
+          <div style={{padding:"0 18px"}}>
+            <button onClick={e=>{e.stopPropagation();setNotesOpen(n=>!n);}} style={{display:"flex",alignItems:"center",justifyContent:"space-between",width:"100%",padding:"10px 0",background:"none",border:"none",cursor:"pointer"}}>
+              <span style={{fontSize:12,fontWeight:600,color:"#6B7280"}}>{t.notes}</span>
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#9CA3AF" strokeWidth="2" style={{transform:notesOpen?"rotate(180deg)":"",transition:"transform .2s"}}><path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7"/></svg>
+            </button>
+            {notesOpen&&<p className="fade-up" style={{fontSize:12,color:"#4B5563",lineHeight:1.6,paddingBottom:10,margin:0}}>{project.notes||t.noNotes}</p>}
+          </div>
+          {/* Tags */}
+          {project.tags?.length>0&&(
+            <div style={{padding:"0 18px 12px",display:"flex",flexWrap:"wrap",gap:5}}>
+              {project.tags.map(tag=><span key={tag} style={{fontSize:10,fontWeight:600,padding:"2px 7px",borderRadius:999,background:"#F5FBFE",color:"#247BA0",border:"1px solid #D6EAF4"}}>#{tag}</span>)}
             </div>
           )}
-        </div>
-      </div>
-      <div style={{height:1,background:"#F3F4F6",margin:"0 18px"}}/>
-      {/* Pattern row */}
-      <div style={{padding:"10px 18px",display:"flex",alignItems:"center",justifyContent:"space-between"}}>
-        <div style={{display:"flex",alignItems:"center",gap:8}}>
-          {project.pattern?(
+          {/* References */}
+          {project.refs?.length>0&&(
             <>
-              {project.pattern.type==="knit"&&(
-                <canvas ref={patternPreviewRef} onClick={()=>setShowPatternView(true)} style={{width:36,height:36,borderRadius:6,border:"1px solid #E5E7EB",cursor:"zoom-in",flexShrink:0}}/>
-              )}
-              {project.pattern.type==="crochet"&&(
-                <span onClick={()=>setShowPatternView(true)} style={{fontSize:22,cursor:"zoom-in",lineHeight:1,flexShrink:0}} title="View crochet pattern">🪝</span>
-              )}
-              <div onClick={()=>setShowPatternView(true)} style={{cursor:"zoom-in",minWidth:0}}>
-                <div style={{fontSize:13,fontWeight:600,color:"#374151",overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap",maxWidth:150}}>
-                  {project.linkedPatternName||(project.pattern.type==="knit"?"Knit Grid":"Crochet Pattern")}
+              <div style={{height:1,background:"#F3F4F6",margin:"0 18px"}}/>
+              <div style={{padding:"10px 18px 12px"}}>
+                <div style={{fontSize:11,fontWeight:600,color:"#6B7280",marginBottom:6}}>{t.refs}</div>
+                <div style={{display:"flex",flexDirection:"column",gap:4}}>
+                  {project.refs.map(ref=>{
+                    const isYT=ref.url?.includes("youtube")||ref.url?.includes("youtu.be");
+                    const isRav=ref.url?.includes("ravelry");
+                    const icon=isYT?"▶":isRav?"🧶":"🔗";
+                    return(
+                      <a key={ref.id} href={ref.url} target="_blank" rel="noopener noreferrer" onClick={e=>e.stopPropagation()} style={{display:"flex",alignItems:"center",gap:8,padding:"7px 10px",borderRadius:9,background:"#F9FAFB",border:"1px solid #E5E7EB",textDecoration:"none"}}
+                        onMouseEnter={e=>e.currentTarget.style.background="#EEF4FF"}
+                        onMouseLeave={e=>e.currentTarget.style.background="#F9FAFB"}>
+                        <span style={{fontSize:13}}>{icon}</span>
+                        <span style={{fontSize:12,fontWeight:600,color:"#374151",flex:1,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{ref.label||ref.url}</span>
+                        <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="#9CA3AF" strokeWidth="2"><path strokeLinecap="round" strokeLinejoin="round" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/></svg>
+                      </a>
+                    );
+                  })}
                 </div>
-                <div style={{fontSize:10,color:"#9CA3AF",marginTop:1}}>{project.pattern.type==="knit"?"🧶 Knit":"🪝 Crochet"}</div>
               </div>
             </>
-          ):<span style={{fontSize:12,color:"#D1D5DB"}}>{t.noPattern}</span>}
-        </div>
-        <div style={{display:"flex",gap:5}}>
-          <button onClick={onPickPattern} style={{padding:"4px 10px",borderRadius:8,border:"1.5px solid #E5E7EB",background:"#F9FAFB",color:"#6B7280",fontSize:11,fontWeight:600,cursor:"pointer"}}>📚 Library</button>
-        </div>
-      </div>
-      {/* Notes */}
-      <div style={{height:1,background:"#F3F4F6",margin:"0 18px"}}/>
-      <div style={{padding:"0 18px"}}>
-        <button onClick={()=>setNotesOpen(n=>!n)} style={{display:"flex",alignItems:"center",justifyContent:"space-between",width:"100%",padding:"10px 0",background:"none",border:"none",cursor:"pointer"}}>
-          <span style={{fontSize:12,fontWeight:600,color:"#6B7280"}}>{t.notes}</span>
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#9CA3AF" strokeWidth="2" style={{transform:notesOpen?"rotate(180deg)":"",transition:"transform .2s"}}><path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7"/></svg>
-        </button>
-        {notesOpen&&<p className="fade-up" style={{fontSize:12,color:"#4B5563",lineHeight:1.6,paddingBottom:10,margin:0}}>{project.notes||t.noNotes}</p>}
-      </div>
-      {/* Tags */}
-      {project.tags?.length>0&&(
-        <div style={{padding:"0 18px 12px",display:"flex",flexWrap:"wrap",gap:5}}>
-          {project.tags.map(tag=><span key={tag} style={{fontSize:10,fontWeight:600,padding:"2px 7px",borderRadius:999,background:"#F5FBFE",color:"#247BA0",border:"1px solid #D6EAF4"}}>#{tag}</span>)}
-        </div>
-      )}
-      {/* References */}
-      {project.refs?.length>0&&(
-        <>
-          <div style={{height:1,background:"#F3F4F6",margin:"0 18px"}}/>
-          <div style={{padding:"10px 18px 12px"}}>
-            <div style={{fontSize:11,fontWeight:600,color:"#6B7280",marginBottom:6}}>{t.refs}</div>
-            <div style={{display:"flex",flexDirection:"column",gap:4}}>
-              {project.refs.map(ref=>{
-                const isYT=ref.url?.includes("youtube")||ref.url?.includes("youtu.be");
-                const isRav=ref.url?.includes("ravelry");
-                const icon=isYT?"▶":isRav?"🧶":"🔗";
-                return(
-                  <a key={ref.id} href={ref.url} target="_blank" rel="noopener noreferrer" style={{display:"flex",alignItems:"center",gap:8,padding:"7px 10px",borderRadius:9,background:"#F9FAFB",border:"1px solid #E5E7EB",textDecoration:"none"}}
-                    onMouseEnter={e=>e.currentTarget.style.background="#EEF4FF"}
-                    onMouseLeave={e=>e.currentTarget.style.background="#F9FAFB"}>
-                    <span style={{fontSize:13}}>{icon}</span>
-                    <span style={{fontSize:12,fontWeight:600,color:"#374151",flex:1,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{ref.label||ref.url}</span>
-                    <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="#9CA3AF" strokeWidth="2"><path strokeLinecap="round" strokeLinejoin="round" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/></svg>
-                  </a>
-                );
-              })}
-            </div>
+          )}
+          {/* Share copied toast */}
+          {shareCopied&&<div style={{margin:"0 18px 8px",padding:"7px 12px",background:"#F0FDF4",border:"1px solid #BBF7D0",borderRadius:10,fontSize:12,color:"#15803D",fontWeight:600,textAlign:"center"}}>{t.shareCopied}</div>}
+          {/* Finished photo strip */}
+          {project.status==="Completed"&&onFinishedPhoto&&(
+            <>
+              <input ref={photoCardRef} type="file" accept="image/*" style={{display:"none"}} onChange={e=>{
+                const f=e.target.files[0];if(!f)return;e.target.value="";
+                const reader=new FileReader();
+                reader.onload=async ev=>{
+                  const original=ev.target.result;
+                  setProcessingPhoto(true);
+                  let cutout=null;
+                  try{cutout=await applyBgRemoval(original);}
+                  catch(err){console.warn("Background removal failed, using original:",err);}
+                  setProcessingPhoto(false);
+                  onFinishedPhoto({original,cutout});
+                  setShowCongrats(true);
+                };
+                reader.readAsDataURL(f);
+              }}/>
+              {processingPhoto
+                ?<div style={{borderTop:"1px solid #F3F4F6",padding:"11px 16px",display:"flex",alignItems:"center",gap:10,background:"#FAFBFF"}}>
+                    <div style={{width:32,height:32,borderRadius:8,background:"#D6EAF4",display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0}}>
+                      <div style={{width:16,height:16,border:"2.5px solid #247BA0",borderTopColor:"transparent",borderRadius:"50%",animation:"spin 0.7s linear infinite"}}/>
+                    </div>
+                    <div style={{flex:1}}>
+                      <div style={{fontSize:12,fontWeight:700,color:"#247BA0"}}>Removing background…</div>
+                      <div style={{fontSize:10,color:"#A78BB5",marginTop:1}}>Creating your sticker</div>
+                    </div>
+                  </div>
+                :<div onClick={e=>{e.stopPropagation();photoCardRef.current?.click();}} style={{borderTop:"1px solid #F3F4F6",padding:"9px 16px",display:"flex",alignItems:"center",gap:10,cursor:"pointer",background:"#FAFBFF",transition:"background .15s"}}
+                    onMouseEnter={e=>e.currentTarget.style.background="#EBF6FC"}
+                    onMouseLeave={e=>e.currentTarget.style.background="#FAFBFF"}>
+                    {project.finishedPhotoCutout
+                      ?<img src={project.finishedPhotoCutout} style={{width:32,height:32,objectFit:"contain",flexShrink:0,filter:"none"}}/>
+                      :project.finishedPhoto
+                        ?<img src={project.finishedPhoto} style={{width:32,height:32,borderRadius:8,objectFit:"cover",border:"2px solid white",boxShadow:"0 2px 6px rgba(0,0,0,.15)",flexShrink:0}}/>
+                        :<div style={{width:32,height:32,borderRadius:8,background:"#D6EAF4",display:"flex",alignItems:"center",justifyContent:"center",fontSize:16,flexShrink:0}}>📸</div>
+                    }
+                    <div style={{flex:1}}>
+                      <div style={{fontSize:12,fontWeight:700,color:"#247BA0"}}>
+                        {project.finishedPhoto?"Change Finished Photo":"Add Finished Photo"}
+                      </div>
+                      <div style={{fontSize:10,color:"#A78BB5",marginTop:1}}>
+                        {project.finishedPhotoCutout?"Background removed ✓ · ":""}Shows as sticker on Dashboard
+                      </div>
+                    </div>
+                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#C4B4D4" strokeWidth="2.5"><path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7"/></svg>
+                  </div>
+              }
+            </>
+          )}
+          {/* Actions */}
+          <div style={{borderTop:"1px solid #F3F4F6",display:"grid",gridTemplateColumns:"1fr 1fr 1fr"}}>
+            <button onClick={e=>{e.stopPropagation();onEdit();}} style={{display:"flex",flexDirection:"column",alignItems:"center",gap:3,padding:"10px 0",background:"none",border:"none",cursor:"pointer",color:"#9CA3AF",borderRight:"1px solid #F3F4F6",transition:"color .15s"}} onMouseEnter={e=>{e.currentTarget.style.color="#247BA0";e.currentTarget.style.background="#F5FBFE";}} onMouseLeave={e=>{e.currentTarget.style.color="#9CA3AF";e.currentTarget.style.background="transparent"}}>
+              <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><path strokeLinecap="round" strokeLinejoin="round" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg>
+              <span style={{fontSize:10}}>{t.edit}</span>
+            </button>
+            <button onClick={e=>{e.stopPropagation();doShare();}} style={{display:"flex",flexDirection:"column",alignItems:"center",gap:3,padding:"10px 0",background:"none",border:"none",cursor:"pointer",color:"#9CA3AF",borderRight:"1px solid #F3F4F6",transition:"color .15s"}} onMouseEnter={e=>{e.currentTarget.style.color="#247BA0";e.currentTarget.style.background="#F5FBFE";}} onMouseLeave={e=>{e.currentTarget.style.color="#9CA3AF";e.currentTarget.style.background="transparent";}}>
+              <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><path strokeLinecap="round" strokeLinejoin="round" d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z"/></svg>
+              <span style={{fontSize:10}}>{t.share}</span>
+            </button>
+            <button onClick={e=>{e.stopPropagation();setShowMore(true);}} style={{display:"flex",flexDirection:"column",alignItems:"center",gap:3,padding:"10px 0",background:"none",border:"none",cursor:"pointer",color:"#9CA3AF",transition:"color .15s"}} onMouseEnter={e=>{e.currentTarget.style.color="#247BA0";e.currentTarget.style.background="#F5FBFE";}} onMouseLeave={e=>{e.currentTarget.style.color="#9CA3AF";e.currentTarget.style.background="transparent";}}>
+              <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><path strokeLinecap="round" strokeLinejoin="round" d="M5 12h.01M12 12h.01M19 12h.01M6 12a1 1 0 11-2 0 1 1 0 012 0zm7 0a1 1 0 11-2 0 1 1 0 012 0zm7 0a1 1 0 11-2 0 1 1 0 012 0z"/></svg>
+              <span style={{fontSize:10}}>{t.more}</span>
+            </button>
           </div>
         </>
       )}
-      {/* Share copied toast */}
-      {shareCopied&&<div style={{margin:"0 18px 8px",padding:"7px 12px",background:"#F0FDF4",border:"1px solid #BBF7D0",borderRadius:10,fontSize:12,color:"#15803D",fontWeight:600,textAlign:"center"}}>{t.shareCopied}</div>}
-      {/* Finished photo strip — only for completed projects */}
-      {project.status==="Completed"&&onFinishedPhoto&&(
-        <>
-          <input ref={photoCardRef} type="file" accept="image/*" style={{display:"none"}} onChange={e=>{
-            const f=e.target.files[0];if(!f)return;e.target.value="";
-            const reader=new FileReader();
-            reader.onload=async ev=>{
-              const original=ev.target.result;
-              setProcessingPhoto(true);
-              let cutout=null;
-              try{cutout=await applyBgRemoval(original);}
-              catch(err){console.warn("Background removal failed, using original:",err);}
-              setProcessingPhoto(false);
-              onFinishedPhoto({original,cutout});
-              setShowCongrats(true);
-            };
-            reader.readAsDataURL(f);
-          }}/>
-          {processingPhoto
-            ?<div style={{borderTop:"1px solid #F3F4F6",padding:"11px 16px",display:"flex",alignItems:"center",gap:10,background:"#FAFBFF"}}>
-                <div style={{width:32,height:32,borderRadius:8,background:"#D6EAF4",display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0}}>
-                  <div style={{width:16,height:16,border:"2.5px solid #247BA0",borderTopColor:"transparent",borderRadius:"50%",animation:"spin 0.7s linear infinite"}}/>
-                </div>
-                <div style={{flex:1}}>
-                  <div style={{fontSize:12,fontWeight:700,color:"#247BA0"}}>Removing background…</div>
-                  <div style={{fontSize:10,color:"#A78BB5",marginTop:1}}>Creating your sticker</div>
-                </div>
-              </div>
-            :<div onClick={()=>photoCardRef.current?.click()} style={{borderTop:"1px solid #F3F4F6",padding:"9px 16px",display:"flex",alignItems:"center",gap:10,cursor:"pointer",background:"#FAFBFF",transition:"background .15s"}}
-                onMouseEnter={e=>e.currentTarget.style.background="#EBF6FC"}
-                onMouseLeave={e=>e.currentTarget.style.background="#FAFBFF"}>
-                {project.finishedPhotoCutout
-                  ?<img src={project.finishedPhotoCutout} style={{width:32,height:32,objectFit:"contain",flexShrink:0,filter:"none"}}/>
-                  :project.finishedPhoto
-                    ?<img src={project.finishedPhoto} style={{width:32,height:32,borderRadius:8,objectFit:"cover",border:"2px solid white",boxShadow:"0 2px 6px rgba(0,0,0,.15)",flexShrink:0}}/>
-                    :<div style={{width:32,height:32,borderRadius:8,background:"#D6EAF4",display:"flex",alignItems:"center",justifyContent:"center",fontSize:16,flexShrink:0}}>📸</div>
-                }
-                <div style={{flex:1}}>
-                  <div style={{fontSize:12,fontWeight:700,color:"#247BA0"}}>
-                    {project.finishedPhoto?"Change Finished Photo":"Add Finished Photo"}
-                  </div>
-                  <div style={{fontSize:10,color:"#A78BB5",marginTop:1}}>
-                    {project.finishedPhotoCutout?"Background removed ✓ · ":""}Shows as sticker on Dashboard
-                  </div>
-                </div>
-                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#C4B4D4" strokeWidth="2.5"><path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7"/></svg>
-              </div>
-          }
-        </>
-      )}
-      {/* Actions */}
-      <div style={{borderTop:"1px solid #F3F4F6",display:"grid",gridTemplateColumns:"1fr 1fr 1fr"}}>
-        <button onClick={onEdit} style={{display:"flex",flexDirection:"column",alignItems:"center",gap:3,padding:"10px 0",background:"none",border:"none",cursor:"pointer",color:"#9CA3AF",borderRight:"1px solid #F3F4F6",transition:"color .15s"}} onMouseEnter={e=>{e.currentTarget.style.color="#247BA0";e.currentTarget.style.background="#F5FBFE";}} onMouseLeave={e=>{e.currentTarget.style.color="#9CA3AF";e.currentTarget.style.background="transparent"}}>
-          <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><path strokeLinecap="round" strokeLinejoin="round" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg>
-          <span style={{fontSize:10}}>{t.edit}</span>
-        </button>
-        <button onClick={doShare} style={{display:"flex",flexDirection:"column",alignItems:"center",gap:3,padding:"10px 0",background:"none",border:"none",cursor:"pointer",color:"#9CA3AF",borderRight:"1px solid #F3F4F6",transition:"color .15s"}} onMouseEnter={e=>{e.currentTarget.style.color="#247BA0";e.currentTarget.style.background="#F5FBFE";}} onMouseLeave={e=>{e.currentTarget.style.color="#9CA3AF";e.currentTarget.style.background="transparent";}}>
-          <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><path strokeLinecap="round" strokeLinejoin="round" d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z"/></svg>
-          <span style={{fontSize:10}}>{t.share}</span>
-        </button>
-        <button onClick={()=>setShowMore(true)} style={{display:"flex",flexDirection:"column",alignItems:"center",gap:3,padding:"10px 0",background:"none",border:"none",cursor:"pointer",color:"#9CA3AF",transition:"color .15s"}} onMouseEnter={e=>{e.currentTarget.style.color="#247BA0";e.currentTarget.style.background="#F5FBFE";}} onMouseLeave={e=>{e.currentTarget.style.color="#9CA3AF";e.currentTarget.style.background="transparent";}}>
-          <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><path strokeLinecap="round" strokeLinejoin="round" d="M5 12h.01M12 12h.01M19 12h.01M6 12a1 1 0 11-2 0 1 1 0 012 0zm7 0a1 1 0 11-2 0 1 1 0 012 0zm7 0a1 1 0 11-2 0 1 1 0 012 0z"/></svg>
-          <span style={{fontSize:10}}>{t.more}</span>
-        </button>
-      </div>
-      </div>
-      {/* More action sheet */}
-      {showMore&&(
-        <div onClick={()=>setShowMore(false)} style={{position:"fixed",inset:0,zIndex:80,background:"rgba(0,0,0,.3)",backdropFilter:"blur(3px)",display:"flex",alignItems:"flex-end",justifyContent:"center",padding:"0 16px 24px"}}>
-          <div onClick={e=>e.stopPropagation()} style={{width:"100%",maxWidth:360,background:"white",borderRadius:22,overflow:"hidden",boxShadow:"0 16px 60px rgba(0,0,0,.2)"}}>
-            <div style={{padding:"12px 18px 8px",textAlign:"center",fontSize:12,color:"#9CA3AF",fontWeight:600,borderBottom:"1px solid #F3F4F6",overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{project.title}</div>
-            {project.status!=="Completed"&&(
-              <button onClick={()=>{onMarkComplete();setShowMore(false);}} style={{width:"100%",padding:"14px 18px",background:"none",border:"none",borderBottom:"1px solid #F3F4F6",cursor:"pointer",textAlign:"left",display:"flex",alignItems:"center",gap:12,fontSize:14,fontWeight:600,color:"#059669"}}>
-                <span style={{width:30,height:30,borderRadius:10,background:"#ECFDF5",display:"flex",alignItems:"center",justifyContent:"center",fontSize:16,flexShrink:0}}>✓</span>{t.markComplete}
-              </button>
-            )}
-            <button onClick={()=>{onDuplicate();setShowMore(false);}} style={{width:"100%",padding:"14px 18px",background:"none",border:"none",borderBottom:"1px solid #F3F4F6",cursor:"pointer",textAlign:"left",display:"flex",alignItems:"center",gap:12,fontSize:14,fontWeight:600,color:"#374151"}}>
-              <span style={{width:30,height:30,borderRadius:10,background:"#F9FAFB",display:"flex",alignItems:"center",justifyContent:"center",fontSize:16,flexShrink:0}}>⧉</span>{t.duplicate}
+    </div>
+    {/* More action sheet */}
+    {showMore&&(
+      <div onClick={()=>setShowMore(false)} style={{position:"fixed",inset:0,zIndex:80,background:"rgba(0,0,0,.3)",backdropFilter:"blur(3px)",display:"flex",alignItems:"flex-end",justifyContent:"center",padding:"0 16px 24px"}}>
+        <div onClick={e=>e.stopPropagation()} style={{width:"100%",maxWidth:360,background:"white",borderRadius:22,overflow:"hidden",boxShadow:"0 16px 60px rgba(0,0,0,.2)"}}>
+          <div style={{padding:"12px 18px 8px",textAlign:"center",fontSize:12,color:"#9CA3AF",fontWeight:600,borderBottom:"1px solid #F3F4F6",overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{project.title}</div>
+          {project.status!=="Completed"&&(
+            <button onClick={()=>{onMarkComplete();setShowMore(false);}} style={{width:"100%",padding:"14px 18px",background:"none",border:"none",borderBottom:"1px solid #F3F4F6",cursor:"pointer",textAlign:"left",display:"flex",alignItems:"center",gap:12,fontSize:14,fontWeight:600,color:"#059669"}}>
+              <span style={{width:30,height:30,borderRadius:10,background:"#ECFDF5",display:"flex",alignItems:"center",justifyContent:"center",fontSize:16,flexShrink:0}}>✓</span>{t.markComplete}
             </button>
-            {onArchive&&(
-              <button onClick={()=>{onArchive();setShowMore(false);}} style={{width:"100%",padding:"14px 18px",background:"none",border:"none",borderBottom:"1px solid #F3F4F6",cursor:"pointer",textAlign:"left",display:"flex",alignItems:"center",gap:12,fontSize:14,fontWeight:600,color:"#7C5CBF"}}>
-                <span style={{width:30,height:30,borderRadius:10,background:"#F5F0FF",display:"flex",alignItems:"center",justifyContent:"center",fontSize:16,flexShrink:0}}>{isArchived?"↩":"📦"}</span>{isArchived?"Unarchive":"Archive"}
-              </button>
-            )}
-            <button onClick={()=>{onDelete();setShowMore(false);}} style={{width:"100%",padding:"14px 18px",background:"none",border:"none",borderBottom:"1px solid #F3F4F6",cursor:"pointer",textAlign:"left",display:"flex",alignItems:"center",gap:12,fontSize:14,fontWeight:600,color:"#EF4444"}}>
-              <span style={{width:30,height:30,borderRadius:10,background:"#FEF2F2",display:"flex",alignItems:"center",justifyContent:"center",fontSize:16,flexShrink:0}}>🗑</span>{t.delete||"Delete"}
+          )}
+          <button onClick={()=>{onDuplicate();setShowMore(false);}} style={{width:"100%",padding:"14px 18px",background:"none",border:"none",borderBottom:"1px solid #F3F4F6",cursor:"pointer",textAlign:"left",display:"flex",alignItems:"center",gap:12,fontSize:14,fontWeight:600,color:"#374151"}}>
+            <span style={{width:30,height:30,borderRadius:10,background:"#F9FAFB",display:"flex",alignItems:"center",justifyContent:"center",fontSize:16,flexShrink:0}}>⧉</span>{t.duplicate}
+          </button>
+          {onArchive&&(
+            <button onClick={()=>{onArchive();setShowMore(false);}} style={{width:"100%",padding:"14px 18px",background:"none",border:"none",borderBottom:"1px solid #F3F4F6",cursor:"pointer",textAlign:"left",display:"flex",alignItems:"center",gap:12,fontSize:14,fontWeight:600,color:"#7C5CBF"}}>
+              <span style={{width:30,height:30,borderRadius:10,background:"#F5F0FF",display:"flex",alignItems:"center",justifyContent:"center",fontSize:16,flexShrink:0}}>{isArchived?"↩":"📦"}</span>{isArchived?"Unarchive":"Archive"}
             </button>
-            <button onClick={()=>setShowMore(false)} style={{width:"100%",padding:"14px 18px",background:"none",border:"none",cursor:"pointer",textAlign:"center",fontSize:14,fontWeight:600,color:"#9CA3AF"}}>{t.cancel}</button>
-          </div>
+          )}
+          <button onClick={()=>{onDelete();setShowMore(false);}} style={{width:"100%",padding:"14px 18px",background:"none",border:"none",borderBottom:"1px solid #F3F4F6",cursor:"pointer",textAlign:"left",display:"flex",alignItems:"center",gap:12,fontSize:14,fontWeight:600,color:"#EF4444"}}>
+            <span style={{width:30,height:30,borderRadius:10,background:"#FEF2F2",display:"flex",alignItems:"center",justifyContent:"center",fontSize:16,flexShrink:0}}>🗑</span>{t.delete||"Delete"}
+          </button>
+          <button onClick={()=>setShowMore(false)} style={{width:"100%",padding:"14px 18px",background:"none",border:"none",cursor:"pointer",textAlign:"center",fontSize:14,fontWeight:600,color:"#9CA3AF"}}>{t.cancel}</button>
         </div>
-      )}
+      </div>
+    )}
   </>);
 }
 
@@ -5628,8 +5727,157 @@ function PickPatternModal({patterns,onClose,onPick}){
   );
 }
 
+/* ─── Dashboard layout config ───────────────────────────────────────────────── */
+const DASH_SECTIONS=[
+  {id:"stickers",icon:"✨"},
+  {id:"stats",icon:"📊"},
+  {id:"progress",icon:"📈"},
+  {id:"recent",icon:"🕐"},
+  {id:"parties",icon:"🎉"},
+  {id:"library",icon:"📚"},
+];
+const DEFAULT_DASH_LAYOUT=DASH_SECTIONS.map(s=>({id:s.id,visible:true}));
+
+function DashLayoutModal({layout,setLayout,onClose}){
+  const{t}=useLang();
+  const secLabel={stickers:t.dashSecStickers,stats:t.dashSecStats,progress:t.dashSecProgress,recent:t.dashSecRecent,library:t.dashSecLibrary,parties:t.dashSecParties};
+  const secIcon=Object.fromEntries(DASH_SECTIONS.map(s=>[s.id,s.icon]));
+  const toggle=id=>setLayout(l=>l.map(x=>x.id===id?{...x,visible:!x.visible}:x));
+  const reset=()=>setLayout(DEFAULT_DASH_LAYOUT);
+
+  // ── Drag-to-reorder state ──────────────────────────────────────────────────
+  const[draggingIdx,setDraggingIdx]=useState(null);
+  const[dropIdx,setDropIdx]=useState(null);
+  const[deltaY,setDeltaY]=useState(0);
+  const dragRef=useRef({startY:0,startIdx:0});
+  const rowRefs=useRef([]);
+
+  const getDropIdx=(clientY)=>{
+    const rows=rowRefs.current;
+    for(let i=0;i<rows.length;i++){
+      if(!rows[i])continue;
+      const r=rows[i].getBoundingClientRect();
+      if(clientY<r.top+r.height/2)return i;
+    }
+    return rows.length-1;
+  };
+
+  useEffect(()=>{
+    if(draggingIdx===null)return;
+    const onMove=e=>{
+      const y=e.clientY??e.touches?.[0]?.clientY;
+      if(y==null)return;
+      setDeltaY(y-dragRef.current.startY);
+      setDropIdx(getDropIdx(y));
+    };
+    const onUp=()=>{
+      setLayout(l=>{
+        if(dropIdx===null||dropIdx===draggingIdx)return l;
+        const a=[...l];
+        const[item]=a.splice(draggingIdx,1);
+        a.splice(dropIdx,0,item);
+        return a;
+      });
+      setDraggingIdx(null);setDropIdx(null);setDeltaY(0);
+    };
+    window.addEventListener("pointermove",onMove,{passive:true});
+    window.addEventListener("pointerup",onUp);
+    return()=>{window.removeEventListener("pointermove",onMove);window.removeEventListener("pointerup",onUp);};
+  },[draggingIdx,dropIdx]);
+
+  const onHandleDown=(e,idx)=>{
+    e.preventDefault();
+    dragRef.current={startY:e.clientY,startIdx:idx};
+    setDraggingIdx(idx);setDropIdx(idx);setDeltaY(0);
+  };
+
+  // Row height constant for "make-space" shift (approx)
+  const ROW_H=58;
+
+  return(
+    <div style={{position:"fixed",inset:0,background:"rgba(0,0,0,.45)",zIndex:200,display:"flex",alignItems:"flex-end",justifyContent:"center"}} onClick={e=>{if(e.target===e.currentTarget&&draggingIdx===null)onClose();}}>
+      <div className="modal-in" style={{background:"#fff",borderRadius:"28px 28px 0 0",width:"100%",maxWidth:480,maxHeight:"80vh",overflow:"hidden",display:"flex",flexDirection:"column"}}>
+        <div style={{padding:"20px 20px 0",display:"flex",alignItems:"center",justifyContent:"space-between",flexShrink:0}}>
+          <div style={{fontSize:18,fontWeight:800,color:"#111"}}>⚙️ {t.dashCustomize}</div>
+          <button onClick={onClose} style={{width:32,height:32,borderRadius:999,background:"#F3F4F6",border:"none",cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center"}}>
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#6B7280" strokeWidth="2.5"><path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12"/></svg>
+          </button>
+        </div>
+        <div style={{overflowY:draggingIdx!==null?"hidden":"auto",padding:"14px 20px 8px",flex:1,position:"relative"}}>
+          <div style={{fontSize:12,color:"#9CA3AF",marginBottom:14}}>Hold ≡ and drag to reorder · tap eye to show/hide.</div>
+          {layout.map((item,idx)=>{
+            const isDragging=idx===draggingIdx;
+            // compute shift for non-dragged items to visually "make space"
+            let shift=0;
+            if(draggingIdx!==null&&!isDragging&&dropIdx!==null){
+              if(draggingIdx<dropIdx){
+                if(idx>draggingIdx&&idx<=dropIdx)shift=-ROW_H;
+              }else{
+                if(idx>=dropIdx&&idx<draggingIdx)shift=ROW_H;
+              }
+            }
+            return(
+              <div key={item.id}>
+                {/* drop indicator line above this slot */}
+                {draggingIdx!==null&&dropIdx===idx&&idx!==draggingIdx&&(
+                  <div style={{height:3,borderRadius:999,background:"#247BA0",margin:"2px 0",transition:"none"}}/>
+                )}
+                <div
+                  ref={el=>rowRefs.current[idx]=el}
+                  style={{
+                    display:"flex",alignItems:"center",gap:10,padding:"10px 12px",
+                    marginBottom:8,
+                    background:isDragging?"#EFF6FF":item.visible?"#FAFAFA":"#F9F9F9",
+                    borderRadius:14,
+                    border:`1.5px solid ${isDragging?"#3B82F6":item.visible?"#E5E7EB":"#F3F4F6"}`,
+                    opacity:isDragging?0.95:item.visible?1:0.55,
+                    transform:isDragging?`translateY(${deltaY}px)`:`translateY(${shift}px)`,
+                    transition:isDragging?"none":"transform .15s ease",
+                    boxShadow:isDragging?"0 8px 24px rgba(0,0,0,.18)":"none",
+                    zIndex:isDragging?10:1,
+                    position:"relative",
+                    userSelect:"none",
+                    touchAction:"none",
+                  }}>
+                  {/* drag handle */}
+                  <div
+                    onPointerDown={e=>onHandleDown(e,idx)}
+                    style={{cursor:"grab",padding:"4px 2px",flexShrink:0,color:"#C4C4C4",display:"flex",alignItems:"center",touchAction:"none"}}>
+                    <svg width="16" height="20" viewBox="0 0 16 20" fill="currentColor">
+                      <circle cx="5" cy="4" r="1.5"/><circle cx="11" cy="4" r="1.5"/>
+                      <circle cx="5" cy="10" r="1.5"/><circle cx="11" cy="10" r="1.5"/>
+                      <circle cx="5" cy="16" r="1.5"/><circle cx="11" cy="16" r="1.5"/>
+                    </svg>
+                  </div>
+                  <span style={{fontSize:18,width:24,textAlign:"center",flexShrink:0}}>{secIcon[item.id]}</span>
+                  <span style={{flex:1,fontSize:14,fontWeight:600,color:"#374151"}}>{secLabel[item.id]}</span>
+                  {!item.visible&&<span style={{fontSize:10,color:"#9CA3AF",background:"#F3F4F6",borderRadius:999,padding:"2px 8px",fontWeight:600}}>{t.dashHidden}</span>}
+                  <button onClick={()=>toggle(item.id)} style={{width:34,height:34,borderRadius:10,border:"1.5px solid",borderColor:item.visible?"#D1D5DB":"#E5E7EB",background:item.visible?"white":"#F3F4F6",cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0}}>
+                    {item.visible
+                      ?<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#374151" strokeWidth="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+                      :<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#9CA3AF" strokeWidth="2"><path d="M17.94 17.94A10.07 10.07 0 0112 20c-7 0-11-8-11-8a18.45 18.45 0 015.06-5.94M9.9 4.24A9.12 9.12 0 0112 4c7 0 11 8 11 8a18.5 18.5 0 01-2.16 3.19m-6.72-1.07a3 3 0 11-4.24-4.24"/><line x1="1" y1="1" x2="23" y2="23"/></svg>
+                    }
+                  </button>
+                </div>
+                {/* drop indicator line after last item */}
+                {draggingIdx!==null&&dropIdx===layout.length-1&&idx===layout.length-1&&dropIdx!==draggingIdx&&(
+                  <div style={{height:3,borderRadius:999,background:"#247BA0",margin:"2px 0"}}/>
+                )}
+              </div>
+            );
+          })}
+        </div>
+        <div style={{padding:"12px 20px 28px",flexShrink:0,borderTop:"1px solid #F3F4F6",display:"flex",gap:10}}>
+          <button onClick={reset} style={{flex:1,padding:"12px",borderRadius:14,background:"#F3F4F6",border:"none",cursor:"pointer",fontWeight:700,fontSize:14,color:"#6B7280"}}>{t.dashLayoutReset}</button>
+          <button onClick={onClose} style={{flex:2,padding:"12px",borderRadius:14,background:"linear-gradient(135deg,#247BA0,#7AC2E1)",color:"#fff",fontSize:15,fontWeight:700,border:"none",cursor:"pointer"}}>{t.dashLayoutDone}</button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 /* ─── Dashboard Page ─────────────────────────────────────────────────────────── */
-function DashboardPage({projects,yarnLib,patterns}){
+function DashboardPage({projects,yarnLib,patterns,myPartyIds,setMyPartyIds,joinedParties,setJoinedParties,settings,setPage}){
   const{t}=useLang();
   const total=projects.length;
   const inProg=projects.filter(p=>p.status==="In Progress").length;
@@ -5644,6 +5892,27 @@ function DashboardPage({projects,yarnLib,patterns}){
   // Bump on every mount so stickers land in fresh positions each time
   // the user navigates to the dashboard (DashboardPage unmounts on tab switch)
   useEffect(()=>{setStickerKey(k=>k+1);},[]);
+
+  // Joined parties for dashboard card
+  const[dashParties,setDashParties]=useState([]);
+  const[dashCounts,setDashCounts]=useState({});
+  const[dashDetail,setDashDetail]=useState(null);
+  useEffect(()=>{
+    if(!sb)return;
+    const ids=[...new Set(joinedParties.map(j=>j.partyId))];
+    if(!ids.length){setDashParties([]);return;}
+    sb.from("parties").select("*").in("id",ids).order("date",{ascending:true})
+      .then(async({data})=>{
+        const parties=data||[];
+        setDashParties(parties);
+        const counts={};
+        await Promise.all(parties.map(async p=>{
+          const{count}=await sb.from("party_signups").select("*",{count:"exact",head:true}).eq("party_id",p.id);
+          counts[p.id]=count||0;
+        }));
+        setDashCounts(counts);
+      }).catch(()=>{});
+  },[joinedParties]);
 
   // Re-trigger fall when range changes
   const handleRangeChange=r=>{setStickerRange(r);setStickerKey(k=>k+1);};
@@ -5752,20 +6021,48 @@ function DashboardPage({projects,yarnLib,patterns}){
   },[stickerKey,stickerProjects.length]);
 
   const StatCard=({label,value,color,icon})=>(
-    <div className="shadow-card" style={{background:"white",borderRadius:20,padding:"16px 14px",display:"flex",flexDirection:"column",gap:6}}>
-      <div style={{width:36,height:36,borderRadius:12,background:color+"18",display:"flex",alignItems:"center",justifyContent:"center",fontSize:18}}>{icon}</div>
-      <div style={{fontSize:26,fontWeight:800,color:"#111",lineHeight:1}}>{value}</div>
-      <div style={{fontSize:11,color:"#9CA3AF",fontWeight:600}}>{label}</div>
+    <div className="shadow-card" style={{background:"white",borderRadius:15,padding:"12px 14px",display:"flex",flexDirection:"row",alignItems:"center",gap:10}}>
+      <div style={{width:27,height:27,borderRadius:9,background:color+"18",display:"flex",alignItems:"center",justifyContent:"center",fontSize:14,flexShrink:0}}>{icon}</div>
+      <div style={{fontSize:9,color:"#9CA3AF",fontWeight:600,flex:1}}>{label}</div>
+      <div style={{fontSize:19,fontWeight:800,color:"#111",lineHeight:1,flexShrink:0}}>{value}</div>
     </div>
   );
 
   const recentProjects=projects.slice(0,3);
 
+  // Dashboard layout customisation
+  const[dashLayout,setDashLayout]=useState(()=>{
+    try{
+      const s=localStorage.getItem("sc_dash_layout");
+      if(s){
+        const saved=JSON.parse(s);
+        // merge: keep saved order/visibility, append any new sections
+        const ids=saved.map(x=>x.id);
+        const missing=DEFAULT_DASH_LAYOUT.filter(x=>!ids.includes(x.id));
+        return[...saved,...missing];
+      }
+    }catch(_){}
+    return DEFAULT_DASH_LAYOUT;
+  });
+  useEffect(()=>{try{localStorage.setItem("sc_dash_layout",JSON.stringify(dashLayout));}catch{};},[dashLayout]);
+  const[showLayoutModal,setShowLayoutModal]=useState(false);
+
   return(
     <div style={{flex:1,overflowY:"auto",padding:"4px 16px 90px"}}>
       <div style={{maxWidth:360,margin:"0 auto"}}>
 
-        {/* ── Finished Projects Sticker Showcase ── */}
+        {/* ── Customize button ── */}
+        <div style={{display:"flex",justifyContent:"flex-end",marginBottom:8,marginTop:12}}>
+          <button onClick={()=>setShowLayoutModal(true)} style={{display:"flex",alignItems:"center",gap:5,padding:"5px 12px",borderRadius:10,background:"white",border:"1.5px solid #E5E7EB",color:"#6B7280",fontSize:11,fontWeight:700,cursor:"pointer",boxShadow:"0 1px 3px rgba(0,0,0,.06)"}}>
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-4 0v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83 0 2 2 0 010-2.83l.06-.06A1.65 1.65 0 004.68 15a1.65 1.65 0 00-1.51-1H3a2 2 0 010-4h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 010-2.83 2 2 0 012.83 0l.06.06A1.65 1.65 0 009 4.68a1.65 1.65 0 001-1.51V3a2 2 0 014 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 0 2 2 0 010 2.83l-.06.06A1.65 1.65 0 0019.4 9a1.65 1.65 0 001.51 1H21a2 2 0 010 4h-.09a1.65 1.65 0 00-1.51 1z"/></svg>
+            {t.dashCustomize}
+          </button>
+        </div>
+
+        {/* ── Sections rendered in user-configured order ── */}
+        {(()=>{
+          const sectionMap={
+            stickers:(
         <div className="shadow-card" style={{background:"linear-gradient(145deg,#fdf6ff,#f0f9ff)",borderRadius:24,padding:"18px 16px",marginBottom:14,overflow:"hidden",position:"relative"}}>
           {/* Decorative background dots */}
           <div style={{position:"absolute",top:-20,right:-20,width:120,height:120,borderRadius:"50%",background:"rgba(124,58,237,0.06)",pointerEvents:"none"}}/>
@@ -5848,75 +6145,122 @@ function DashboardPage({projects,yarnLib,patterns}){
             </div>
           )}
         </div>
-
-        {/* Stat cards 2×2 */}
-        <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:10,marginBottom:14}}>
-          <StatCard label={t.dashTotal} value={total} color="#247BA0" icon="📁"/>
-          <StatCard label={t.dashInProgress} value={inProg} color="#3B6FD4" icon="🔄"/>
-          <StatCard label={t.dashCompleted} value={completed} color="#059669" icon="✅"/>
-          <StatCard label={t.dashYarns} value={yarns} color="#EC4899" icon="🧶"/>
-        </div>
-
-        {/* Overall progress bar */}
-        {total>0&&(
-          <div className="shadow-card" style={{background:"white",borderRadius:20,padding:"16px",marginBottom:14}}>
-            <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:10}}>
-              <div style={{fontSize:13,fontWeight:700,color:"#374151"}}>Overall Progress</div>
-              <div style={{fontSize:13,fontWeight:800,color:"#247BA0"}}>{avgProgress}%</div>
-            </div>
-            <div style={{height:8,borderRadius:999,background:"#F3F4F6",overflow:"hidden"}}>
-              <div style={{height:"100%",borderRadius:999,width:`${avgProgress}%`,background:"linear-gradient(90deg,#247BA0,#7AC2E1)",transition:"width .6s"}}/>
-            </div>
-            <div style={{display:"flex",gap:10,marginTop:12}}>
-              {[["In Progress",inProg,"#3B6FD4"],["Completed",completed,"#059669"],["On Hold",onHold,"#D97706"]].map(([label,val,color])=>(
-                <div key={label} style={{flex:1,textAlign:"center"}}>
-                  <div style={{fontSize:16,fontWeight:800,color}}>{val}</div>
-                  <div style={{fontSize:10,color:"#9CA3AF"}}>{label}</div>
-                </div>
-              ))}
-            </div>
-          </div>
-        )}
-
-        {/* Recent projects */}
-        {recentProjects.length>0&&(
-          <div className="shadow-card" style={{background:"white",borderRadius:20,padding:"16px",marginBottom:14}}>
-            <div style={{fontSize:13,fontWeight:700,color:"#374151",marginBottom:10}}>{t.dashRecent}</div>
-            <div style={{display:"flex",flexDirection:"column",gap:10}}>
-              {recentProjects.map(p=>{
-                const st=STATUS[p.status]||STATUS["Not Started"];
-                const mainYarn=(p.yarns||[])[0];
-                return(
-                  <div key={p.id} style={{display:"flex",alignItems:"center",gap:10}}>
-                    <div style={{width:36,height:36,borderRadius:11,background:mainYarn?.color||"#E5E7EB",flexShrink:0,boxShadow:`0 2px 6px ${(mainYarn?.color||"#E5E7EB")}44`}}/>
-                    <div style={{flex:1,minWidth:0}}>
-                      <div style={{fontSize:13,fontWeight:700,color:"#111",overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{p.title}</div>
-                      <div style={{height:3,borderRadius:999,background:"#F3F4F6",marginTop:4,overflow:"hidden"}}>
-                        <div style={{height:"100%",borderRadius:999,width:`${p.progress||0}%`,background:"linear-gradient(90deg,#247BA0,#7AC2E1)"}}/>
-                      </div>
-                    </div>
-                    <span style={{fontSize:10,fontWeight:700,padding:"2px 7px",borderRadius:999,background:st.bg,color:st.color,flexShrink:0}}>{p.status}</span>
-                  </div>
-                );
-              })}
-            </div>
-          </div>
-        )}
-
-        {/* Library summary */}
-        <div className="shadow-card" style={{background:"white",borderRadius:20,padding:"16px"}}>
-          <div style={{fontSize:13,fontWeight:700,color:"#374151",marginBottom:10}}>Library</div>
-          <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:10}}>
-            {[[`🧶 ${yarns} yarns`,"Stash","#EC4899"],[`📋 ${patterns.length} patterns`,"Saved","#247BA0"]].map(([val,label,color])=>(
-              <div key={label} style={{background:color+"08",borderRadius:12,padding:"10px 12px"}}>
-                <div style={{fontSize:14,fontWeight:700,color:"#111"}}>{val}</div>
-                <div style={{fontSize:10,color:"#9CA3AF"}}>{label}</div>
+            ),
+            stats:(
+              <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:10,marginBottom:14}}>
+                <StatCard label={t.dashTotal} value={total} color="#247BA0" icon="📁"/>
+                <StatCard label={t.dashInProgress} value={inProg} color="#3B6FD4" icon="🔄"/>
+                <StatCard label={t.dashCompleted} value={completed} color="#059669" icon="✅"/>
+                <StatCard label={t.dashYarns} value={yarns} color="#EC4899" icon="🧶"/>
               </div>
-            ))}
-          </div>
-        </div>
+            ),
+            progress: total>0?(
+              <div className="shadow-card" style={{background:"white",borderRadius:20,padding:"16px",marginBottom:14}}>
+                <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:10}}>
+                  <div style={{fontSize:13,fontWeight:700,color:"#374151"}}>Overall Progress</div>
+                  <div style={{fontSize:13,fontWeight:800,color:"#247BA0"}}>{avgProgress}%</div>
+                </div>
+                <div style={{height:8,borderRadius:999,background:"#F3F4F6",overflow:"hidden"}}>
+                  <div style={{height:"100%",borderRadius:999,width:`${avgProgress}%`,background:"linear-gradient(90deg,#247BA0,#7AC2E1)",transition:"width .6s"}}/>
+                </div>
+                <div style={{display:"flex",gap:10,marginTop:12}}>
+                  {[["In Progress",inProg,"#3B6FD4"],["Completed",completed,"#059669"],["On Hold",onHold,"#D97706"]].map(([label,val,color])=>(
+                    <div key={label} style={{flex:1,textAlign:"center"}}>
+                      <div style={{fontSize:16,fontWeight:800,color}}>{val}</div>
+                      <div style={{fontSize:10,color:"#9CA3AF"}}>{label}</div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            ):null,
+            recent: recentProjects.length>0?(
+              <div className="shadow-card" style={{background:"white",borderRadius:20,padding:"16px",marginBottom:14}}>
+                <div style={{fontSize:13,fontWeight:700,color:"#374151",marginBottom:10}}>{t.dashRecent}</div>
+                <div style={{display:"flex",flexDirection:"column",gap:10}}>
+                  {recentProjects.map(p=>{
+                    const st=STATUS[p.status]||STATUS["Not Started"];
+                    const mainYarn=(p.yarns||[])[0];
+                    return(
+                      <div key={p.id} style={{display:"flex",alignItems:"center",gap:10}}>
+                        <div style={{width:36,height:36,borderRadius:11,background:mainYarn?.color||"#E5E7EB",flexShrink:0,boxShadow:`0 2px 6px ${(mainYarn?.color||"#E5E7EB")}44`}}/>
+                        <div style={{flex:1,minWidth:0}}>
+                          <div style={{fontSize:13,fontWeight:700,color:"#111",overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{p.title}</div>
+                          <div style={{height:3,borderRadius:999,background:"#F3F4F6",marginTop:4,overflow:"hidden"}}>
+                            <div style={{height:"100%",borderRadius:999,width:`${p.progress||0}%`,background:"linear-gradient(90deg,#247BA0,#7AC2E1)"}}/>
+                          </div>
+                        </div>
+                        <span style={{fontSize:10,fontWeight:700,padding:"2px 7px",borderRadius:999,background:st.bg,color:st.color,flexShrink:0}}>{p.status}</span>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            ):null,
+            parties: dashParties.length>0?(
+              <div className="shadow-card" style={{background:"white",borderRadius:20,padding:"16px",marginBottom:14}}>
+                <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:10}}>
+                  <div style={{fontSize:13,fontWeight:700,color:"#374151"}}>🎉 My Parties</div>
+                  <button onClick={()=>setPage("parties")} style={{fontSize:11,fontWeight:600,color:"#247BA0",background:"none",border:"none",cursor:"pointer",padding:0}}>See all →</button>
+                </div>
+                <div style={{display:"flex",flexDirection:"column",gap:8}}>
+                  {dashParties.map(p=>{
+                    const icon=CRAFT_ICONS[p.craft_type]||"🎨";
+                    const dateTime=formatPartyDateTime(p.date,p.time);
+                    const latest=latestAnnouncement(p.announcement);
+                    return(
+                      <div key={p.id} onClick={()=>setDashDetail(p)} style={{display:"flex",alignItems:"center",gap:10,padding:"10px 12px",background:"#F9FAFB",borderRadius:12,border:"1px solid #F3F4F6",cursor:"pointer"}}>
+                        <div style={{width:36,height:36,borderRadius:11,background:"#247BA018",display:"flex",alignItems:"center",justifyContent:"center",fontSize:18,flexShrink:0}}>{icon}</div>
+                        <div style={{flex:1,minWidth:0}}>
+                          <div style={{fontSize:13,fontWeight:700,color:"#111",overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{p.title}</div>
+                          {dateTime&&<div style={{fontSize:11,color:"#9CA3AF",marginTop:1}}>{dateTime}</div>}
+                          {latest&&<div style={{fontSize:11,color:"#92400E",marginTop:2,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>📢 {latest}</div>}
+                        </div>
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#D1D5DB" strokeWidth="2.5"><path strokeLinecap="round" strokeLinejoin="round" d="M9 18l6-6-6-6"/></svg>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            ):null,
+            library:(
+              <div className="shadow-card" style={{background:"white",borderRadius:20,padding:"16px",marginBottom:14}}>
+                <div style={{fontSize:13,fontWeight:700,color:"#374151",marginBottom:10}}>Library</div>
+                <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:10}}>
+                  {[[`🧶 ${yarns} yarns`,"Stash","#EC4899"],[`📋 ${patterns.length} patterns`,"Saved","#247BA0"]].map(([val,label,color])=>(
+                    <div key={label} style={{background:color+"08",borderRadius:12,padding:"10px 12px"}}>
+                      <div style={{fontSize:14,fontWeight:700,color:"#111"}}>{val}</div>
+                      <div style={{fontSize:10,color:"#9CA3AF"}}>{label}</div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            ),
+          };
+          return dashLayout.filter(x=>x.visible).map(x=>(
+            <React.Fragment key={x.id}>{sectionMap[x.id]}</React.Fragment>
+          ));
+        })()}
 
       </div>
+
+      {showLayoutModal&&<DashLayoutModal layout={dashLayout} setLayout={setDashLayout} onClose={()=>setShowLayoutModal(false)}/>}
+
+      {dashDetail&&(
+        <PartyDetailModal
+          party={dashDetail}
+          attendeeCount={dashCounts[dashDetail.id]||0}
+          isJoined={true}
+          onClose={()=>setDashDetail(null)}
+          onLeave={async()=>{
+            const entry=joinedParties.find(j=>j.partyId===dashDetail.id);
+            if(!entry)return;
+            if(!window.confirm("Leave this party?"))return;
+            if(sb&&entry.signupId)await sb.from("party_signups").delete().eq("id",entry.signupId).catch(()=>{});
+            setJoinedParties(j=>j.filter(j=>j.partyId!==dashDetail.id));
+            setDashDetail(null);
+          }}
+        />
+      )}
 
       {/* Sticker detail popup */}
       {selectedSticker&&createPortal(
@@ -6134,6 +6478,29 @@ function SettingsPage({settings, setSettings, lang, setLang, onBack}) {
   const {t} = useLang();
   const set = (k, v) => setSettings(s => ({...s, [k]: v}));
   const [signInModal, setSignInModal] = useState(null); // "google" | "apple" | null
+  const photoInputRef = React.useRef(null);
+
+  const handlePhotoChange = (e) => {
+    const file = e.target.files?.[0];
+    if(!file) return;
+    const reader = new FileReader();
+    reader.onload = (ev) => {
+      const img = new Image();
+      img.onload = () => {
+        const size = 150;
+        const canvas = document.createElement("canvas");
+        canvas.width = size; canvas.height = size;
+        const ctx = canvas.getContext("2d");
+        const min = Math.min(img.width, img.height);
+        const sx = (img.width - min) / 2, sy = (img.height - min) / 2;
+        ctx.drawImage(img, sx, sy, min, min, 0, 0, size, size);
+        set("profilePhoto", canvas.toDataURL("image/jpeg", 0.82));
+      };
+      img.src = ev.target.result;
+    };
+    reader.readAsDataURL(file);
+    e.target.value = "";
+  };
 
   const handleConnect = (provider, email) => {
     set(provider === "google" ? "googleAccount" : "appleAccount", email);
@@ -6161,11 +6528,31 @@ function SettingsPage({settings, setSettings, lang, setLang, onBack}) {
 
         {/* Profile */}
         <SectionCard title={t.settingsProfile}>
+          {/* Photo picker */}
+          <div style={{display:"flex",justifyContent:"center",marginBottom:16}}>
+            <div style={{position:"relative",cursor:"pointer"}} onClick={()=>photoInputRef.current?.click()}>
+              <div style={{width:76,height:76,borderRadius:999,background:"#F3F4F6",overflow:"hidden",border:"2px solid #E5E7EB",display:"flex",alignItems:"center",justifyContent:"center"}}>
+                {settings.profilePhoto
+                  ? <img src={settings.profilePhoto} style={{width:"100%",height:"100%",objectFit:"cover"}}/>
+                  : <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="#C0C8D0" strokeWidth="1.5"><path strokeLinecap="round" strokeLinejoin="round" d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>}
+              </div>
+              <div style={{position:"absolute",bottom:0,right:0,width:24,height:24,borderRadius:999,background:"#247BA0",border:"2px solid #fff",display:"flex",alignItems:"center",justifyContent:"center"}}>
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.5"><path strokeLinecap="round" strokeLinejoin="round" d="M23 19a2 2 0 01-2 2H3a2 2 0 01-2-2V8a2 2 0 012-2h4l2-3h6l2 3h4a2 2 0 012 2z"/><circle cx="12" cy="13" r="4"/></svg>
+              </div>
+            </div>
+            <input ref={photoInputRef} type="file" accept="image/*" style={{display:"none"}} onChange={handlePhotoChange}/>
+          </div>
           <SettingRow label={t.settingsName}>
             <input value={settings.profileName} onChange={e=>set("profileName",e.target.value)} placeholder={t.settingsNamePh} style={inputStyle}/>
           </SettingRow>
           <SettingRow label={t.settingsBio}>
             <input value={settings.profileBio} onChange={e=>set("profileBio",e.target.value)} placeholder={t.settingsBioPh} style={inputStyle}/>
+          </SettingRow>
+          <SettingRow label={t.settingsCountry}>
+            <select value={settings.profileCountry||""} onChange={e=>set("profileCountry",e.target.value)} style={selectStyle}>
+              <option value="">{t.settingsCountryPh}</option>
+              {COUNTRIES.map(c=><option key={c} value={c}>{c}</option>)}
+            </select>
           </SettingRow>
           <div style={{borderTop:"1px solid #F3F4F6",paddingTop:10,display:"flex",flexDirection:"column",gap:8}}>
             <div style={{fontSize:11,fontWeight:700,color:"#9CA3AF",letterSpacing:"0.06em",textTransform:"uppercase",marginBottom:2}}>{t.settingsLinkedAccounts}</div>
@@ -6286,6 +6673,9 @@ function BottomNav({page,setPage,t,onAdd}){
     library:(active)=>(
       <img src="library.png" width="38" height="38" style={{opacity:active?1:0.35,objectFit:"contain"}}/>
     ),
+    parties:(active)=>(
+      <img src="party.png" width="38" height="38" style={{opacity:active?1:0.35,objectFit:"contain"}}/>
+    ),
     chart:(active)=>(
       <svg width="34" height="34" viewBox="0 0 34 34" fill="none" style={{opacity:active?1:0.32}}>
         <circle cx="17" cy="17" r="3.5" stroke={active?"#247BA0":"#7AC2E1"} strokeWidth={active?2.2:1.6}/>
@@ -6304,15 +6694,16 @@ function BottomNav({page,setPage,t,onAdd}){
   const tabs=[
     {id:"projects",label:t.navProjects},
     {id:"dashboard",label:t.navDashboard},
+    {id:"parties",label:t.navParties},
     {id:"library",label:t.navLibrary},
   ];
 
-  // Split tabs around the center FAB
+  // Split tabs around the center FAB — 2 left, 2 right
   const left=tabs.slice(0,2);
   const right=tabs.slice(2);
 
   return(
-    <div style={{position:"fixed",bottom:8,left:0,right:0,height:64,background:"rgba(255,255,255,.94)",backdropFilter:"blur(14px)",borderTop:"1px solid #E8F4FB",display:"flex",alignItems:"center",zIndex:40}}>
+    <div style={{position:"fixed",bottom:0,left:0,right:0,height:64,background:"rgba(255,255,255,.94)",backdropFilter:"blur(14px)",borderTop:"1px solid #E8F4FB",display:"flex",alignItems:"center",zIndex:40}}>
       {/* Left tabs */}
       {left.map(tab=>(
         <button key={tab.id} type="button" onClick={()=>setPage(tab.id)} style={{flex:1,display:"flex",flexDirection:"column",alignItems:"center",gap:2,padding:"8px 0",background:"none",border:"none",cursor:"pointer",transition:"opacity .15s"}}>
@@ -6323,8 +6714,8 @@ function BottomNav({page,setPage,t,onAdd}){
 
       {/* Center FAB — absolutely positioned to float above bar */}
       <div style={{flex:1,position:"relative",alignSelf:"stretch"}}>
-        <button type="button" onClick={onAdd} style={{width:79,height:79,borderRadius:"50%",background:"none",border:"none",cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center",position:"absolute",bottom:16,left:"50%",transform:"translateX(-50%)",padding:0}}>
-          <img src="add.png" width="79" height="79" style={{objectFit:"contain"}}/>
+        <button type="button" onClick={onAdd} style={{width:73,height:73,borderRadius:"50%",background:"none",border:"none",cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center",position:"absolute",bottom:12,left:"50%",transform:"translateX(-50%)",padding:0}}>
+          <img src="add.png" width="73" height="73" style={{objectFit:"contain"}}/>
         </button>
       </div>
 
@@ -6363,7 +6754,7 @@ const DEFAULT_PATTERNS=[
 ];
 
 const DEFAULT_SETTINGS = {
-  profileName: "", profileBio: "", googleAccount: null, appleAccount: null,
+  profileName: "", profileBio: "", profileCountry: "", profilePhoto: "", googleAccount: null, appleAccount: null,
   theme: "light",
   notifications: true,
   lang: "en",
@@ -8535,6 +8926,1055 @@ function ProjectsView({projects, setProjects, setEditingProject, setPickPatternF
   );
 }
 
+/* ─── Craft Parties ─────────────────────────────────────────────────────────── */
+const CRAFT_ICONS={crochet:"🪝",knitting:"🧶",both:"🎨"};
+
+function PartyMap({lat,lng,label}){
+  const ref=React.useRef(null);
+  React.useEffect(()=>{
+    if(!ref.current||!window.L)return;
+    const map=L.map(ref.current,{zoomControl:true,scrollWheelZoom:false}).setView([lat,lng],14);
+    L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",{attribution:"© OpenStreetMap contributors"}).addTo(map);
+    // Warm beige retro style — applied only to tiles so markers/popups stay sharp
+    map.getPanes().tilePane.style.filter="sepia(45%) saturate(70%) brightness(108%) contrast(88%) hue-rotate(-8deg)";
+    L.marker([lat,lng]).addTo(map).bindPopup(label||"").openPopup();
+    return()=>map.remove();
+  },[lat,lng,label]);
+  return <div ref={ref} style={{height:200,borderRadius:12,overflow:"hidden",marginTop:8,border:"1px solid #ddd3be"}}/>;
+}
+
+function LocationInput({value,onChange,locationData,onLocationData,inputStyle}){
+  const[resolving,setResolving]=React.useState(false);
+  const[error,setError]=React.useState("");
+  const iS=inputStyle||{width:"100%",padding:"9px 12px",borderRadius:10,border:"1.5px solid #E5E7EB",fontSize:14,color:"#111",background:"#FAFAFA"};
+  async function handleResolve(){
+    if(!value.trim())return;
+    setResolving(true);setError("");
+    const r=await resolveLocation(value).catch(()=>null);
+    setResolving(false);
+    if(!r){setError("Location not found. Try a different address or paste a Google Maps link.");onLocationData(null);return;}
+    onLocationData(r);
+  }
+  return(
+    <div>
+      <div style={{display:"flex",gap:6}}>
+        <input style={{...iS,flex:1}} placeholder="Address or Google Maps link" value={value}
+          onChange={e=>{onChange(e.target.value);onLocationData(null);setError("");}}
+          onKeyDown={e=>{if(e.key==="Enter"){e.preventDefault();handleResolve();}}}/>
+        <button type="button" onClick={handleResolve} disabled={resolving}
+          style={{flexShrink:0,padding:"0 14px",borderRadius:10,background:locationData?"#16A34A":"#3B82F6",color:"#fff",fontWeight:700,fontSize:14,border:"none",cursor:"pointer",opacity:resolving?0.6:1}}>
+          {resolving?"…":locationData?"✓":"📍"}
+        </button>
+      </div>
+      {error&&<div style={{fontSize:11,color:"#EF4444",marginTop:4}}>{error}</div>}
+      {!error&&!locationData&&value.trim()&&<div style={{fontSize:11,color:"#9CA3AF",marginTop:4}}>Press 📍 to resolve location on map</div>}
+      {locationData&&(
+        <>
+          <div style={{fontSize:11,color:"#16A34A",marginTop:4,fontWeight:600}}>📍 {locationData.place_name||locationData.formatted_address}</div>
+          <PartyMap lat={locationData.latitude} lng={locationData.longitude} label={locationData.place_name}/>
+        </>
+      )}
+    </div>
+  );
+}
+
+function CreatePartyModal({onClose,onCreated,settings}){
+  const{t}=useLang();
+  const[form,setForm]=useState({title:"",description:"",date:"",time:"",location:"",place_name:"",craft_type:"both",max_attendees:"",is_public:false});
+  const[locationData,setLocationData]=useState(null);
+  const[error,setError]=useState("");
+  const[loading,setLoading]=useState(false);
+  const[createdCode,setCreatedCode]=useState(null);
+  const[copied,setCopied]=useState(false);
+  const sf=(k,v)=>setForm(f=>({...f,[k]:v}));
+  const iS={width:"100%",padding:"9px 12px",borderRadius:10,border:"1.5px solid #E5E7EB",fontSize:14,color:"#111",background:"#FAFAFA"};
+  const submit=async()=>{
+    if(!form.title.trim()){setError(t.partyErrTitle);return;}
+    if(!form.date){setError("Date is required.");return;}
+    if(!form.time){setError("Time is required.");return;}
+    if(!form.location.trim()){setError("Location is required.");return;}
+    if(!sb){setError("Supabase not configured. Add your project URL and key.");return;}
+    setLoading(true);setError("");
+    try{
+      const{data,error:err}=await sb.from("parties").insert({
+        host_name:settings?.profileName||"Anonymous",
+        host_country:settings?.profileCountry||null,
+        host_bio:settings?.profileBio||null,
+        host_photo:settings?.profilePhoto||null,
+        host_city:locationData?.city||null,
+        title:form.title.trim(),
+        description:form.description.trim()||null,
+        date:form.date||null,
+        time:form.time||null,
+        location:form.location.trim()||null,
+        craft_type:form.craft_type,
+        max_attendees:form.max_attendees?parseInt(form.max_attendees):null,
+        is_public:form.is_public,
+        latitude:locationData?.latitude||null,
+        longitude:locationData?.longitude||null,
+        place_name:form.place_name.trim()||locationData?.place_name||null,
+        formatted_address:locationData?.formatted_address||null,
+      }).select().single();
+      if(err)throw err;
+      onCreated(data.id);
+      setCreatedCode(data.id);
+    }catch(e){setError(e.message||"Error creating party.");}
+    setLoading(false);
+  };
+  const copyCode=()=>{
+    if(createdCode){navigator.clipboard?.writeText(createdCode).catch(()=>{});setCopied(true);setTimeout(()=>setCopied(false),2000);}
+  };
+  return(
+    <div style={{position:"fixed",inset:0,background:"rgba(0,0,0,.45)",zIndex:200,display:"flex",alignItems:"flex-end",justifyContent:"center"}} onClick={e=>{if(e.target===e.currentTarget)onClose();}}>
+      <div className="modal-in" style={{background:"#fff",borderRadius:"28px 28px 0 0",width:"100%",maxWidth:480,maxHeight:"92vh",overflow:"hidden",display:"flex",flexDirection:"column"}}>
+        <div style={{padding:"20px 20px 0",display:"flex",alignItems:"center",justifyContent:"space-between",flexShrink:0}}>
+          <div style={{fontSize:20,fontWeight:800,color:"#111"}}>{t.partyCreate}</div>
+          <button onClick={onClose} style={{width:32,height:32,borderRadius:999,background:"#F3F4F6",border:"none",cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center"}}>
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#6B7280" strokeWidth="2.5"><path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12"/></svg>
+          </button>
+        </div>
+        <div style={{overflowY:"auto",padding:"16px 20px 8px",flex:1}}>
+          {error&&<div style={{background:"#FEF2F2",color:"#DC2626",padding:"8px 12px",borderRadius:10,fontSize:13,marginBottom:13}}>{error}</div>}
+          {createdCode?(
+            <div style={{textAlign:"center",padding:"20px 0"}}>
+              <div style={{fontSize:40,marginBottom:12}}>🎉</div>
+              <div style={{fontSize:18,fontWeight:800,color:"#111",marginBottom:8}}>{t.partySuccess}</div>
+              <div style={{fontSize:12,color:"#9CA3AF",marginBottom:16}}>{t.partyCodeHint}</div>
+              <div style={{background:"#F0F8FF",border:"1.5px solid #247BA0",borderRadius:14,padding:"12px 16px",marginBottom:12,wordBreak:"break-all",fontSize:13,fontWeight:600,color:"#247BA0",letterSpacing:"0.02em"}}>{createdCode}</div>
+              <button onClick={copyCode} style={{padding:"10px 28px",borderRadius:12,background:"#247BA0",color:"white",border:"none",cursor:"pointer",fontWeight:700,fontSize:14}}>
+                {copied?t.partyCopied:t.partyCopy}
+              </button>
+            </div>
+          ):(
+            <>
+              <div style={{marginBottom:12}}>
+                <label style={{fontSize:12,fontWeight:600,color:"#6B7280",display:"block",marginBottom:4}}>{t.partyTitle} <span style={{color:"#EF4444"}}>*</span></label>
+                <input style={iS} value={form.title} onChange={e=>sf("title",e.target.value)} placeholder="e.g. Saturday Stitch & Chat"/>
+              </div>
+              <div style={{marginBottom:12}}>
+                <label style={{fontSize:12,fontWeight:600,color:"#6B7280",display:"block",marginBottom:4}}>{t.partyDesc}</label>
+                <textarea style={{...iS,resize:"vertical",minHeight:60}} value={form.description} onChange={e=>sf("description",e.target.value)} placeholder="What are we making?"/>
+              </div>
+              <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:12,marginBottom:12}}>
+                <div>
+                  <label style={{fontSize:12,fontWeight:600,color:"#6B7280",display:"block",marginBottom:4}}>{t.partyDate} <span style={{color:"#EF4444"}}>*</span></label>
+                  <input style={iS} type="date" value={form.date} onChange={e=>sf("date",e.target.value)}/>
+                </div>
+                <div>
+                  <label style={{fontSize:12,fontWeight:600,color:"#6B7280",display:"block",marginBottom:4}}>{t.partyTime} <span style={{color:"#EF4444"}}>*</span></label>
+                  <input style={iS} type="time" step="900" value={form.time} onChange={e=>sf("time",e.target.value)}/>
+                </div>
+              </div>
+              <div style={{marginBottom:12}}>
+                <label style={{fontSize:12,fontWeight:600,color:"#6B7280",display:"block",marginBottom:4}}>{t.partyLocation} <span style={{color:"#EF4444"}}>*</span></label>
+                <LocationInput value={form.location} onChange={v=>sf("location",v)} locationData={locationData} onLocationData={setLocationData} inputStyle={iS}/>
+              </div>
+              <div style={{marginBottom:12}}>
+                <label style={{fontSize:12,fontWeight:600,color:"#6B7280",display:"block",marginBottom:4}}>Place Name <span style={{fontSize:10,color:"#B0B7C0",fontWeight:400}}>(optional — e.g. Cozy Yarn Café)</span></label>
+                <input style={iS} value={form.place_name} onChange={e=>sf("place_name",e.target.value)} placeholder="Venue or café name"/>
+              </div>
+              <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:12,marginBottom:12}}>
+                <div>
+                  <label style={{fontSize:12,fontWeight:600,color:"#6B7280",display:"block",marginBottom:4}}>{t.partyCraftType}</label>
+                  <select style={{...iS,appearance:"none"}} value={form.craft_type} onChange={e=>sf("craft_type",e.target.value)}>
+                    <option value="crochet">{CRAFT_ICONS.crochet} {t.partyCraftCrochet}</option>
+                    <option value="knitting">{CRAFT_ICONS.knitting} {t.partyCraftKnit}</option>
+                    <option value="both">{CRAFT_ICONS.both} {t.partyCraftBoth}</option>
+                  </select>
+                </div>
+                <div>
+                  <label style={{fontSize:12,fontWeight:600,color:"#6B7280",display:"block",marginBottom:4}}>{t.partyMaxAttendees}</label>
+                  <input style={iS} type="number" min="1" value={form.max_attendees} onChange={e=>sf("max_attendees",e.target.value)} placeholder="∞"/>
+                </div>
+              </div>
+              <label style={{display:"flex",alignItems:"center",gap:10,cursor:"pointer",padding:"10px 14px",borderRadius:12,background:form.is_public?"#EFF6FF":"#F9FAFB",border:`1.5px solid ${form.is_public?"#3B82F6":"#E5E7EB"}`,marginBottom:8}}>
+                <input type="checkbox" checked={form.is_public} onChange={e=>sf("is_public",e.target.checked)} style={{width:16,height:16,accentColor:"#3B82F6",cursor:"pointer"}}/>
+                <span style={{fontSize:13,color:form.is_public?"#1D4ED8":"#6B7280",fontWeight:form.is_public?600:400}}>🌍 {t.partyPublic}</span>
+              </label>
+            </>
+          )}
+        </div>
+        {!createdCode&&(
+          <div style={{padding:"12px 20px 28px",flexShrink:0,borderTop:"1px solid #F3F4F6"}}>
+            <button onClick={submit} disabled={loading} style={{width:"100%",padding:"14px",borderRadius:14,background:"linear-gradient(135deg,#247BA0,#7AC2E1)",color:"#fff",fontSize:16,fontWeight:700,border:"none",cursor:loading?"default":"pointer",opacity:loading?0.7:1}}>
+              {loading?t.partyLoading:t.partyCreate}
+            </button>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
+function JoinPartyModal({onClose,onJoined,settings,initialParty=null}){
+  const{t}=useLang();
+  const[step,setStep]=useState(initialParty?"confirm":"code"); // "code" | "confirm" | "done"
+  const[code,setCode]=useState("");
+  const[party,setParty]=useState(initialParty);
+  const[attendeeCount,setAttendeeCount]=useState(0);
+  // if initialParty provided, fetch its current attendee count
+  React.useEffect(()=>{
+    if(initialParty&&sb){
+      sb.from("party_signups").select("*",{count:"exact",head:true}).eq("party_id",initialParty.id)
+        .then(({count})=>setAttendeeCount(count||0)).catch(()=>{});
+    }
+  },[]);
+  const[name,setName]=useState(settings?.profileName||"");
+  const[country,setCountry]=useState(settings?.profileCountry||"");
+  const[error,setError]=useState("");
+  const[loading,setLoading]=useState(false);
+  const iS={width:"100%",padding:"9px 12px",borderRadius:10,border:"1.5px solid #E5E7EB",fontSize:14,color:"#111",background:"#FAFAFA"};
+
+  const lookup=async()=>{
+    if(!code.trim()){setError(t.partyErrCode);return;}
+    if(!sb){setError("Supabase not configured.");return;}
+    setLoading(true);setError("");
+    try{
+      const{data:pData,error:pErr}=await sb.from("parties").select("*").eq("id",code.trim()).single();
+      if(pErr||!pData){setError(t.partyNotFound);setLoading(false);return;}
+      const{count}=await sb.from("party_signups").select("*",{count:"exact",head:true}).eq("party_id",pData.id);
+      setParty(pData);setAttendeeCount(count||0);setStep("confirm");
+    }catch(e){setError(t.partyNotFound);}
+    setLoading(false);
+  };
+
+  const confirm=async()=>{
+    if(!settings?.profileName?.trim()){setError("Please add your name in Settings → Profile before joining.");return;}
+    if(!settings?.profileBio?.trim()){setError("Please add a short bio in Settings → Profile before joining.");return;}
+    if(!name.trim()){setError(t.partyAddName+" is required.");return;}
+    if(party.max_attendees&&attendeeCount>=party.max_attendees){setError(t.partyFull);return;}
+    if(!sb){setError("Supabase not configured.");return;}
+    setLoading(true);setError("");
+    try{
+      const{data,error:err}=await sb.from("party_signups").insert({
+        party_id:party.id,attendee_name:name.trim(),attendee_country:country||null,
+        attendee_bio:settings?.profileBio||null,attendee_photo:settings?.profilePhoto||null,
+      }).select().single();
+      if(err){console.error("party_signups insert error:",JSON.stringify(err));throw err;}
+      onJoined({partyId:party.id,signupId:data.id});
+      setStep("done");
+    }catch(e){setError(e.message||"Error joining party.");}
+    setLoading(false);
+  };
+
+  return(
+    <div style={{position:"fixed",inset:0,background:"rgba(0,0,0,.45)",zIndex:200,display:"flex",alignItems:"flex-end",justifyContent:"center"}} onClick={e=>{if(e.target===e.currentTarget)onClose();}}>
+      <div className="modal-in" style={{background:"#fff",borderRadius:"28px 28px 0 0",width:"100%",maxWidth:480,maxHeight:"92vh",overflow:"hidden",display:"flex",flexDirection:"column"}}>
+        <div style={{padding:"20px 20px 0",display:"flex",alignItems:"center",justifyContent:"space-between",flexShrink:0}}>
+          <div style={{fontSize:20,fontWeight:800,color:"#111"}}>{step==="done"?t.partyJoinSuccess:t.partyJoinTitle}</div>
+          <button onClick={onClose} style={{width:32,height:32,borderRadius:999,background:"#F3F4F6",border:"none",cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center"}}>
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#6B7280" strokeWidth="2.5"><path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12"/></svg>
+          </button>
+        </div>
+        <div style={{overflowY:"auto",padding:"16px 20px 8px",flex:1}}>
+          {error&&<div style={{background:"#FEF2F2",color:"#DC2626",padding:"8px 12px",borderRadius:10,fontSize:13,marginBottom:13}}>{error}</div>}
+          {step==="done"&&(
+            <div style={{textAlign:"center",padding:"20px 0"}}>
+              <div style={{fontSize:40,marginBottom:12}}>🎉</div>
+              <div style={{fontSize:18,fontWeight:800,color:"#111",marginBottom:6}}>{t.partyJoinSuccess}</div>
+              <div style={{fontSize:13,color:"#9CA3AF"}}>{party?.title}</div>
+            </div>
+          )}
+          {step==="code"&&(
+            <div>
+              <div style={{fontSize:13,color:"#6B7280",marginBottom:16}}>{t.partyEnterCode}</div>
+              <input style={iS} value={code} onChange={e=>setCode(e.target.value)} placeholder="e.g. a1b2c3d4-..." onKeyDown={e=>{if(e.key==="Enter")lookup();}}/>
+            </div>
+          )}
+          {step==="confirm"&&party&&(
+            <div>
+              <div style={{background:"#F0F8FF",borderRadius:14,padding:"14px",marginBottom:16}}>
+                <div style={{fontSize:11,fontWeight:700,color:"#247BA0",textTransform:"uppercase",letterSpacing:"0.06em",marginBottom:4}}>{t.partyHostedBy} {party.host_name}{party.host_country?` · ${party.host_country}`:""}</div>
+                <div style={{fontSize:17,fontWeight:800,color:"#111",marginBottom:6}}>{CRAFT_ICONS[party.craft_type]||"🎨"} {party.title}</div>
+                {party.description&&<div style={{fontSize:13,color:"#6B7280",marginBottom:6}}>{party.description}</div>}
+                {(party.date||party.time)&&<div style={{fontSize:12,color:"#374151",marginBottom:4}}>📅 {party.date||""} {party.time||""}</div>}
+                {(party.place_name||party.formatted_address||(party.location&&!party.location.startsWith("http")))&&<div style={{fontSize:12,color:"#374151",marginBottom:4}}>📍 {party.place_name||party.formatted_address||(party.location&&!party.location.startsWith("http")?party.location:"")}</div>}
+                {party.latitude&&party.longitude&&<PartyMap lat={party.latitude} lng={party.longitude} label={party.place_name||party.formatted_address||(party.location&&!party.location.startsWith("http")?party.location:"")}/>}
+                <div style={{fontSize:12,color:party.max_attendees&&attendeeCount>=party.max_attendees?"#EF4444":"#9CA3AF",marginTop:party.latitude&&party.longitude?8:0}}>
+                  👥 {attendeeCount}{party.max_attendees?` / ${party.max_attendees}`:""} {t.partyAttendees}
+                </div>
+              </div>
+              {party.max_attendees&&attendeeCount>=party.max_attendees?(
+                <div style={{background:"#FEF2F2",color:"#EF4444",padding:"10px 14px",borderRadius:10,fontSize:13,fontWeight:600,textAlign:"center"}}>{t.partyFull}</div>
+              ):(
+                <>
+                  <div style={{marginBottom:12}}>
+                    <label style={{fontSize:12,fontWeight:600,color:"#6B7280",display:"block",marginBottom:4}}>{t.partyAddName} <span style={{color:"#EF4444"}}>*</span></label>
+                    <input style={iS} value={name} onChange={e=>setName(e.target.value)} placeholder={t.partyAddName}/>
+                  </div>
+                  <div style={{marginBottom:12}}>
+                    <label style={{fontSize:12,fontWeight:600,color:"#6B7280",display:"block",marginBottom:4}}>{t.settingsCountry}</label>
+                    <select style={{...iS,appearance:"none"}} value={country} onChange={e=>setCountry(e.target.value)}>
+                      <option value="">{t.settingsCountryPh}</option>
+                      {COUNTRIES.map(c=><option key={c} value={c}>{c}</option>)}
+                    </select>
+                  </div>
+                </>
+              )}
+            </div>
+          )}
+        </div>
+        <div style={{padding:"12px 20px 28px",flexShrink:0,borderTop:"1px solid #F3F4F6"}}>
+          {step==="code"&&<button onClick={lookup} disabled={loading} style={{width:"100%",padding:"14px",borderRadius:14,background:"linear-gradient(135deg,#247BA0,#7AC2E1)",color:"#fff",fontSize:16,fontWeight:700,border:"none",cursor:loading?"default":"pointer",opacity:loading?0.7:1}}>{loading?t.partyLoading:"Look up →"}</button>}
+          {step==="confirm"&&!(party?.max_attendees&&attendeeCount>=party.max_attendees)&&<button onClick={confirm} disabled={loading} style={{width:"100%",padding:"14px",borderRadius:14,background:"linear-gradient(135deg,#247BA0,#7AC2E1)",color:"#fff",fontSize:16,fontWeight:700,border:"none",cursor:loading?"default":"pointer",opacity:loading?0.7:1}}>{loading?t.partyLoading:t.partyJoinTitle}</button>}
+          {step==="done"&&<button onClick={onClose} style={{width:"100%",padding:"14px",borderRadius:14,background:"#F3F4F6",color:"#374151",fontSize:16,fontWeight:700,border:"none",cursor:"pointer"}}>Done</button>}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function ManagePartyModal({partyId,onClose,onDeleted,settings}){
+  const{t}=useLang();
+  const[tab,setTab]=useState("attendees"); // "attendees" | "edit" | "announce"
+  const[party,setParty]=useState(null);
+  const[attendees,setAttendees]=useState([]);
+  const[loading,setLoading]=useState(true);
+  const[copied,setCopied]=useState(false);
+  const[manageAttendeeCard,setManageAttendeeCard]=useState(null);
+  // edit
+  const[editForm,setEditForm]=useState(null);
+  const[editLocationData,setEditLocationData]=useState(null);
+  const[saving,setSaving]=useState(false);
+  const[saveMsg,setSaveMsg]=useState("");
+  // announce
+  const[annText,setAnnText]=useState("");
+  const[announcements,setAnnouncements]=useState([]);
+  const[annSaving,setAnnSaving]=useState(false);
+  const[annMsg,setAnnMsg]=useState("");
+  // delete
+  const[confirmDelete,setConfirmDelete]=useState(false);
+  const[deleting,setDeleting]=useState(false);
+  const[error,setError]=useState("");
+  const iS={width:"100%",padding:"9px 12px",borderRadius:10,border:"1.5px solid #E5E7EB",fontSize:14,color:"#111",background:"#FAFAFA"};
+  const sf=(k,v)=>setEditForm(f=>({...f,[k]:v}));
+
+  useEffect(()=>{
+    if(!sb){setLoading(false);return;}
+    (async()=>{
+      try{
+        const[{data:p},{data:a}]=await Promise.all([
+          sb.from("parties").select("*").eq("id",partyId).single(),
+          sb.from("party_signups").select("*").eq("party_id",partyId).order("created_at"),
+        ]);
+        setParty(p);setAttendees(a||[]);
+        if(p){
+          setEditForm({title:p.title||"",description:p.description||"",date:p.date||"",time:p.time||"",location:p.location||"",place_name:p.place_name||"",craft_type:p.craft_type||"both",max_attendees:p.max_attendees||"",is_public:p.is_public||false});
+          if(p.latitude&&p.longitude)setEditLocationData({latitude:p.latitude,longitude:p.longitude,place_name:p.place_name||"",formatted_address:p.formatted_address||"",city:p.host_city||""});
+        }
+        if(p?.announcement)setAnnouncements(parseAnnouncements(p.announcement));
+      }catch(_){}
+      setLoading(false);
+    })();
+  },[partyId]);
+
+  const copyCode=()=>{navigator.clipboard?.writeText(partyId).catch(()=>{});setCopied(true);setTimeout(()=>setCopied(false),2000);};
+
+  const saveEdit=async()=>{
+    if(!editForm.title.trim()){setError(t.partyErrTitle);return;}
+    setSaving(true);setError("");setSaveMsg("");
+    try{
+      const{error:err}=await sb.from("parties").update({
+        title:editForm.title.trim(),description:editForm.description.trim()||null,
+        date:editForm.date||null,time:editForm.time||null,
+        location:editForm.location.trim()||null,craft_type:editForm.craft_type,
+        max_attendees:editForm.max_attendees?parseInt(editForm.max_attendees):null,
+        is_public:editForm.is_public,
+        latitude:editLocationData?.latitude||null,
+        longitude:editLocationData?.longitude||null,
+        place_name:editForm.place_name?.trim()||editLocationData?.place_name||null,
+        formatted_address:editLocationData?.formatted_address||null,
+        host_city:editLocationData?.city||null,
+        host_photo:settings?.profilePhoto||null,
+      }).eq("id",partyId);
+      if(err)throw err;
+      setParty(p=>({...p,...editForm,max_attendees:editForm.max_attendees?parseInt(editForm.max_attendees):null,latitude:editLocationData?.latitude||p.latitude,longitude:editLocationData?.longitude||p.longitude,place_name:editLocationData?.place_name||p.place_name,formatted_address:editLocationData?.formatted_address||p.formatted_address}));
+      setSaveMsg(t.partyEditSaved);setTimeout(()=>setSaveMsg(""),2500);
+    }catch(e){setError(e.message||"Error saving.");}
+    setSaving(false);
+  };
+
+  const postAnnouncement=async()=>{
+    if(!annText.trim())return;
+    setAnnSaving(true);setAnnMsg("");
+    try{
+      const newEntry={text:annText.trim(),ts:new Date().toISOString()};
+      const updated=[newEntry,...announcements];
+      const{error:err}=await sb.from("parties").update({announcement:JSON.stringify(updated)}).eq("id",partyId);
+      if(err)throw err;
+      setAnnouncements(updated);
+      setAnnText("");
+      setAnnMsg(t.partyAnnouncePosted);setTimeout(()=>setAnnMsg(""),2500);
+    }catch(e){setAnnMsg("Error: "+e.message);}
+    setAnnSaving(false);
+  };
+
+  const deleteParty=async()=>{
+    setDeleting(true);
+    try{
+      const{error:err}=await sb.from("parties").delete().eq("id",partyId);
+      if(err)throw err;
+      onDeleted(partyId);onClose();
+    }catch(e){setError(e.message||"Error deleting.");setDeleting(false);setConfirmDelete(false);}
+  };
+
+  const tabBtn=(id,label)=>(
+    <button onClick={()=>setTab(id)} style={{flex:1,padding:"8px 4px",borderRadius:10,border:"none",cursor:"pointer",fontSize:12,fontWeight:700,background:tab===id?"#247BA0":"#F3F4F6",color:tab===id?"#fff":"#6B7280"}}>{label}</button>
+  );
+
+  return(
+    <div style={{position:"fixed",inset:0,background:"rgba(0,0,0,.45)",zIndex:200,display:"flex",alignItems:"flex-end",justifyContent:"center"}} onClick={e=>{if(e.target===e.currentTarget)onClose();}}>
+      <div className="modal-in" style={{position:"relative",background:"#fff",borderRadius:"28px 28px 0 0",width:"100%",maxWidth:480,maxHeight:"92vh",overflow:"hidden",display:"flex",flexDirection:"column"}}>
+        <div style={{padding:"16px 20px 0",flexShrink:0}}>
+          <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:12}}>
+            <div style={{fontSize:18,fontWeight:800,color:"#111"}}>{party?`${CRAFT_ICONS[party.craft_type]||"🎨"} ${party.title}`:t.partyManage}</div>
+            <button onClick={onClose} style={{width:32,height:32,borderRadius:999,background:"#F3F4F6",border:"none",cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center"}}>
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#6B7280" strokeWidth="2.5"><path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12"/></svg>
+            </button>
+          </div>
+          <div style={{display:"flex",gap:6,marginBottom:2}}>{tabBtn("attendees",t.partyTabAttendees)}{tabBtn("edit",t.partyTabEdit)}{tabBtn("announce",t.partyTabAnnounce)}</div>
+        </div>
+        <div style={{overflowY:"auto",padding:"14px 20px 24px",flex:1}}>
+          {loading?<div style={{textAlign:"center",padding:"24px",color:"#9CA3AF"}}>{t.partyLoading}</div>:(
+            <>
+              {error&&<div style={{background:"#FEF2F2",color:"#DC2626",padding:"8px 12px",borderRadius:10,fontSize:13,marginBottom:12}}>{error}</div>}
+
+              {/* ── ATTENDEES TAB ── */}
+              {tab==="attendees"&&(
+                <>
+                  {party&&(
+                    <div style={{marginBottom:14}}>
+                      {(party.date||party.time)&&<div style={{fontSize:12,color:"#6B7280",marginBottom:2}}>📅 {party.date||""} {party.time||""}</div>}
+                      {(party.place_name||party.formatted_address||(party.location&&!party.location.startsWith("http")))&&<div style={{fontSize:12,color:"#6B7280",marginBottom:4}}>📍 {party.place_name||party.formatted_address||(party.location&&!party.location.startsWith("http")?party.location:"")}</div>}
+                      <div style={{height:8}}/>
+                      <div style={{fontSize:11,fontWeight:700,color:"#9CA3AF",textTransform:"uppercase",letterSpacing:"0.06em",marginBottom:4}}>{t.partyCode}</div>
+                      <div style={{display:"flex",gap:8,alignItems:"center"}}>
+                        <div style={{flex:1,background:"#F0F8FF",border:"1.5px solid #247BA0",borderRadius:10,padding:"8px 12px",fontSize:12,fontWeight:600,color:"#247BA0",wordBreak:"break-all"}}>{partyId}</div>
+                        <button onClick={copyCode} style={{flexShrink:0,padding:"8px 14px",borderRadius:10,background:"#247BA0",color:"white",border:"none",cursor:"pointer",fontWeight:700,fontSize:12}}>{copied?t.partyCopied:t.partyCopy}</button>
+                      </div>
+                    </div>
+                  )}
+                  <div style={{fontSize:11,fontWeight:700,color:"#9CA3AF",textTransform:"uppercase",letterSpacing:"0.06em",marginBottom:8}}>{t.partyAttendees} ({attendees.length}{party?.max_attendees?` / ${party.max_attendees}`:""})</div>
+                  {attendees.length===0?(
+                    <div style={{textAlign:"center",padding:"20px",color:"#9CA3AF",fontSize:13}}>{t.partyNoAttendees}</div>
+                  ):(
+                    <div style={{display:"flex",flexDirection:"column",gap:8}}>
+                      {attendees.map((a,i)=>(
+                        <div key={a.id} onClick={()=>setError("")||setTab("attendees")||setManageAttendeeCard(a)}
+                          style={{display:"flex",alignItems:"center",gap:10,padding:"10px 12px",background:"#FAFAFA",borderRadius:12,border:"1px solid #F3F4F6",cursor:"pointer"}}>
+                          <div style={{width:36,height:36,borderRadius:999,overflow:"hidden",flexShrink:0,background:"#E5E7EB",display:"flex",alignItems:"center",justifyContent:"center"}}>
+                            {a.attendee_photo
+                              ?<img src={a.attendee_photo} style={{width:"100%",height:"100%",objectFit:"cover"}}/>
+                              :<div style={{width:"100%",height:"100%",background:"linear-gradient(135deg,#247BA0,#7AC2E1)",display:"flex",alignItems:"center",justifyContent:"center",color:"white",fontWeight:700,fontSize:14}}>{a.attendee_name?.[0]?.toUpperCase()||"?"}</div>}
+                          </div>
+                          <div style={{flex:1}}>
+                            <div style={{fontSize:13,fontWeight:700,color:"#111"}}>{a.attendee_name}</div>
+                            {a.attendee_country&&<div style={{fontSize:11,color:"#9CA3AF"}}>{a.attendee_country}</div>}
+                          </div>
+                          <div style={{fontSize:10,color:"#D1D5DB"}}>#{i+1}</div>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                  <div style={{marginTop:20,paddingTop:16,borderTop:"1px solid #FEE2E2"}}>
+                    {confirmDelete?(
+                      <div style={{background:"#FEF2F2",borderRadius:14,padding:"14px"}}>
+                        <div style={{fontSize:13,color:"#374151",marginBottom:12}}>{t.partyDeleteConfirm}</div>
+                        <div style={{display:"flex",gap:8}}>
+                          <button onClick={()=>setConfirmDelete(false)} style={{flex:1,padding:"10px",borderRadius:10,background:"#F3F4F6",border:"none",cursor:"pointer",fontWeight:700,fontSize:13,color:"#374151"}}>Cancel</button>
+                          <button onClick={deleteParty} disabled={deleting} style={{flex:1,padding:"10px",borderRadius:10,background:"#EF4444",border:"none",cursor:"pointer",fontWeight:700,fontSize:13,color:"white",opacity:deleting?0.7:1}}>{deleting?"…":t.partyDeleteConfirmBtn}</button>
+                        </div>
+                      </div>
+                    ):(
+                      <button onClick={()=>setConfirmDelete(true)} style={{width:"100%",padding:"10px",borderRadius:12,background:"#FEF2F2",border:"1.5px solid #FECACA",color:"#EF4444",fontSize:13,fontWeight:700,cursor:"pointer"}}>🗑 {t.partyDelete}</button>
+                    )}
+                  </div>
+                </>
+              )}
+
+              {/* ── EDIT TAB ── */}
+              {tab==="edit"&&editForm&&(
+                <>
+                  <div style={{marginBottom:12}}>
+                    <label style={{fontSize:12,fontWeight:600,color:"#6B7280",display:"block",marginBottom:4}}>{t.partyTitle} <span style={{color:"#EF4444"}}>*</span></label>
+                    <input style={iS} value={editForm.title} onChange={e=>sf("title",e.target.value)}/>
+                  </div>
+                  <div style={{marginBottom:12}}>
+                    <label style={{fontSize:12,fontWeight:600,color:"#6B7280",display:"block",marginBottom:4}}>{t.partyDesc}</label>
+                    <textarea style={{...iS,resize:"vertical",minHeight:60}} value={editForm.description} onChange={e=>sf("description",e.target.value)}/>
+                  </div>
+                  <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:12,marginBottom:12}}>
+                    <div>
+                      <label style={{fontSize:12,fontWeight:600,color:"#6B7280",display:"block",marginBottom:4}}>{t.partyDate}</label>
+                      <input style={iS} type="date" value={editForm.date} onChange={e=>sf("date",e.target.value)}/>
+                    </div>
+                    <div>
+                      <label style={{fontSize:12,fontWeight:600,color:"#6B7280",display:"block",marginBottom:4}}>{t.partyTime}</label>
+                      <input style={iS} type="time" step="900" value={editForm.time} onChange={e=>sf("time",e.target.value)}/>
+                    </div>
+                  </div>
+                  <div style={{marginBottom:12}}>
+                    <label style={{fontSize:12,fontWeight:600,color:"#6B7280",display:"block",marginBottom:4}}>{t.partyLocation}</label>
+                    <LocationInput value={editForm.location} onChange={v=>sf("location",v)} locationData={editLocationData} onLocationData={setEditLocationData} inputStyle={iS}/>
+                  </div>
+                  <div style={{marginBottom:12}}>
+                    <label style={{fontSize:12,fontWeight:600,color:"#6B7280",display:"block",marginBottom:4}}>Place Name <span style={{fontSize:10,color:"#B0B7C0",fontWeight:400}}>(optional — e.g. Cozy Yarn Café)</span></label>
+                    <input style={iS} value={editForm.place_name||""} onChange={e=>sf("place_name",e.target.value)} placeholder="Venue or café name"/>
+                  </div>
+                  <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:12,marginBottom:12}}>
+                    <div>
+                      <label style={{fontSize:12,fontWeight:600,color:"#6B7280",display:"block",marginBottom:4}}>{t.partyCraftType}</label>
+                      <select style={{...iS,appearance:"none"}} value={editForm.craft_type} onChange={e=>sf("craft_type",e.target.value)}>
+                        <option value="crochet">{CRAFT_ICONS.crochet} {t.partyCraftCrochet}</option>
+                        <option value="knitting">{CRAFT_ICONS.knitting} {t.partyCraftKnit}</option>
+                        <option value="both">{CRAFT_ICONS.both} {t.partyCraftBoth}</option>
+                      </select>
+                    </div>
+                    <div>
+                      <label style={{fontSize:12,fontWeight:600,color:"#6B7280",display:"block",marginBottom:4}}>{t.partyMaxAttendees}</label>
+                      <input style={iS} type="number" min="1" value={editForm.max_attendees} onChange={e=>sf("max_attendees",e.target.value)} placeholder="∞"/>
+                    </div>
+                  </div>
+                  <label style={{display:"flex",alignItems:"center",gap:10,cursor:"pointer",padding:"10px 14px",borderRadius:12,background:editForm.is_public?"#EFF6FF":"#F9FAFB",border:`1.5px solid ${editForm.is_public?"#3B82F6":"#E5E7EB"}`,marginBottom:14}}>
+                    <input type="checkbox" checked={editForm.is_public} onChange={e=>sf("is_public",e.target.checked)} style={{width:16,height:16,accentColor:"#3B82F6",cursor:"pointer"}}/>
+                    <span style={{fontSize:13,color:editForm.is_public?"#1D4ED8":"#6B7280",fontWeight:editForm.is_public?600:400}}>🌍 {t.partyPublic}</span>
+                  </label>
+                  {saveMsg&&<div style={{background:"#F0FDF4",color:"#16A34A",padding:"8px 12px",borderRadius:10,fontSize:13,marginBottom:10,textAlign:"center",fontWeight:600}}>{saveMsg}</div>}
+                  <button onClick={saveEdit} disabled={saving} style={{width:"100%",padding:"13px",borderRadius:14,background:"linear-gradient(135deg,#247BA0,#7AC2E1)",color:"#fff",fontSize:15,fontWeight:700,border:"none",cursor:saving?"default":"pointer",opacity:saving?0.7:1}}>
+                    {saving?"…":t.partyEditSave}
+                  </button>
+                </>
+              )}
+
+              {/* ── ANNOUNCE TAB ── */}
+              {tab==="announce"&&(
+                <>
+                  <div style={{fontSize:13,color:"#6B7280",marginBottom:14,lineHeight:1.5}}>{t.partyAnnounce} — {t.partyCodeHint.toLowerCase().replace("share this code","this message will be visible to all attendees")}</div>
+                  <textarea style={{...iS,resize:"vertical",minHeight:100,marginBottom:10}} value={annText} onChange={e=>setAnnText(e.target.value)} placeholder={t.partyAnnouncePh}/>
+                  {annMsg&&<div style={{background:annMsg.startsWith("Error")?"#FEF2F2":"#F0FDF4",color:annMsg.startsWith("Error")?"#DC2626":"#16A34A",padding:"8px 12px",borderRadius:10,fontSize:13,marginBottom:10,textAlign:"center",fontWeight:600}}>{annMsg}</div>}
+                  <div style={{display:"flex",gap:8}}>
+                    <button onClick={()=>{setAnnText("");}} style={{flex:1,padding:"12px",borderRadius:12,background:"#F3F4F6",border:"none",cursor:"pointer",fontWeight:700,fontSize:14,color:"#6B7280"}}>{t.partyAnnounceClear}</button>
+                    <button onClick={postAnnouncement} disabled={annSaving} style={{flex:2,padding:"12px",borderRadius:12,background:"linear-gradient(135deg,#247BA0,#7AC2E1)",color:"#fff",fontSize:14,fontWeight:700,border:"none",cursor:annSaving?"default":"pointer",opacity:annSaving?0.7:1}}>
+                      {annSaving?"…":t.partyAnnouncePost}
+                    </button>
+                  </div>
+                  <div style={{marginTop:14,padding:"12px",background:"#FFFBEB",borderRadius:12,border:"1.5px solid #FDE68A",fontSize:12,color:"#92400E",lineHeight:1.5}}>
+                    💡 Attendees see your latest update on their party card. All updates are visible in the party detail.
+                  </div>
+                  {announcements.length>0&&(
+                    <div style={{marginTop:14}}>
+                      <div style={{fontSize:11,fontWeight:700,color:"#9CA3AF",textTransform:"uppercase",letterSpacing:"0.06em",marginBottom:8}}>Posted updates</div>
+                      <div style={{display:"flex",flexDirection:"column",gap:8}}>
+                        {announcements.map((a,i)=>(
+                          <div key={i} style={{padding:"10px 12px",background:"#F9FAFB",borderRadius:10,border:"1px solid #F3F4F6"}}>
+                            {i===0&&<span style={{fontSize:10,fontWeight:700,color:"#247BA0",marginBottom:4,display:"block"}}>Latest</span>}
+                            <div style={{fontSize:13,color:"#374151",lineHeight:1.5}}>{a.text}</div>
+                            {a.ts&&<div style={{fontSize:10,color:"#D1D5DB",marginTop:4}}>{new Date(a.ts).toLocaleDateString("en",{month:"short",day:"numeric",hour:"2-digit",minute:"2-digit"})}</div>}
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                </>
+              )}
+            </>
+          )}
+        </div>
+        {/* Attendee business card overlay */}
+        {manageAttendeeCard&&(
+          <div style={{position:"absolute",inset:0,background:"rgba(0,0,0,.40)",zIndex:1200,display:"flex",alignItems:"center",justifyContent:"center",padding:24}} onClick={()=>setManageAttendeeCard(null)}>
+            <div style={{background:"#fff",borderRadius:24,padding:"28px 24px 20px",width:"100%",maxWidth:300,textAlign:"center",boxShadow:"0 8px 40px rgba(0,0,0,.18)"}} onClick={e=>e.stopPropagation()}>
+              <div style={{width:80,height:80,borderRadius:999,margin:"0 auto 14px",overflow:"hidden",display:"flex",alignItems:"center",justifyContent:"center"}}>
+                {manageAttendeeCard.attendee_photo
+                  ?<img src={manageAttendeeCard.attendee_photo} style={{width:"100%",height:"100%",objectFit:"cover"}}/>
+                  :<div style={{width:"100%",height:"100%",background:"linear-gradient(135deg,#247BA0,#7AC2E1)",display:"flex",alignItems:"center",justifyContent:"center",color:"white",fontWeight:800,fontSize:28}}>{manageAttendeeCard.attendee_name?.[0]?.toUpperCase()||"?"}</div>}
+              </div>
+              <div style={{fontSize:18,fontWeight:800,color:"#111"}}>{manageAttendeeCard.attendee_name}</div>
+              {manageAttendeeCard.attendee_country&&<div style={{fontSize:12,color:"#9CA3AF",marginTop:3}}>{manageAttendeeCard.attendee_country}</div>}
+              {manageAttendeeCard.attendee_bio
+                ?<div style={{fontSize:13,color:"#374151",marginTop:12,lineHeight:1.65,padding:"0 4px"}}>{manageAttendeeCard.attendee_bio}</div>
+                :<div style={{fontSize:12,color:"#D1D5DB",marginTop:10,fontStyle:"italic"}}>No bio yet</div>}
+              <button onClick={()=>setManageAttendeeCard(null)} style={{marginTop:18,padding:"9px 28px",borderRadius:12,background:"#F3F4F6",border:"none",cursor:"pointer",fontWeight:700,fontSize:13,color:"#374151"}}>Close</button>
+            </div>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
+function formatPartyDateTime(date,time){
+  let dateStr="";
+  if(date){try{const d=new Date(date+"T00:00:00");dateStr=d.toLocaleDateString("en",{weekday:"short",month:"short",day:"numeric"});}catch{dateStr=date;}}
+  let timeStr="";
+  if(time){try{const[h,m]=time.split(":");const hr=parseInt(h);timeStr=`${hr%12||12}:${m} ${hr>=12?"PM":"AM"}`;}catch{timeStr=time;}}
+  if(dateStr&&timeStr)return`${dateStr} · ${timeStr}`;
+  return dateStr||timeStr;
+}
+
+const CRAFT_ACCENT={crochet:"#247BA0",knitting:"#247BA0",both:"#247BA0"};
+
+function PartyCard({party,isOwn,isJoined,attendeeCount,onManage,onJoinDirect,onDetail}){
+  const{t}=useLang();
+  const icon=CRAFT_ICONS[party.craft_type]||"🎨";
+  const accent=CRAFT_ACCENT[party.craft_type]||"#247BA0";
+  const full=party.max_attendees&&attendeeCount>=party.max_attendees;
+  const pct=party.max_attendees>0?Math.min(100,Math.round((attendeeCount/party.max_attendees)*100)):0;
+  const displayLocation=party.place_name||party.formatted_address||(party.location&&!party.location.startsWith("http")?party.location:null);
+  const dateTime=formatPartyDateTime(party.date,party.time);
+  const handleClick=onDetail?onDetail:(isOwn?onManage:(onJoinDirect&&!isJoined&&!full?onJoinDirect:null));
+
+  let statusLabel,statusColor;
+  if(isOwn){statusLabel="Hosting";statusColor="#059669";}
+  else if(isJoined){statusLabel="Joined";statusColor="#247BA0";}
+  else if(full){statusLabel="Full";statusColor="#EF4444";}
+  else{statusLabel="Open";statusColor="#6B7280";}
+
+  return(
+    <div onClick={handleClick||undefined} className="shadow-card"
+      style={{background:"white",borderRadius:20,overflow:"hidden",cursor:handleClick?"pointer":"default"}}>
+      {/* Accent bar */}
+      <div style={{height:3,background:`linear-gradient(90deg,${accent},${accent}88)`}}/>
+      <div style={{padding:"14px 16px"}}>
+        {/* Top row */}
+        <div style={{display:"flex",alignItems:"center",gap:10}}>
+          <div style={{width:40,height:40,borderRadius:12,background:accent+"18",display:"flex",alignItems:"center",justifyContent:"center",fontSize:20,flexShrink:0}}>{icon}</div>
+          <div style={{flex:1,minWidth:0}}>
+            <div style={{fontSize:14,fontWeight:700,color:"#111",overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{party.title}</div>
+            <div style={{fontSize:11,color:"#9CA3AF"}}>{party.host_name}{party.host_country?" · "+party.host_country:""}</div>
+          </div>
+          <div style={{display:"flex",flexDirection:"column",alignItems:"flex-end",gap:5,flexShrink:0}}>
+            <span style={{fontSize:10,fontWeight:700,padding:"2px 8px",borderRadius:999,background:statusColor+"18",color:statusColor}}>{statusLabel}</span>
+            {isOwn&&(
+              <button onClick={e=>{e.stopPropagation();onManage();}} style={{color:"#7AC2E1",background:"none",border:"none",cursor:"pointer",padding:2,display:"flex",alignItems:"center",gap:3,fontSize:11,fontWeight:600}}>
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path strokeLinecap="round" strokeLinejoin="round" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg>
+                Manage
+              </button>
+            )}
+            {!isOwn&&!isJoined&&onJoinDirect&&!full&&(
+              <button onClick={e=>{e.stopPropagation();onJoinDirect();}} style={{color:"#7AC2E1",background:"none",border:"none",cursor:"pointer",padding:2,fontSize:11,fontWeight:600}}>Join →</button>
+            )}
+          </div>
+        </div>
+        {/* Info row */}
+        <div style={{display:"flex",gap:14,marginTop:12,paddingTop:10,borderTop:"1px solid #F3F4F6",flexWrap:"wrap"}}>
+          {party.host_city&&(
+            <div style={{display:"flex",alignItems:"center",gap:3,fontSize:11,color:"#247BA0",flexShrink:0}}>
+              <span>🏙️</span><span style={{fontWeight:600}}>{party.host_city}</span>
+            </div>
+          )}
+          {displayLocation&&(
+            <div style={{display:"flex",alignItems:"center",gap:3,fontSize:11,color:"#6B7280",flex:1,minWidth:0}}>
+              <span style={{flexShrink:0}}>📍</span><span style={{overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{displayLocation}</span>
+            </div>
+          )}
+          {dateTime&&(
+            <div style={{display:"flex",alignItems:"center",gap:3,fontSize:11,color:"#6B7280",flexShrink:0}}>
+              <span>🕒</span><span>{dateTime}</span>
+            </div>
+          )}
+          <div style={{display:"flex",alignItems:"center",gap:3,fontSize:11,color:full?"#EF4444":"#9CA3AF",flexShrink:0}}>
+            <span>👥</span><span>{attendeeCount}{party.max_attendees?` / ${party.max_attendees}`:""}</span>
+          </div>
+        </div>
+        {/* Capacity bar */}
+        {party.max_attendees>0&&(
+          <div style={{marginTop:8}}>
+            <div style={{height:4,borderRadius:999,background:"#F3F4F6",overflow:"hidden"}}>
+              <div style={{height:"100%",borderRadius:999,width:`${pct}%`,background:`linear-gradient(90deg,${accent}cc,${accent})`,transition:"width .5s"}}/>
+            </div>
+            <div style={{fontSize:10,color:"#9CA3AF",marginTop:2,textAlign:"right"}}>{pct}% capacity</div>
+          </div>
+        )}
+        {/* Announcement — only visible to host or joined attendees; card shows latest only */}
+        {(isOwn||isJoined)&&latestAnnouncement(party.announcement)&&(
+          <div style={{marginTop:10,padding:"8px 12px",background:"#FFFBEB",borderRadius:10,border:"1px solid #FDE68A",fontSize:11,color:"#92400E",display:"flex",alignItems:"center",gap:4,overflow:"hidden"}}>
+            <span style={{fontWeight:700,flexShrink:0}}>📢</span>
+            <span style={{overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{latestAnnouncement(party.announcement)}</span>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
+/* ── Party Detail Modal ── */
+function PartyDetailModal({party,attendeeCount,isJoined,onClose,onJoin,onLeave}){
+  const{t}=useLang();
+  const icon=CRAFT_ICONS[party.craft_type]||"🎨";
+  const accent=CRAFT_ACCENT[party.craft_type]||"#247BA0";
+  const full=party.max_attendees&&attendeeCount>=party.max_attendees;
+  const pct=party.max_attendees>0?Math.min(100,Math.round((attendeeCount/party.max_attendees)*100)):0;
+  const dateTime=formatPartyDateTime(party.date,party.time);
+  const displayLocation=party.place_name||party.formatted_address||(party.location&&!party.location.startsWith("http")?party.location:null);
+  const[showHostCard,setShowHostCard]=React.useState(false);
+  const[attendees,setAttendees]=React.useState([]);
+  const[attendeeCard,setAttendeeCard]=React.useState(null);
+  const[announcements,setAnnouncements]=React.useState(()=>parseAnnouncements(party.announcement));
+  React.useEffect(()=>{
+    if(!sb||!party?.id)return;
+    // Fetch fresh data so announcements are never stale
+    sb.from("parties").select("announcement").eq("id",party.id).single()
+      .then(({data})=>{if(data)setAnnouncements(parseAnnouncements(data.announcement));}).catch(()=>{});
+    sb.from("party_signups").select("*").eq("party_id",party.id).order("created_at")
+      .then(({data})=>setAttendees(data||[])).catch(()=>{});
+  },[party?.id]);
+  return(
+    <div style={{position:"fixed",inset:0,background:"rgba(0,0,0,.45)",zIndex:200,display:"flex",alignItems:"flex-end",justifyContent:"center"}} onClick={e=>{if(e.target===e.currentTarget)onClose();}}>
+      <div className="modal-in" style={{position:"relative",background:"#fff",borderRadius:"28px 28px 0 0",width:"100%",maxWidth:480,maxHeight:"92vh",overflow:"hidden",display:"flex",flexDirection:"column"}}>
+        {/* Accent bar */}
+        <div style={{height:4,background:`linear-gradient(90deg,${accent},${accent}88)`,flexShrink:0}}/>
+        {/* Header */}
+        <div style={{padding:"18px 20px 0",display:"flex",alignItems:"flex-start",justifyContent:"space-between",flexShrink:0}}>
+          <div style={{display:"flex",alignItems:"center",gap:10,flex:1,minWidth:0}}>
+            <div style={{width:44,height:44,borderRadius:14,background:accent+"18",display:"flex",alignItems:"center",justifyContent:"center",fontSize:22,flexShrink:0}}>{icon}</div>
+            <div style={{minWidth:0}}>
+              <div style={{fontSize:17,fontWeight:800,color:"#111",overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{party.title}</div>
+              <div onClick={()=>setShowHostCard(true)} style={{fontSize:12,color:"#247BA0",cursor:"pointer",textDecorationLine:"underline",textDecorationStyle:"dotted",display:"inline-block",marginTop:1}}>
+                {party.host_name}{party.host_country?" · "+party.host_country:""}
+              </div>
+            </div>
+          </div>
+          <button onClick={onClose} style={{width:32,height:32,borderRadius:999,background:"#F3F4F6",border:"none",cursor:"pointer",flexShrink:0,marginLeft:10,display:"flex",alignItems:"center",justifyContent:"center"}}>
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#6B7280" strokeWidth="2.5"><path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12"/></svg>
+          </button>
+        </div>
+        {/* Host business card overlay */}
+        {showHostCard&&(
+          <div style={{position:"absolute",inset:0,background:"rgba(0,0,0,.40)",zIndex:1200,display:"flex",alignItems:"center",justifyContent:"center",padding:24}} onClick={()=>setShowHostCard(false)}>
+            <div style={{background:"#fff",borderRadius:24,padding:"28px 24px 20px",width:"100%",maxWidth:300,textAlign:"center",boxShadow:"0 8px 40px rgba(0,0,0,.18)"}} onClick={e=>e.stopPropagation()}>
+              <div style={{width:80,height:80,borderRadius:999,margin:"0 auto 14px",overflow:"hidden",background:accent+"18",border:`3px solid ${accent}22`,display:"flex",alignItems:"center",justifyContent:"center",fontSize:32}}>
+                {party.host_photo
+                  ? <img src={party.host_photo} style={{width:"100%",height:"100%",objectFit:"cover"}}/>
+                  : icon}
+              </div>
+              <div style={{fontSize:18,fontWeight:800,color:"#111"}}>{party.host_name}</div>
+              {party.host_country&&<div style={{fontSize:12,color:"#9CA3AF",marginTop:3}}>{party.host_country}</div>}
+              {party.host_bio&&<div style={{fontSize:13,color:"#374151",marginTop:12,lineHeight:1.65,padding:"0 4px"}}>{party.host_bio}</div>}
+              {!party.host_bio&&<div style={{fontSize:12,color:"#D1D5DB",marginTop:10,fontStyle:"italic"}}>No bio yet</div>}
+              <button onClick={()=>setShowHostCard(false)} style={{marginTop:18,padding:"9px 28px",borderRadius:12,background:"#F3F4F6",border:"none",cursor:"pointer",fontWeight:700,fontSize:13,color:"#374151"}}>Close</button>
+            </div>
+          </div>
+        )}
+        {/* Body */}
+        <div style={{overflowY:"auto",padding:"16px 20px",flex:1,isolation:"isolate"}}>
+          {party.description&&<div style={{fontSize:13,color:"#374151",lineHeight:1.6,marginBottom:14,padding:"12px 14px",background:"#F9FAFB",borderRadius:12}}>{party.description}</div>}
+          <div style={{display:"flex",flexDirection:"column",gap:10,marginBottom:14}}>
+            {dateTime&&<div style={{display:"flex",alignItems:"center",gap:10,fontSize:13,color:"#374151"}}>
+              <span style={{fontSize:18,width:24,textAlign:"center",flexShrink:0}}>🕒</span><span>{dateTime}</span>
+            </div>}
+            {(party.place_name||party.formatted_address||displayLocation)&&(
+              <div style={{display:"flex",alignItems:"flex-start",gap:10,fontSize:13,color:"#374151"}}>
+                <span style={{fontSize:18,width:24,textAlign:"center",flexShrink:0,marginTop:1}}>📍</span>
+                <div>
+                  {party.place_name&&<div style={{fontWeight:600,color:"#111"}}>{party.place_name}</div>}
+                  {party.formatted_address&&<div style={{fontSize:11,color:"#9CA3AF",marginTop:2}}>{party.formatted_address}</div>}
+                  {!party.place_name&&!party.formatted_address&&displayLocation&&<div>{displayLocation}</div>}
+                </div>
+              </div>
+            )}
+            <div style={{display:"flex",alignItems:"center",gap:10,fontSize:13,color:full?"#EF4444":"#374151"}}>
+              <span style={{fontSize:18,width:24,textAlign:"center",flexShrink:0}}>👥</span>
+              <span>{attendeeCount}{party.max_attendees?` / ${party.max_attendees} spots`:""}{full?" · Full":""}</span>
+            </div>
+          </div>
+          {party.max_attendees>0&&(
+            <div style={{marginBottom:14}}>
+              <div style={{height:4,borderRadius:999,background:"#F3F4F6",overflow:"hidden"}}>
+                <div style={{height:"100%",borderRadius:999,width:`${pct}%`,background:`linear-gradient(90deg,${accent}cc,${accent})`,transition:"width .5s"}}/>
+              </div>
+              <div style={{fontSize:11,color:"#9CA3AF",marginTop:3,textAlign:"right"}}>{pct}% capacity</div>
+            </div>
+          )}
+          {party.latitude&&party.longitude&&<PartyMap lat={party.latitude} lng={party.longitude} label={party.place_name||party.formatted_address||(party.location&&!party.location.startsWith("http")?party.location:"")}/>}
+          {/* Attendees */}
+          {attendees.length>0&&(
+            <div style={{marginTop:4,marginBottom:14}}>
+              <div style={{fontSize:11,fontWeight:700,color:"#9CA3AF",textTransform:"uppercase",letterSpacing:"0.06em",marginBottom:8}}>👥 Who's coming ({attendees.length})</div>
+              <div style={{display:"flex",flexDirection:"column",gap:7}}>
+                {attendees.map(a=>(
+                  <div key={a.id} onClick={()=>setAttendeeCard(a)}
+                    style={{display:"flex",alignItems:"center",gap:10,padding:"10px 12px",background:"#F9FAFB",borderRadius:12,border:"1px solid #F3F4F6",cursor:"pointer"}}>
+                    <div style={{width:36,height:36,borderRadius:999,overflow:"hidden",flexShrink:0,background:"#E5E7EB",display:"flex",alignItems:"center",justifyContent:"center"}}>
+                      {a.attendee_photo
+                        ?<img src={a.attendee_photo} style={{width:"100%",height:"100%",objectFit:"cover"}}/>
+                        :<div style={{width:"100%",height:"100%",background:"linear-gradient(135deg,#247BA0,#7AC2E1)",display:"flex",alignItems:"center",justifyContent:"center",color:"white",fontWeight:700,fontSize:15}}>{a.attendee_name?.[0]?.toUpperCase()||"?"}</div>}
+                    </div>
+                    <div style={{flex:1,minWidth:0}}>
+                      <div style={{fontSize:13,fontWeight:700,color:"#111"}}>{a.attendee_name}</div>
+                      {a.attendee_country&&<div style={{fontSize:11,color:"#9CA3AF"}}>{a.attendee_country}</div>}
+                    </div>
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#D1D5DB" strokeWidth="2.5"><path strokeLinecap="round" strokeLinejoin="round" d="M9 18l6-6-6-6"/></svg>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+          {announcements.length>0&&(
+            <div style={{marginTop:4,marginBottom:14}}>
+              <div style={{fontSize:11,fontWeight:700,color:"#9CA3AF",textTransform:"uppercase",letterSpacing:"0.06em",marginBottom:8}}>📢 Updates</div>
+              <div style={{display:"flex",flexDirection:"column",gap:8}}>
+                {announcements.map((a,i)=>(
+                  <div key={i} style={{padding:"10px 14px",borderRadius:12,border:i===0?"1px solid #FDE68A":"1px solid #F3F4F6",background:i===0?"#FFFBEB":"#F9FAFB"}}>
+                    {i===0&&<span style={{fontSize:10,fontWeight:700,color:"#247BA0",display:"block",marginBottom:3}}>Latest</span>}
+                    <div style={{fontSize:13,color:i===0?"#92400E":"#6B7280",lineHeight:1.5}}>{a.text}</div>
+                    {a.ts&&<div style={{fontSize:10,color:"#D1D5DB",marginTop:4}}>{new Date(a.ts).toLocaleDateString("en",{month:"short",day:"numeric",hour:"2-digit",minute:"2-digit"})}</div>}
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+        </div>
+        {/* Attendee business card overlay */}
+        {attendeeCard&&(
+          <div style={{position:"absolute",inset:0,background:"rgba(0,0,0,.40)",zIndex:1200,display:"flex",alignItems:"center",justifyContent:"center",padding:24}} onClick={()=>setAttendeeCard(null)}>
+            <div style={{background:"#fff",borderRadius:24,padding:"28px 24px 20px",width:"100%",maxWidth:300,textAlign:"center",boxShadow:"0 8px 40px rgba(0,0,0,.18)"}} onClick={e=>e.stopPropagation()}>
+              <div style={{width:80,height:80,borderRadius:999,margin:"0 auto 14px",overflow:"hidden",display:"flex",alignItems:"center",justifyContent:"center"}}>
+                {attendeeCard.attendee_photo
+                  ?<img src={attendeeCard.attendee_photo} style={{width:"100%",height:"100%",objectFit:"cover"}}/>
+                  :<div style={{width:"100%",height:"100%",background:"linear-gradient(135deg,#247BA0,#7AC2E1)",display:"flex",alignItems:"center",justifyContent:"center",color:"white",fontWeight:800,fontSize:28}}>{attendeeCard.attendee_name?.[0]?.toUpperCase()||"?"}</div>}
+              </div>
+              <div style={{fontSize:18,fontWeight:800,color:"#111"}}>{attendeeCard.attendee_name}</div>
+              {attendeeCard.attendee_country&&<div style={{fontSize:12,color:"#9CA3AF",marginTop:3}}>{attendeeCard.attendee_country}</div>}
+              {attendeeCard.attendee_bio
+                ?<div style={{fontSize:13,color:"#374151",marginTop:12,lineHeight:1.65,padding:"0 4px"}}>{attendeeCard.attendee_bio}</div>
+                :<div style={{fontSize:12,color:"#D1D5DB",marginTop:10,fontStyle:"italic"}}>No bio yet</div>}
+              <button onClick={()=>setAttendeeCard(null)} style={{marginTop:18,padding:"9px 28px",borderRadius:12,background:"#F3F4F6",border:"none",cursor:"pointer",fontWeight:700,fontSize:13,color:"#374151"}}>Close</button>
+            </div>
+          </div>
+        )}
+        {/* Footer */}
+        <div style={{padding:"12px 20px 28px",flexShrink:0,borderTop:"1px solid #F3F4F6",display:"flex",flexDirection:"column",gap:8}}>
+          {onJoin&&!full&&!isJoined?(
+            <button onClick={onJoin} style={{width:"100%",padding:"14px",borderRadius:14,background:`linear-gradient(135deg,${accent},${accent}bb)`,color:"#fff",fontSize:16,fontWeight:700,border:"none",cursor:"pointer"}}>Join this Party →</button>
+          ):onJoin&&full?(
+            <div style={{textAlign:"center",padding:"14px",color:"#EF4444",fontWeight:700,fontSize:14}}>{t.partyFull}</div>
+          ):(
+            <button onClick={onClose} style={{width:"100%",padding:"14px",borderRadius:14,background:"#F3F4F6",color:"#374151",fontSize:15,fontWeight:700,border:"none",cursor:"pointer"}}>Close</button>
+          )}
+          {isJoined&&onLeave&&(
+            <button onClick={onLeave} style={{width:"100%",padding:"11px",borderRadius:14,background:"#FEF2F2",color:"#EF4444",fontSize:13,fontWeight:700,border:"none",cursor:"pointer"}}>Leave Party</button>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+/* ── Explore tab — public/nearby parties ── */
+function ExplorePartiesPage({myPartyIds,joinedParties,setJoinedParties,settings}){
+  const{t}=useLang();
+  const[publicParties,setPublicParties]=useState([]);
+  const[attendeeCounts,setAttendeeCounts]=useState({});
+  const[loading,setLoading]=useState(false);
+  const[showJoin,setShowJoin]=useState(false);
+  const[joinTarget,setJoinTarget]=useState(null);
+  const[detailTarget,setDetailTarget]=useState(null);
+  const[cityFilter,setCityFilter]=useState("all");
+
+  const fetchData=useCallback(async()=>{
+    if(!sb)return;
+    setLoading(true);
+    try{
+      const allIds=[...new Set([...myPartyIds,...joinedParties.map(j=>j.partyId)])];
+      const userCountry=settings?.profileCountry;
+      let q=sb.from("parties").select("*").eq("is_public",true);
+      if(userCountry)q=q.eq("host_country",userCountry);
+      const{data}=await q.order("created_at",{ascending:false}).limit(20);
+      const fresh=(data||[]).filter(p=>!allIds.includes(p.id));
+      setPublicParties(fresh);
+      if(fresh.length){
+        const counts={};
+        await Promise.all(fresh.map(async p=>{
+          const{count}=await sb.from("party_signups").select("*",{count:"exact",head:true}).eq("party_id",p.id);
+          counts[p.id]=count||0;
+        }));
+        setAttendeeCounts(counts);
+      }
+    }catch(_){}
+    setLoading(false);
+  },[myPartyIds,joinedParties,settings?.profileCountry]);
+
+  useEffect(()=>{if(sb)fetchData();},[fetchData]);
+
+  const cities=React.useMemo(()=>[...new Set(publicParties.map(p=>p.host_city).filter(Boolean))].sort(),[publicParties]);
+  const filteredParties=cityFilter==="all"?publicParties:publicParties.filter(p=>p.host_city===cityFilter);
+
+  return(
+    <div style={{flex:1,overflowY:"auto",padding:"4px 16px 80px"}}>
+      <div style={{maxWidth:360,margin:"0 auto"}}>
+        <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:10}}>
+          <div style={{fontSize:13,color:"#9CA3AF"}}>{loading?"Loading…":`${filteredParties.length} part${filteredParties.length===1?"y":"ies"}${cityFilter!=="all"?" in "+cityFilter:" nearby"}`}</div>
+          <button onClick={()=>setShowJoin(true)} style={{padding:"6px 12px",borderRadius:9,border:"1.5px solid #E5E7EB",background:"white",fontSize:12,fontWeight:600,color:"#374151",cursor:"pointer"}}>Join with code</button>
+        </div>
+
+        {/* City filter */}
+        {!loading&&cities.length>0&&(
+          <div style={{marginBottom:12}}>
+            <select value={cityFilter} onChange={e=>setCityFilter(e.target.value)}
+              style={{width:"100%",padding:"9px 12px",borderRadius:10,border:"1.5px solid #E5E7EB",fontSize:13,fontWeight:600,color:cityFilter==="all"?"#6B7280":"#247BA0",background:"white",appearance:"none",backgroundImage:`url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%236B7280' stroke-width='2.5'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' d='M19 9l-7 7-7-7'/%3E%3C/svg%3E")`,backgroundRepeat:"no-repeat",backgroundPosition:"right 12px center",paddingRight:32,cursor:"pointer"}}>
+              <option value="all">🌍 All cities</option>
+              {cities.map(c=><option key={c} value={c}>🏙️ {c}</option>)}
+            </select>
+          </div>
+        )}
+
+        {!loading&&filteredParties.length===0&&(
+          <div style={{textAlign:"center",padding:"50px 20px",color:"#9CA3AF"}}>
+            <div style={{fontSize:36,marginBottom:10}}>🌍</div>
+            <div style={{fontSize:15,fontWeight:600,color:"#4B5563",marginBottom:4}}>{cityFilter!=="all"?`No parties in ${cityFilter}`:"No parties nearby"}</div>
+            <div style={{fontSize:13}}>{settings?.profileCountry?`No public parties in ${settings.profileCountry} yet`:"Set your country in Settings to see local parties"}</div>
+          </div>
+        )}
+
+        <div style={{display:"flex",flexDirection:"column",gap:10}}>
+          {filteredParties.map(p=>(
+            <PartyCard key={p.id} party={p} isOwn={false} isJoined={false}
+              attendeeCount={attendeeCounts[p.id]||0}
+              onDetail={()=>setDetailTarget(p)}
+              onJoinDirect={()=>setJoinTarget(p)}/>
+          ))}
+        </div>
+      </div>
+      {showJoin&&<JoinPartyModal settings={settings} onClose={()=>setShowJoin(false)} onJoined={entry=>{setJoinedParties(j=>[...j,entry]);setShowJoin(false);fetchData();}}/>}
+      {joinTarget&&<JoinPartyModal settings={settings} initialParty={joinTarget} onClose={()=>setJoinTarget(null)} onJoined={entry=>{setJoinedParties(j=>[...j,entry]);setJoinTarget(null);fetchData();}}/>}
+      {detailTarget&&(
+        <PartyDetailModal
+          party={detailTarget} attendeeCount={attendeeCounts[detailTarget.id]||0}
+          isJoined={false}
+          onClose={()=>setDetailTarget(null)}
+          onJoin={()=>{const p=detailTarget;setDetailTarget(null);setJoinTarget(p);}}
+        />
+      )}
+    </div>
+  );
+}
+
+/* ── Host tab — my hosted + joined parties ── */
+function HostPartiesPage({myPartyIds,setMyPartyIds,joinedParties,setJoinedParties,settings}){
+  const{t}=useLang();
+  const[myParties,setMyParties]=useState([]);
+  const[joinedPartyData,setJoinedPartyData]=useState([]);
+  const[attendeeCounts,setAttendeeCounts]=useState({});
+  const[loading,setLoading]=useState(false);
+  const[showCreate,setShowCreate]=useState(false);
+  const[manageId,setManageId]=useState(null);
+  const[detailTarget,setDetailTarget]=useState(null);
+
+  const fetchData=useCallback(async()=>{
+    if(!sb)return;
+    setLoading(true);
+    const ids=[...new Set([...myPartyIds,...joinedParties.map(j=>j.partyId)])];
+    if(ids.length){
+      const{data}=await sb.from("parties").select("*").in("id",ids);
+      const parties=data||[];
+      setMyParties(parties.filter(p=>myPartyIds.includes(p.id)));
+      setJoinedPartyData(parties.filter(p=>joinedParties.some(j=>j.partyId===p.id)));
+      const counts={};
+      await Promise.all(ids.map(async id=>{
+        const{count}=await sb.from("party_signups").select("*",{count:"exact",head:true}).eq("party_id",id);
+        counts[id]=count||0;
+      }));
+      setAttendeeCounts(counts);
+    }else{setMyParties([]);setJoinedPartyData([]);}
+    setLoading(false);
+  },[myPartyIds,joinedParties]);
+
+  useEffect(()=>{if(sb)fetchData();},[fetchData]);
+
+  const hasAny=myParties.length>0||joinedPartyData.length>0;
+  const SectionLabel=({children})=>(
+    <div style={{fontSize:10,fontWeight:700,color:"#9CA3AF",textTransform:"uppercase",letterSpacing:"0.07em",marginBottom:8,marginTop:4}}>{children}</div>
+  );
+
+  return(
+    <div style={{flex:1,overflowY:"auto",padding:"4px 16px 80px"}}>
+      <div style={{maxWidth:360,margin:"0 auto"}}>
+        <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:12}}>
+          <div style={{fontSize:13,color:"#9CA3AF"}}>{loading?"Loading…":hasAny?`${myPartyIds.length+joinedParties.length} part${myPartyIds.length+joinedParties.length===1?"y":"ies"}`:"Your craft gatherings"}</div>
+          <button onClick={()=>setShowCreate(true)} style={{width:36,height:36,borderRadius:11,background:"linear-gradient(135deg,#247BA0,#7AC2E1)",border:"none",cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center",boxShadow:"0 4px 14px #247BA044"}}>
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.5"><path strokeLinecap="round" strokeLinejoin="round" d="M12 4v16m8-8H4"/></svg>
+          </button>
+        </div>
+
+        {!loading&&!hasAny&&(
+          <div style={{textAlign:"center",padding:"50px 20px",color:"#9CA3AF"}}>
+            <div style={{fontSize:36,marginBottom:10}}>🎉</div>
+            <div style={{fontSize:15,fontWeight:600,color:"#4B5563",marginBottom:4}}>No parties yet</div>
+            <div style={{fontSize:13,marginBottom:20}}>Host your first craft meetup</div>
+            <button onClick={()=>setShowCreate(true)} style={{padding:"10px 20px",borderRadius:11,background:"linear-gradient(135deg,#247BA0,#7AC2E1)",border:"none",color:"white",fontSize:13,fontWeight:700,cursor:"pointer"}}>+ Host a Party</button>
+          </div>
+        )}
+
+        {!loading&&myParties.length>0&&(
+          <div style={{marginBottom:24}}>
+            <SectionLabel>Hosting</SectionLabel>
+            <div style={{display:"flex",flexDirection:"column",gap:10}}>
+              {myParties.map(p=>(
+                <PartyCard key={p.id} party={p} isOwn attendeeCount={attendeeCounts[p.id]||0} onManage={()=>setManageId(p.id)} onDetail={()=>setDetailTarget(p)}/>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {!loading&&joinedPartyData.length>0&&(
+          <div style={{marginBottom:24}}>
+            <SectionLabel>Joined</SectionLabel>
+            <div style={{display:"flex",flexDirection:"column",gap:10}}>
+              {joinedPartyData.map(p=>(
+                <PartyCard key={p.id} party={p} isJoined attendeeCount={attendeeCounts[p.id]||0} onDetail={()=>setDetailTarget(p)}/>
+              ))}
+            </div>
+          </div>
+        )}
+      </div>
+      {showCreate&&<CreatePartyModal settings={settings} onClose={()=>setShowCreate(false)} onCreated={id=>{setMyPartyIds(ids=>[...ids,id]);setShowCreate(false);fetchData();}}/>}
+      {manageId&&<ManagePartyModal partyId={manageId} settings={settings} onClose={()=>setManageId(null)} onDeleted={id=>{setMyPartyIds(ids=>ids.filter(i=>i!==id));setManageId(null);fetchData();}}/>}
+      {detailTarget&&(
+        <PartyDetailModal
+          party={detailTarget} attendeeCount={attendeeCounts[detailTarget.id]||0}
+          isJoined={joinedPartyData.some(p=>p.id===detailTarget.id)}
+          onClose={()=>setDetailTarget(null)}
+          onLeave={joinedParties.some(j=>j.partyId===detailTarget?.id)?async()=>{
+            const entry=joinedParties.find(j=>j.partyId===detailTarget.id);
+            if(!entry)return;
+            if(!window.confirm("Leave this party?"))return;
+            if(sb&&entry.signupId)await sb.from("party_signups").delete().eq("id",entry.signupId).catch(()=>{});
+            setJoinedParties(j=>j.filter(j=>j.partyId!==detailTarget.id));
+            setDetailTarget(null);
+            fetchData();
+          }:null}
+        />
+      )}
+    </div>
+  );
+}
+
+/* ── PartiesPage — tab shell, mirrors LibraryPage exactly ── */
+function PartiesPage({myPartyIds,setMyPartyIds,joinedParties,setJoinedParties,settings}){
+  const[tab,setTab]=useState("explore");
+  return(
+    <div style={{flex:1,display:"flex",flexDirection:"column",overflow:"hidden"}}>
+      <div style={{padding:"20px 16px 12px",maxWidth:360,margin:"0 auto",width:"100%",flexShrink:0}}>
+        <div style={{fontSize:12,fontWeight:700,color:"#247BA0",letterSpacing:"0.08em",textTransform:"uppercase",marginBottom:6}}>Craft Parties</div>
+        <div style={{background:"#F3F4F6",borderRadius:14,padding:3,display:"flex",gap:2}}>
+          {[{id:"explore",label:"🌍 Explore"},{id:"host",label:"🎉 My Parties"}].map(tb=>(
+            <button key={tb.id} onClick={()=>setTab(tb.id)} style={{flex:1,padding:"8px 0",borderRadius:11,border:"none",cursor:"pointer",fontSize:12,fontWeight:700,background:tab===tb.id?"white":"transparent",color:tab===tb.id?"#247BA0":"#6B7280",boxShadow:tab===tb.id?"0 2px 8px rgba(0,0,0,.1)":"none",transition:"all .2s"}}>
+              {tb.label}
+            </button>
+          ))}
+        </div>
+      </div>
+      <div style={{flex:1,overflow:"hidden",display:"flex",flexDirection:"column"}}>
+        {tab==="explore"
+          ?<ExplorePartiesPage myPartyIds={myPartyIds} joinedParties={joinedParties} setJoinedParties={setJoinedParties} settings={settings}/>
+          :<HostPartiesPage myPartyIds={myPartyIds} setMyPartyIds={setMyPartyIds} joinedParties={joinedParties} setJoinedParties={setJoinedParties} settings={settings}/>
+        }
+      </div>
+    </div>
+  );
+}
+
 /* ─── App ───────────────────────────────────────────────────────────────────── */
 function App(){
   const[projects,setProjects]=useState(DEFAULTS);
@@ -8550,6 +9990,10 @@ function App(){
   const t=T[lang]||T.en;
   const[settings,setSettings]=useState(()=>{try{const s=localStorage.getItem("sc_settings");return s?JSON.parse(s):DEFAULT_SETTINGS;}catch{return DEFAULT_SETTINGS;}});
   useEffect(()=>{try{localStorage.setItem("sc_settings",JSON.stringify(settings));}catch{};},[settings]);
+  const[myPartyIds,setMyPartyIds]=useState(()=>{try{return JSON.parse(localStorage.getItem("sc_my_parties")||"[]");}catch{return[];}});
+  useEffect(()=>{try{localStorage.setItem("sc_my_parties",JSON.stringify(myPartyIds));}catch{};},[myPartyIds]);
+  const[joinedParties,setJoinedParties]=useState(()=>{try{return JSON.parse(localStorage.getItem("sc_joined_parties")||"[]");}catch{return[];}});
+  useEffect(()=>{try{localStorage.setItem("sc_joined_parties",JSON.stringify(joinedParties));}catch{};},[joinedParties]);
 
   return(
     <LangCtx.Provider value={{lang,t}}>
@@ -8577,7 +10021,9 @@ function App(){
         {page==="projects"?(
           <ProjectsView projects={projects} setProjects={setProjects} setEditingProject={setEditingProject} setPickPatternFor={setPickPatternFor} t={t}/>
         ):page==="dashboard"?(
-          <DashboardPage projects={projects} yarnLib={yarnLib} patterns={patterns}/>
+          <DashboardPage projects={projects} yarnLib={yarnLib} patterns={patterns} myPartyIds={myPartyIds} setMyPartyIds={setMyPartyIds} joinedParties={joinedParties} setJoinedParties={setJoinedParties} settings={settings} setPage={setPage}/>
+        ):page==="parties"?(
+          <PartiesPage myPartyIds={myPartyIds} setMyPartyIds={setMyPartyIds} joinedParties={joinedParties} setJoinedParties={setJoinedParties} settings={settings}/>
         ):page==="settings"?(
           <SettingsPage settings={settings} setSettings={setSettings} lang={lang} setLang={setLang} onBack={()=>setPage("projects")}/>
         ):page==="chart"?(
