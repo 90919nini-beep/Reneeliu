@@ -1320,6 +1320,8 @@ function KnitGrid({initialGrid,onGridChange,yarnColors}){
   const undoStack=useRef([]); // [{grid, imgState}]
   const redoStack=useRef([]); // [{grid, imgState}]
   const imgStateRef=useRef(null); // synchronous shadow of imgState for snapshots
+  const[kgZoom,setKgZoom]=useState(1);
+  const kgPinchRef=useRef(null);
   const{t}=useLang();
   const{canvasBg="#FDFAF6"}=useSettings();
 
@@ -1519,15 +1521,18 @@ function KnitGrid({initialGrid,onGridChange,yarnColors}){
         <button onClick={handleRedo} disabled={!canRedo} title="Redo (Ctrl+Shift+Z)" style={{padding:"3px 9px",borderRadius:7,border:"none",background:canRedo?"#EFF6FF":"#F3F4F6",color:canRedo?"#3B82F6":"#C4B4A8",fontSize:11,cursor:canRedo?"pointer":"default",fontWeight:600}}>↪ Redo</button>
       </div>
       {showImgTool&&<ImageToPatternModal initCols={cols} initRows={rows} initialState={imgState} yarnColors={yarnColors} onApply={handleImgApply} onClose={()=>setShowImgTool(false)}/>}
-      <div ref={containerRef} style={{flex:1,minHeight:0,borderRadius:10,border:"1px solid #E5E7EB",background:canvasBg,display:"flex",justifyContent:"center",alignItems:"center",overflow:"hidden"}}>
-        <canvas ref={canvasRef} style={{display:"block",cursor:"crosshair"}}
+      <div ref={containerRef} style={{flex:1,minHeight:0,borderRadius:10,border:"1px solid #E5E7EB",background:canvasBg,display:"flex",justifyContent:"center",alignItems:"center",overflow:"hidden",touchAction:"none"}}>
+        <canvas ref={canvasRef} style={{display:"block",cursor:"crosshair",transform:`scale(${kgZoom})`,transformOrigin:"center"}}
           onMouseDown={e=>{painting.current=true;pushUndo();paintBlock(e);}}
           onMouseMove={e=>{
             const cell=getCell(e);setHoverCell(cell.x>=0&&cell.y>=0?cell:null);
             if(painting.current)paintBlock(e);
           }}
           onMouseUp={()=>{painting.current=false;sync();}}
-          onMouseLeave={()=>{painting.current=false;setHoverCell(null);sync();}}/>
+          onMouseLeave={()=>{painting.current=false;setHoverCell(null);sync();}}
+          onTouchStart={e=>{if(e.touches.length===2){e.preventDefault();kgPinchRef.current=Math.hypot(e.touches[0].clientX-e.touches[1].clientX,e.touches[0].clientY-e.touches[1].clientY);}}}
+          onTouchMove={e=>{if(e.touches.length===2&&kgPinchRef.current!==null){e.preventDefault();const d=Math.hypot(e.touches[0].clientX-e.touches[1].clientX,e.touches[0].clientY-e.touches[1].clientY);setKgZoom(z=>Math.max(0.5,Math.min(4,z*d/kgPinchRef.current)));kgPinchRef.current=d;}}}
+          onTouchEnd={e=>{if(e.touches.length<2)kgPinchRef.current=null;}}/>
       </div>
       <div style={{display:"flex",gap:8,marginTop:10,alignItems:"center",flexShrink:0}}>
         <span style={{fontSize:11,color:"#6B7280",fontWeight:600}}>Cols</span>
@@ -2232,6 +2237,7 @@ function CrochetBuilder({stitches,setStitches,layout,setLayout,yarnColors}){
   const ir=useRef({});
   const lastTouchRef=useRef(0);
   const autoScaleRef=useRef(1);
+  const ccPinchRef=useRef(null);
   const rowRenderOffRef=useRef({});
   const SYM_COLS=["#247BA0","#E07B8A","#F59E0B","#3B6FD4","#059669","#111111"];
   const CELL=32, CELL_H=40, SNAP_R=1.6;
@@ -2626,6 +2632,15 @@ function CrochetBuilder({stitches,setStitches,layout,setLayout,yarnColors}){
     if(ir.current.isDragging){setDragSt(null);setGuides([]);}
     ir.current={};setHoverCell(null);setGuides([]);
   };
+  const handleTouchStart=e=>{
+    if(e.touches.length===2){e.preventDefault();ccPinchRef.current=Math.hypot(e.touches[0].clientX-e.touches[1].clientX,e.touches[0].clientY-e.touches[1].clientY);}
+    else{ccPinchRef.current=null;onMouseDown(e);}
+  };
+  const handleTouchMove=e=>{
+    if(e.touches.length===2&&ccPinchRef.current!==null){e.preventDefault();const d=Math.hypot(e.touches[0].clientX-e.touches[1].clientX,e.touches[0].clientY-e.touches[1].clientY);setZoom(z=>Math.max(0.25,Math.min(3,z*d/ccPinchRef.current)));ccPinchRef.current=d;}
+    else if(e.touches.length!==2){ccPinchRef.current=null;onMouseMove(e);}
+  };
+  const handleTouchEnd=e=>{if(e.touches.length<2)ccPinchRef.current=null;onMouseUp(e);};
   // Re-trigger draw when container is resized (fixes initial sizing issues)
   const[_contSz,setContSz]=useState(0);
   useEffect(()=>{
@@ -2736,7 +2751,7 @@ function CrochetBuilder({stitches,setStitches,layout,setLayout,yarnColors}){
         })()}
         <canvas ref={canvasRef}
           onMouseDown={onMouseDown} onMouseMove={onMouseMove} onMouseUp={onMouseUp} onMouseLeave={onMouseLeave}
-          onTouchStart={onMouseDown} onTouchMove={onMouseMove} onTouchEnd={onMouseUp}
+          onTouchStart={handleTouchStart} onTouchMove={handleTouchMove} onTouchEnd={handleTouchEnd}
           style={{position:"absolute",inset:0,cursor:activeTool==="eraser"?"cell":dragSt?"grabbing":"crosshair"}}/>
         </div>{/* end containerRef */}
 
@@ -4454,6 +4469,18 @@ function KnitReadChart({grid,onBack}){
   const containerRef=useRef(null);
   const dragRef=useRef(null); // {startX,startY,startPanX,startPanY,moved}
   const suppressClick=useRef(false);
+  const krcPinchRef=useRef(null);
+
+  useEffect(()=>{
+    const el=containerRef.current;if(!el)return;
+    const onTS=e=>{if(e.touches.length===2){e.preventDefault();krcPinchRef.current=Math.hypot(e.touches[0].clientX-e.touches[1].clientX,e.touches[0].clientY-e.touches[1].clientY);}};
+    const onTM=e=>{if(e.touches.length===2&&krcPinchRef.current!==null){e.preventDefault();const d=Math.hypot(e.touches[0].clientX-e.touches[1].clientX,e.touches[0].clientY-e.touches[1].clientY);setScale(s=>Math.max(0.5,Math.min(4,s*d/krcPinchRef.current)));krcPinchRef.current=d;}};
+    const onTE=e=>{if(e.touches.length<2)krcPinchRef.current=null;};
+    el.addEventListener("touchstart",onTS,{passive:false});
+    el.addEventListener("touchmove",onTM,{passive:false});
+    el.addEventListener("touchend",onTE);
+    return()=>{el.removeEventListener("touchstart",onTS);el.removeEventListener("touchmove",onTM);el.removeEventListener("touchend",onTE);};
+  },[]);
 
   const resetView=useCallback(()=>{setScale(1);setPan({x:0,y:0});},[]);
   // Auto-reset pan whenever scale drops to 100% (covers both the % button and the − zoom button)
@@ -5356,6 +5383,20 @@ function CrochetChartView({stitches=[],highlightY=null,currentRowY=null,onRowCli
   const[cSize,setCSize]=useState({w:0,h:0});
   const[fitDone,setFitDone]=useState(false);
   const dragRef=useRef(null);
+
+  // Pinch-to-zoom
+  useEffect(()=>{
+    if(!showControls)return;
+    const el=containerRef.current;if(!el)return;
+    let pinch=null;
+    const onTS=e=>{if(e.touches.length===2){e.preventDefault();pinch=Math.hypot(e.touches[0].clientX-e.touches[1].clientX,e.touches[0].clientY-e.touches[1].clientY);}};
+    const onTM=e=>{if(e.touches.length===2&&pinch!==null){e.preventDefault();const d=Math.hypot(e.touches[0].clientX-e.touches[1].clientX,e.touches[0].clientY-e.touches[1].clientY);setZoom(z=>Math.max(0.25,Math.min(4,z*d/pinch)));pinch=d;}};
+    const onTE=e=>{if(e.touches.length<2)pinch=null;};
+    el.addEventListener("touchstart",onTS,{passive:false});
+    el.addEventListener("touchmove",onTM,{passive:false});
+    el.addEventListener("touchend",onTE);
+    return()=>{el.removeEventListener("touchstart",onTS);el.removeEventListener("touchmove",onTM);el.removeEventListener("touchend",onTE);};
+  },[showControls]);
 
   // Track container size via ResizeObserver
   useEffect(()=>{
@@ -7690,6 +7731,18 @@ function useCpmCanvas(svgRef){
     const h=(e)=>{e.preventDefault();setScale(s=>Math.max(0.28,Math.min(4,+(s+(e.deltaY<0?.13:-.13)).toFixed(2))));};
     el.addEventListener("wheel",h,{passive:false});
     return()=>el.removeEventListener("wheel",h);
+  },[svgRef]);
+
+  useEffect(()=>{
+    const el=svgRef.current;if(!el)return;
+    let pinch=null;
+    const onTS=e=>{if(e.touches.length===2){e.preventDefault();pinch=Math.hypot(e.touches[0].clientX-e.touches[1].clientX,e.touches[0].clientY-e.touches[1].clientY);}};
+    const onTM=e=>{if(e.touches.length===2&&pinch!==null){e.preventDefault();const d=Math.hypot(e.touches[0].clientX-e.touches[1].clientX,e.touches[0].clientY-e.touches[1].clientY);setScale(s=>Math.max(0.28,Math.min(4,+(s*d/pinch).toFixed(2))));pinch=d;}};
+    const onTE=e=>{if(e.touches.length<2)pinch=null;};
+    el.addEventListener("touchstart",onTS,{passive:false});
+    el.addEventListener("touchmove",onTM,{passive:false});
+    el.addEventListener("touchend",onTE);
+    return()=>{el.removeEventListener("touchstart",onTS);el.removeEventListener("touchmove",onTM);el.removeEventListener("touchend",onTE);};
   },[svgRef]);
 
   const onMD=useCallback((e)=>{
