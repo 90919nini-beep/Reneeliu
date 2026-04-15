@@ -3268,7 +3268,7 @@ function SymbolLegendPanel({stitches,rowY}){
 function ReadModeBottomSheet({title,open,onClose,children}){
   if(!open)return null;
   return createPortal(
-    <div onClick={onClose} style={{position:"fixed",inset:0,zIndex:210,display:"flex",
+    <div onClick={onClose} style={{position:"fixed",inset:0,zIndex:200000,display:"flex",
       flexDirection:"column",justifyContent:"flex-end",background:"rgba(0,0,0,0.18)"}}>
       <div onClick={e=>e.stopPropagation()}
         style={{background:"white",borderRadius:"16px 16px 0 0",
