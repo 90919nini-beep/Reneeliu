@@ -4395,11 +4395,13 @@ function imgPick(cb){
 function PatternFormModal({onClose,onSave,initial,yarnLib=[]}){
   const editing=!!initial;
   const{t}=useLang();
-  const blank={name:"",category:"Shawl",craft:"Crochet",difficulty:"Beginner",source:"",notes:"",tags:"",image:null,designData:null};
+  const blank={name:"",category:"Shawl",craft:"Crochet",difficulty:"Beginner",source:"",notes:"",tags:"",image:null,designData:null,importText:"",importImage:null,importPdf:null};
   const[form,setForm]=useState(editing?{...blank,...initial,tags:Array.isArray(initial.tags)?initial.tags.join(", "):initial.tags||""}:blank);
   const[openMaker,setOpenMaker]=useState(null); // null | "rows" | "rounds"
   // derive layout from existing designData, or default to "rows"
   const[layout,setLayout]=useState((editing&&initial?.designData?.type==="rounds")?"rounds":"rows");
+  const[creationMethod,setCreationMethod]=useState(editing&&initial?.designData?.type==="imported"?"import":"design");
+  const[generatedCount,setGeneratedCount]=useState(0);
   const s=(k,v)=>setForm(f=>({...f,[k]:v}));
   const iS={width:"100%",padding:"9px 12px",borderRadius:10,border:"1.5px solid #E5E7EB",fontSize:14,color:"#111",background:"#FAFAFA"};
   const save=()=>{
@@ -4408,6 +4410,13 @@ function PatternFormModal({onClose,onSave,initial,yarnLib=[]}){
     onClose();
   };
   const yarnColors=yarnLib.filter(y=>y.color).map(y=>({color:y.color,name:[y.brand,y.name,y.colorway].filter(Boolean).join(" ")||"Yarn"}));
+  const generateSteps=()=>{
+    const lines=form.importText.split('\n').map(l=>l.trim()).filter(Boolean);
+    if(!lines.length)return;
+    const steps=lines.map((text,i)=>({id:`s${i}`,text}));
+    setForm(f=>({...f,designData:{type:'imported',steps}}));
+    setGeneratedCount(lines.length);
+  };
   const openDesign=()=>setOpenMaker(form.craft==="Crochet"&&layout==="rounds"?"rounds":"rows");
   if(openMaker==="rows") return(
     <PatternMaker
@@ -4439,6 +4448,19 @@ function PatternFormModal({onClose,onSave,initial,yarnLib=[]}){
         </div>
         <div style={{overflowY:"auto",padding:"16px 20px 8px",flex:1}}>
 
+          {/* Creation method selector */}
+          <div style={{display:"flex",gap:8,marginBottom:16}}>
+            {['design','import'].map(m=>(
+              <button key={m} onClick={()=>setCreationMethod(m)}
+                style={{flex:1,padding:"10px 0",borderRadius:20,border:"1.5px solid #BFD7EA",
+                  background:creationMethod===m?"#247BA0":"white",
+                  color:creationMethod===m?"white":"#247BA0",
+                  fontSize:13,fontWeight:700,cursor:"pointer",transition:"all 0.15s"}}>
+                {m==='design'?'Design Chart':'Import Pattern'}
+              </button>
+            ))}
+          </div>
+
           {/* Image upload */}
           <div style={{marginBottom:14}}>
             <label style={{display:"block",fontSize:12,fontWeight:600,color:"#6B7280",marginBottom:6}}>Pattern Photo</label>
@@ -4457,6 +4479,7 @@ function PatternFormModal({onClose,onSave,initial,yarnLib=[]}){
             )}
           </div>
 
+          {creationMethod==='design'&&(<>
           {/* Step 1 — Craft */}
           <div style={{marginBottom:12}}>
             <label style={{display:"block",fontSize:12,fontWeight:600,color:"#6B7280",marginBottom:7}}>
@@ -4506,21 +4529,61 @@ function PatternFormModal({onClose,onSave,initial,yarnLib=[]}){
           </div>
 
           {/* Open Design Tool */}
-          <button onClick={openDesign} style={{width:"100%",marginBottom:14,padding:"11px",borderRadius:12,border:"1.5px solid #7AC2E1",background:form.designData?"#F3E8FF":"#FAFAFA",color:"#247BA0",fontWeight:700,fontSize:13,cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center",gap:6}}>
+          <button onClick={openDesign} style={{width:"100%",marginBottom:14,padding:"11px",borderRadius:12,border:"1.5px solid #7AC2E1",background:form.designData&&form.designData.type!=="imported"?"#F3E8FF":"#FAFAFA",color:"#247BA0",fontWeight:700,fontSize:13,cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center",gap:6}}>
             <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path strokeLinecap="round" strokeLinejoin="round" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"/></svg>
             {form.designData?.type==="rounds"?"✓ Rounds Pattern — Edit":""}
-            {form.designData&&form.designData.type!=="rounds"?"✓ Pattern Designed — Edit":""}
-            {!form.designData&&(
+            {form.designData&&form.designData.type!=="rounds"&&form.designData.type!=="imported"?"✓ Pattern Designed — Edit":""}
+            {(!form.designData||form.designData.type==="imported")&&(
               form.craft==="Crochet"&&layout==="rounds"?"Design Rounds Pattern":
               form.craft==="Knitting"?"Open Knit Grid":
               "Open Rows Pattern Maker"
             )}
           </button>
+          </>)}
+
+          {creationMethod==='import'&&(<>
+          {/* Paste text */}
+          <div style={{marginBottom:12}}>
+            <label style={{display:"block",fontSize:12,fontWeight:600,color:"#6B7280",marginBottom:6}}>Paste Pattern Text</label>
+            <textarea value={form.importText} onChange={e=>s("importText",e.target.value)}
+              placeholder={"Paste row-by-row instructions here (one step per line)...\n\nExample:\nFoundation chain: ch 30\nRow 1: sc in each ch across (30 sts)\nRow 2: ch 1, turn, sc in each st across"}
+              style={{width:"100%",minHeight:130,borderRadius:10,border:"1.5px solid #E5E7EB",padding:"10px 12px",fontSize:13,resize:"vertical",boxSizing:"border-box",background:"#FAFAFA",lineHeight:1.5}}/>
+          </div>
+          {/* Upload pattern image */}
+          <div style={{marginBottom:12}}>
+            <label style={{display:"block",fontSize:12,fontWeight:600,color:"#6B7280",marginBottom:6}}>Upload Pattern Image</label>
+            <label style={{display:"flex",alignItems:"center",gap:8,padding:"10px 14px",borderRadius:10,border:"1.5px dashed #BFD7EA",background:"#FAFAFA",cursor:"pointer",color:form.importImage?"#16A34A":"#6B7280",fontSize:13,fontWeight:600}}>
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path strokeLinecap="round" strokeLinejoin="round" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
+              {form.importImage?"Image uploaded ✓":"Choose image file"}
+              <input type="file" accept="image/*" style={{display:"none"}} onChange={e=>{const f=e.target.files[0];if(!f)return;const r=new FileReader();r.onload=ev=>s("importImage",ev.target.result);r.readAsDataURL(f);}}/>
+            </label>
+          </div>
+          {/* Upload PDF */}
+          <div style={{marginBottom:14}}>
+            <label style={{display:"block",fontSize:12,fontWeight:600,color:"#6B7280",marginBottom:6}}>Upload PDF</label>
+            <label style={{display:"flex",alignItems:"center",gap:8,padding:"10px 14px",borderRadius:10,border:"1.5px dashed #BFD7EA",background:"#FAFAFA",cursor:"pointer",color:form.importPdf?"#16A34A":"#6B7280",fontSize:13,fontWeight:600}}>
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path strokeLinecap="round" strokeLinejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+              {form.importPdf?`${form.importPdf} ✓`:"Choose PDF file"}
+              <input type="file" accept=".pdf" style={{display:"none"}} onChange={e=>{const f=e.target.files[0];if(!f)return;s("importPdf",f.name);}}/>
+            </label>
+          </div>
+          {/* Generate Steps */}
+          <button onClick={generateSteps} disabled={!form.importText.trim()}
+            style={{width:"100%",marginBottom:6,padding:"11px",borderRadius:12,border:"none",
+              background:form.importText.trim()?"#247BA0":"#E5E7EB",
+              color:form.importText.trim()?"white":"#9CA3AF",
+              fontWeight:700,fontSize:13,cursor:form.importText.trim()?"pointer":"default",
+              display:"flex",alignItems:"center",justifyContent:"center",gap:6}}>
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path strokeLinecap="round" strokeLinejoin="round" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4"/></svg>
+            Generate Steps from Text
+          </button>
+          {generatedCount>0&&<div style={{fontSize:12,color:"#16A34A",fontWeight:600,textAlign:"center",marginBottom:12}}>✓ {generatedCount} step{generatedCount!==1?"s":""} generated</div>}
+          </>)}
 
           <FormField label={t.patternName2}><input style={iS} value={form.name} onChange={e=>s("name",e.target.value)} placeholder="e.g. Hitchhiker Shawl"/></FormField>
           <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:12}}>
             <FormField label={t.patternCategory}><select style={{...iS,appearance:"none"}} value={form.category} onChange={e=>s("category",e.target.value)}>{PATTERN_CATEGORIES.map(x=><option key={x}>{x}</option>)}</select></FormField>
-            <FormField label={t.patternCraft}><div style={{...iS,background:"#F3F4F6",color:"#374151",fontWeight:600,display:"flex",alignItems:"center",cursor:"default"}}>{form.craft}</div></FormField>
+            <FormField label={t.patternCraft}>{creationMethod==='import'?<select style={{...iS,appearance:"none"}} value={form.craft} onChange={e=>s("craft",e.target.value)}><option>Crochet</option><option>Knitting</option></select>:<div style={{...iS,background:"#F3F4F6",color:"#374151",fontWeight:600,display:"flex",alignItems:"center",cursor:"default"}}>{form.craft}</div>}</FormField>
             <FormField label={t.patternDifficulty}><select style={{...iS,appearance:"none"}} value={form.difficulty} onChange={e=>s("difficulty",e.target.value)}>{PATTERN_DIFFICULTIES.map(x=><option key={x}>{x}</option>)}</select></FormField>
           </div>
           <FormField label={t.patternSource}><input style={iS} value={form.source} onChange={e=>s("source",e.target.value)} placeholder="https://www.ravelry.com/..."/></FormField>
@@ -4528,7 +4591,7 @@ function PatternFormModal({onClose,onSave,initial,yarnLib=[]}){
           <FormField label={t.patternNotes}><textarea style={{...iS,minHeight:72,resize:"vertical"}} value={form.notes} onChange={e=>s("notes",e.target.value)} placeholder="Any notes..."/></FormField>
         </div>
         <div style={{padding:"12px 20px 28px",flexShrink:0,borderTop:"1px solid #F3F4F6"}}>
-          <button disabled={!form.name.trim()} onClick={save} style={{width:"100%",padding:"14px",borderRadius:14,background:"linear-gradient(135deg,#247BA0,#7AC2E1)",color:"#fff",fontSize:16,fontWeight:700,border:"none",cursor:"pointer",opacity:form.name.trim()?1:0.5}}>{editing?t.saveChanges:t.addPatternBtn}</button>
+          <button disabled={!form.name.trim()} onClick={save} style={{width:"100%",padding:"14px",borderRadius:14,background:"linear-gradient(135deg,#247BA0,#7AC2E1)",color:"#fff",fontSize:16,fontWeight:700,border:"none",cursor:"pointer",opacity:form.name.trim()?1:0.5}}>{editing?t.saveChanges:creationMethod==='import'?'Add Imported Pattern':t.addPatternBtn}</button>
         </div>
       </div>
     </div>
@@ -4730,6 +4793,228 @@ function KnitReadChart({grid,onBack,progressMarker=null,onSaveProgress}){
   );
 }
 
+/* ── Step checklist reader for imported text patterns ── */
+function StepReader({steps=[],patName="",onBack}){
+  const items=useMemo(()=>steps.map(s=>{
+    const t=s.text.trim();
+    const isSection=t.endsWith(":")&&!t.includes("(")&&t.length<=60;
+    const isRepeat=!isSection&&/\brepeat\b|×|\btimes\b/i.test(t);
+    return{id:s.id,text:t,isSection,isRepeat};
+  }),[steps]);
+
+  const stepItems=useMemo(()=>items.filter(i=>!i.isSection),[items]);
+  const[checked,setChecked]=useState({});
+  const[counts,setCounts]=useState({});
+  const[stitches,setStitches]=useState(0);
+  const justChecked=useRef(new Set());
+  const stepRefs=useRef({});
+  /* force re-render for pop animation */
+  const[,forceRender]=useState(0);
+
+  const checkedCount=stepItems.filter(s=>checked[s.id]).length;
+  const total=stepItems.length;
+  const pct=total?Math.round((checkedCount/total)*100):0;
+  const allDone=total>0&&checkedCount===total;
+  const activeId=stepItems.find(s=>!checked[s.id])?.id;
+
+  const toggleCheck=id=>{
+    setChecked(c=>{
+      const next={...c,[id]:!c[id]};
+      if(next[id]){
+        justChecked.current.add(id);
+        setTimeout(()=>{justChecked.current.delete(id);forceRender(n=>n+1);},260);
+        const newActive=stepItems.find(s=>!next[s.id]);
+        if(newActive) setTimeout(()=>{
+          stepRefs.current[newActive.id]?.scrollIntoView({behavior:"smooth",block:"center"});
+        },200);
+      }
+      return next;
+    });
+  };
+  const adj=(id,delta)=>setCounts(c=>({...c,[id]:Math.max(0,(c[id]||0)+delta)}));
+
+  /* Bold text inside parentheses — highlights stitch counts like (30 sc) */
+  const fmtText=text=>{
+    const parts=text.split(/(\([^)]+\))/g);
+    return parts.map((p,i)=>
+      /^\([^)]+\)$/.test(p)
+        ?<strong key={i} style={{fontWeight:700,color:"#247BA0"}}>{p}</strong>
+        :p
+    );
+  };
+
+  if(!steps.length) return(
+    <div style={{position:"fixed",inset:0,background:"white",zIndex:100,display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",gap:16}}>
+      <span style={{fontSize:48}}>📋</span>
+      <p style={{fontSize:16,color:"#6B7280",margin:0}}>No steps found.</p>
+      <button onClick={onBack} style={{padding:"10px 28px",borderRadius:12,background:"#247BA0",color:"white",border:"none",fontWeight:700,fontSize:14,cursor:"pointer"}}>Back</button>
+    </div>
+  );
+
+  return(
+    <div style={{position:"fixed",inset:0,background:"white",zIndex:100,display:"flex",flexDirection:"column"}}>
+
+      <style>{`
+        @keyframes sr-pop{0%{transform:scale(1)}50%{transform:scale(1.3)}100%{transform:scale(1)}}
+        .sr-pop{animation:sr-pop .22s ease}
+      `}</style>
+
+      {/* ── Header ── */}
+      <div style={{padding:"12px 16px 10px",background:"white",borderBottom:"1px solid #EFEFEF",flexShrink:0}}>
+        <div style={{display:"flex",alignItems:"center",gap:10,marginBottom:10}}>
+          <button onClick={onBack} style={{width:32,height:32,borderRadius:999,background:"#F3F4F6",border:"none",cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0}}>
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#6B7280" strokeWidth="2.5"><path strokeLinecap="round" strokeLinejoin="round" d="M15 19l-7-7 7-7"/></svg>
+          </button>
+          <span style={{flex:1,fontSize:15,fontWeight:800,color:"#111",overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{patName}</span>
+          <span style={{fontSize:12,fontWeight:700,flexShrink:0,padding:"3px 10px",borderRadius:999,minWidth:52,textAlign:"center",
+            color:allDone?"#16A34A":"#247BA0",background:allDone?"#DCFCE7":"#EBF6FC"}}>
+            {checkedCount} / {total}
+          </span>
+        </div>
+        <div style={{display:"flex",alignItems:"center",gap:8}}>
+          <div style={{flex:1,height:4,background:"#F0F0F0",borderRadius:999,overflow:"hidden"}}>
+            <div style={{height:"100%",borderRadius:999,transition:"width .35s ease",
+              background:allDone?"#16A34A":"#247BA0",width:`${pct}%`}}/>
+          </div>
+          <span style={{fontSize:11,fontWeight:700,minWidth:30,textAlign:"right",
+            color:allDone?"#16A34A":"#9CA3AF"}}>{pct}%</span>
+        </div>
+      </div>
+
+      {/* ── Scrollable checklist ── */}
+      <div style={{flex:1,overflowY:"auto",paddingBottom:32}}>
+        {items.map((item,idx)=>{
+
+          /* ── Section divider ── */
+          if(item.isSection) return(
+            <div key={item.id} style={{padding:"0 16px",marginTop:idx===0?16:32,marginBottom:10}}>
+              <div style={{borderTop:"1px solid #E8E8E8",paddingTop:10,display:"flex",alignItems:"center",gap:10}}>
+                <span style={{fontSize:10,fontWeight:800,color:"#1A6A8A",textTransform:"uppercase",letterSpacing:"0.12em",whiteSpace:"nowrap",flexShrink:0}}>
+                  {item.text.replace(/:$/,"")}
+                </span>
+                <div style={{flex:1,height:1,background:"#EBEBEB"}}/>
+              </div>
+            </div>
+          );
+
+          /* ── Step row ── */
+          const isActive=item.id===activeId;
+          const isDone=!!checked[item.id];
+          const count=counts[item.id]||0;
+          const popping=justChecked.current.has(item.id);
+
+          return(
+            <div
+              key={item.id}
+              ref={el=>stepRefs.current[item.id]=el}
+              onClick={()=>!isDone&&toggleCheck(item.id)}
+              style={{
+                padding:isDone?"9px 16px 9px 13px":"13px 16px 13px 13px",
+                display:"flex",alignItems:"flex-start",gap:10,
+                cursor:isDone?"default":"pointer",
+                opacity:isDone?0.42:1,
+                background:isActive?"rgba(36,123,160,0.07)":"white",
+                borderLeft:isActive?"3px solid #1A6A8A":"3px solid transparent",
+                borderBottom:"1px solid #F5F5F5",
+                transition:"padding .2s ease,opacity .25s,background .2s",
+              }}>
+
+              {/* Checkbox */}
+              <button
+                className={popping?"sr-pop":""}
+                onClick={e=>{e.stopPropagation();toggleCheck(item.id);}}
+                style={{
+                  width:24,height:24,borderRadius:6,flexShrink:0,marginTop:0,cursor:"pointer",
+                  border:`2px solid ${isDone?"#1A6A8A":isActive?"#1A6A8A":"#D1D5DB"}`,
+                  background:isDone?"#1A6A8A":"white",
+                  display:"flex",alignItems:"center",justifyContent:"center",
+                  transition:"background .15s,border-color .15s",
+                }}>
+                {isDone
+                  ?<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="3.5"><path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7"/></svg>
+                  :isActive
+                  ?<div style={{width:7,height:7,borderRadius:999,background:"#1A6A8A"}}/>
+                  :null}
+              </button>
+
+              {/* Text + repeat counter */}
+              <div style={{flex:1,minWidth:0}}>
+                <p style={{
+                  margin:0,
+                  fontSize:isDone?14:16,
+                  lineHeight:1.65,
+                  color:isDone?"#6B7280":isActive?"#111":"#374151",
+                  fontWeight:isActive?600:400,
+                  textDecoration:isDone?"line-through":"none",
+                  whiteSpace:"pre-wrap",
+                  wordBreak:"break-word",
+                  overflow:isDone?"hidden":"visible",
+                  display:isDone?"-webkit-box":"block",
+                  WebkitLineClamp:isDone?2:undefined,
+                  WebkitBoxOrient:isDone?"vertical":undefined,
+                  transition:"font-size .2s",
+                }}>
+                  {isDone?item.text:fmtText(item.text)}
+                </p>
+
+                {/* Repeat counter */}
+                {item.isRepeat&&!isDone&&(()=>{
+                  const m=item.text.match(/\b(\d+)\s*times?\b/i)||item.text.match(/×\s*(\d+)/);
+                  const target=m?parseInt(m[1],10):null;
+                  return(
+                    <div style={{display:"flex",alignItems:"center",gap:6,marginTop:8}}>
+                      <button onClick={e=>{e.stopPropagation();adj(item.id,-1);}}
+                        style={{width:23,height:23,borderRadius:999,background:"#F3F4F6",border:"none",cursor:"pointer",
+                          display:"flex",alignItems:"center",justifyContent:"center",
+                          fontSize:14,fontWeight:700,color:count===0?"#D1D5DB":"#374151",lineHeight:1}}>−</button>
+                      <span style={{fontSize:13,fontWeight:700,color:"#1A6A8A",minWidth:target?34:17,textAlign:"center"}}>
+                        {target?`${count} / ${target}`:count}
+                      </span>
+                      <button onClick={e=>{e.stopPropagation();adj(item.id,1);}}
+                        style={{width:23,height:23,borderRadius:999,background:"#F3F4F6",border:"none",cursor:"pointer",
+                          display:"flex",alignItems:"center",justifyContent:"center",
+                          fontSize:14,fontWeight:700,color:target&&count>=target?"#16A34A":"#374151",lineHeight:1}}>+</button>
+                    </div>
+                  );
+                })()}
+              </div>
+            </div>
+          );
+        })}
+      </div>
+
+      {/* ── Stitch counter bar ── */}
+      {!allDone&&(
+        <div style={{borderTop:"1px solid #EFEFEF",background:"white",flexShrink:0,display:"flex",alignItems:"stretch",minHeight:58}}>
+          <button onClick={()=>setStitches(n=>n+1)}
+            style={{flex:1,background:"none",border:"none",cursor:"pointer",display:"flex",alignItems:"center",gap:10,padding:"0 18px",textAlign:"left"}}>
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#9CA3AF" strokeWidth="2"><path strokeLinecap="round" strokeLinejoin="round" d="M12 4v16m8-8H4"/></svg>
+            <div style={{display:"flex",flexDirection:"column",alignItems:"flex-start",lineHeight:1}}>
+              <span style={{fontSize:11,color:"#9CA3AF",fontWeight:600,marginBottom:2}}>Stitches</span>
+              <span style={{fontSize:24,fontWeight:800,color:"#1A6A8A",letterSpacing:"-0.5px"}}>{stitches}</span>
+            </div>
+            <span style={{fontSize:11,color:"#C4D9E4",marginLeft:"auto",paddingRight:4}}>tap to count</span>
+          </button>
+          <button onClick={()=>setStitches(0)}
+            style={{padding:"0 16px",background:"none",border:"none",borderLeft:"1px solid #F0F0F0",cursor:"pointer",color:"#9CA3AF",fontSize:11,fontWeight:700,flexShrink:0}}>
+            Reset
+          </button>
+        </div>
+      )}
+
+      {/* ── All-done banner ── */}
+      {allDone&&(
+        <div style={{padding:"14px 20px 28px",background:"white",borderTop:"1px solid #D1FAE5",display:"flex",flexDirection:"column",alignItems:"center",gap:8,flexShrink:0}}>
+          <span style={{fontSize:28}}>🎉</span>
+          <p style={{margin:0,fontSize:14,fontWeight:700,color:"#16A34A"}}>All steps complete!</p>
+          <button onClick={onBack} style={{padding:"10px 32px",borderRadius:12,background:"#16A34A",color:"white",border:"none",fontWeight:700,fontSize:14,cursor:"pointer"}}>Done</button>
+        </div>
+      )}
+
+    </div>
+  );
+}
+
 /* ── Pattern Detail Modal ── */
 function PatternDetailModal({pat,onClose,onEdit,onDelete,onUpdate,yarnLib=[]}){
   const{t}=useLang();
@@ -4739,6 +5024,7 @@ function PatternDetailModal({pat,onClose,onEdit,onDelete,onUpdate,yarnLib=[]}){
   const[showChartView,setShowChartView]=useState(false);
   const[showRoundsRead,setShowRoundsRead]=useState(false);
   const[showKnitRead,setShowKnitRead]=useState(false);
+  const[showStepRead,setShowStepRead]=useState(false);
   const[editNotes,setEditNotes]=useState(false);
   const[notesVal,setNotesVal]=useState(pat.notes||"");
   const[showPatMore,setShowPatMore]=useState(false);
@@ -4775,6 +5061,7 @@ function PatternDetailModal({pat,onClose,onEdit,onDelete,onUpdate,yarnLib=[]}){
   const hasDesign=!!pat.designData;
   const isCrochetDesign=hasDesign&&pat.designData.type==="crochet";
   const isRoundsDesign=hasDesign&&pat.designData.type==="rounds";
+  const isImportedDesign=hasDesign&&pat.designData?.type==="imported";
 
   if(showChartView) return(
     <PatternViewModal
@@ -4792,6 +5079,9 @@ function PatternDetailModal({pat,onClose,onEdit,onDelete,onUpdate,yarnLib=[]}){
   );
   if(showKnitRead) return(
     <KnitReadChart grid={pat.designData?.grid||[]} onBack={()=>setShowKnitRead(false)}/>
+  );
+  if(showStepRead) return(
+    <StepReader steps={pat.designData?.steps||[]} patName={pat.name} onBack={()=>setShowStepRead(false)}/>
   );
 
   return createPortal(
@@ -4819,8 +5109,23 @@ function PatternDetailModal({pat,onClose,onEdit,onDelete,onUpdate,yarnLib=[]}){
             </div>
           )}
 
+          {/* ── Step mode section (imported text patterns) ── */}
+          {isImportedDesign&&(
+            <div style={{padding:"14px 16px 0"}}>
+              <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:8}}>
+                <span style={{fontSize:12,fontWeight:700,color:"#6B7280"}}>📋 Step Mode</span>
+                <span style={{fontSize:11,color:"#9CA3AF"}}>{pat.designData.steps?.length||0} step{(pat.designData.steps?.length||0)!==1?"s":""}</span>
+              </div>
+              <button onClick={()=>setShowStepRead(true)}
+                style={{width:"100%",padding:"13px",borderRadius:12,border:"none",background:"#247BA0",color:"white",fontWeight:700,fontSize:14,cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center",gap:8}}>
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path strokeLinecap="round" strokeLinejoin="round" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4"/></svg>
+                Read Steps
+              </button>
+            </div>
+          )}
+
           {/* ── Full-size pattern grid ── */}
-          {hasDesign&&(
+          {hasDesign&&!isImportedDesign&&(
             <div style={{padding:"14px 16px 0"}}>
               <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:8}}>
                 <span style={{fontSize:12,fontWeight:700,color:"#6B7280"}}>
