@@ -262,7 +262,7 @@ const T={
     refPlaceholder:"e.g. Ravelry Pattern",refUrlPlaceholder:"https://...",
     yarnLib:"Yarn Library",addToLib:"Add Yarn",owned:"Owned",used:"Used",remaining:"Remaining",
     noYarns:"No yarns in stash",addYarnHint:"Add yarns to track your stash",
-    ballsOwned:"Balls Owned",libBrand:"Brand",libName:"Yarn Name",libColorway:"Colorway",libFibre:"Fibre",libColor:"Color",libWeight:"Weight",
+    ballsOwned:"Balls Owned",libBrand:"Brand",libName:"Yarn Name",libColorway:"Colorway",libFibre:"Fibre",libColor:"Color",libWeight:"Yarn Weight",libPhysWeight:"Weight",libLength:"Length",
     addYarnTitle:"Add to Yarn Library",addYarnBtn:"Add to Library",
     filterAll:"All",filterFibre:"Fibre",filterWeight:"Weight",
     toolsLib:"Tools Library",addTool:"Add Tool",toolType:"Type",toolSize:"Size",toolMaterial:"Material",
@@ -325,7 +325,7 @@ const T={
     refPlaceholder:"ex. Patron Ravelry",refUrlPlaceholder:"https://...",
     yarnLib:"Fil & Laine",addToLib:"Ajouter",owned:"Possédé",used:"Utilisé",remaining:"Restant",
     noYarns:"Aucun fil",addYarnHint:"Gérez votre stock de fils",
-    ballsOwned:"Pelotes possédées",libBrand:"Marque",libName:"Nom",libColorway:"Coloris",libFibre:"Fibre",libColor:"Couleur",libWeight:"Épaisseur",
+    ballsOwned:"Pelotes possédées",libBrand:"Marque",libName:"Nom",libColorway:"Coloris",libFibre:"Fibre",libColor:"Couleur",libWeight:"Épaisseur fil",libPhysWeight:"Poids",libLength:"Longueur",
     addYarnTitle:"Ajouter à la bibliothèque",addYarnBtn:"Ajouter",
     filterAll:"Tous",filterFibre:"Fibre",filterWeight:"Épaisseur",
     toolsLib:"Outils",addTool:"Ajouter outil",toolType:"Type",toolSize:"Taille",toolMaterial:"Matériau",
@@ -388,7 +388,7 @@ const T={
     refPlaceholder:"例：Ravelryパターン",refUrlPlaceholder:"https://...",
     yarnLib:"毛糸ライブラリ",addToLib:"追加",owned:"所持",used:"使用",remaining:"残り",
     noYarns:"毛糸がありません",addYarnHint:"毛糸を追加してストックを管理",
-    ballsOwned:"所持玉数",libBrand:"ブランド",libName:"毛糸名",libColorway:"カラーウェイ",libFibre:"繊維",libColor:"色",libWeight:"太さ",
+    ballsOwned:"所持玉数",libBrand:"ブランド",libName:"毛糸名",libColorway:"カラーウェイ",libFibre:"繊維",libColor:"色",libWeight:"糸の太さ",libPhysWeight:"重さ",libLength:"長さ",
     addYarnTitle:"ライブラリに追加",addYarnBtn:"追加する",
     filterAll:"すべて",filterFibre:"繊維",filterWeight:"太さ",
     toolsLib:"道具ライブラリ",addTool:"道具を追加",toolType:"種類",toolSize:"サイズ",toolMaterial:"素材",
@@ -451,7 +451,7 @@ const T={
     refPlaceholder:"例：Ravelry花樣",refUrlPlaceholder:"https://...",
     yarnLib:"毛線庫",addToLib:"新增",owned:"持有",used:"已用",remaining:"剩餘",
     noYarns:"毛線庫為空",addYarnHint:"新增毛線以追蹤存量",
-    ballsOwned:"持有球數",libBrand:"品牌",libName:"線名",libColorway:"色彩",libFibre:"纖維",libColor:"顏色",libWeight:"重量",
+    ballsOwned:"持有球數",libBrand:"品牌",libName:"線名",libColorway:"色彩",libFibre:"纖維",libColor:"顏色",libWeight:"線材粗細",libPhysWeight:"重量",libLength:"長度",
     addYarnTitle:"新增至毛線庫",addYarnBtn:"新增",
     filterAll:"全部",filterFibre:"纖維",filterWeight:"重量",
     toolsLib:"工具庫",addTool:"新增工具",toolType:"類型",toolSize:"尺寸",toolMaterial:"材質",
@@ -514,7 +514,7 @@ const T={
     refPlaceholder:"예: Ravelry 패턴",refUrlPlaceholder:"https://...",
     yarnLib:"실 라이브러리",addToLib:"추가",owned:"보유",used:"사용",remaining:"남은",
     noYarns:"실이 없습니다",addYarnHint:"실을 추가하여 재고를 관리하세요",
-    ballsOwned:"보유 볼 수",libBrand:"브랜드",libName:"실 이름",libColorway:"컬러웨이",libFibre:"섬유",libColor:"색상",libWeight:"굵기",
+    ballsOwned:"보유 볼 수",libBrand:"브랜드",libName:"실 이름",libColorway:"컬러웨이",libFibre:"섬유",libColor:"색상",libWeight:"실 굵기",libPhysWeight:"무게",libLength:"길이",
     addYarnTitle:"실 라이브러리에 추가",addYarnBtn:"추가",
     filterAll:"전체",filterFibre:"섬유",filterWeight:"굵기",
     toolsLib:"도구 라이브러리",addTool:"도구 추가",toolType:"종류",toolSize:"크기",toolMaterial:"재질",
@@ -3966,7 +3966,7 @@ function AddYarnModal({onClose,onAdd,initialYarn,onEdit}){
     composition:initialYarn.composition&&initialYarn.composition.length>0
       ?initialYarn.composition
       :[{fibre:initialYarn.fibre||"Merino Wool",pct:100}],
-  }:{brand:"",name:"",colorway:"",color:SWATCHES[0],composition:[{fibre:"Merino Wool",pct:100}],weight:"Worsted",ballsOwned:1});
+  }:{brand:"",name:"",colorway:"",color:SWATCHES[0],composition:[{fibre:"Merino Wool",pct:100}],weight:"Worsted",ballsOwned:1,physWeight:"",physWeightUnit:"oz",yarnLength:"",yarnLengthUnit:"yd"});
   const s=(k,v)=>setForm(f=>({...f,[k]:v}));
   const iS={width:"100%",padding:"9px 12px",borderRadius:10,border:"1.5px solid #E5E7EB",fontSize:14,color:"#111",background:"#FAFAFA"};
 
@@ -3991,6 +3991,24 @@ function AddYarnModal({onClose,onAdd,initialYarn,onEdit}){
           <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:12}}>
             <FormField label={t.libWeight}><select style={{...iS,appearance:"none"}} value={form.weight} onChange={e=>s("weight",e.target.value)}>{WEIGHTS.map(w=><option key={w}>{w}</option>)}</select></FormField>
             <FormField label={t.ballsOwned}><input style={iS} type="number" min="1" value={form.ballsOwned} onChange={e=>s("ballsOwned",Number(e.target.value))}/></FormField>
+          </div>
+          <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:12}}>
+            <FormField label={t.libPhysWeight}>
+              <div style={{display:"flex",gap:6}}>
+                <input style={{...iS,flex:1}} type="number" min="0" step="0.1" value={form.physWeight} onChange={e=>s("physWeight",e.target.value)} placeholder="0"/>
+                <select style={{...iS,width:60,padding:"9px 6px",flexShrink:0,appearance:"none",textAlign:"center"}} value={form.physWeightUnit} onChange={e=>s("physWeightUnit",e.target.value)}>
+                  <option>oz</option><option>g</option>
+                </select>
+              </div>
+            </FormField>
+            <FormField label={t.libLength}>
+              <div style={{display:"flex",gap:6}}>
+                <input style={{...iS,flex:1}} type="number" min="0" step="1" value={form.yarnLength} onChange={e=>s("yarnLength",e.target.value)} placeholder="0"/>
+                <select style={{...iS,width:60,padding:"9px 6px",flexShrink:0,appearance:"none",textAlign:"center"}} value={form.yarnLengthUnit} onChange={e=>s("yarnLengthUnit",e.target.value)}>
+                  <option>yd</option><option>m</option>
+                </select>
+              </div>
+            </FormField>
           </div>
           {/* Material composition */}
           <div style={{marginBottom:13}}>
@@ -4142,6 +4160,12 @@ function YarnLibPage({yarnLib,setYarnLib,projects}){
                       <div style={{height:"100%",borderRadius:999,width:`${pct}%`,background:`linear-gradient(90deg,${yarn.color}cc,${yarn.color})`,transition:"width .5s"}}/>
                     </div>
                     <div style={{fontSize:10,color:"#9CA3AF",marginTop:2,textAlign:"right"}}>{pct}% {t.used.toLowerCase()}</div>
+                  </div>
+                )}
+                {(yarn.physWeight||yarn.yarnLength)&&(
+                  <div style={{display:"flex",gap:6,marginTop:8,flexWrap:"wrap"}}>
+                    {yarn.physWeight&&<span style={{fontSize:10,padding:"2px 8px",borderRadius:999,background:"#F3F4F6",color:"#6B7280",fontWeight:600}}>{yarn.physWeight} {yarn.physWeightUnit||"oz"}</span>}
+                    {yarn.yarnLength&&<span style={{fontSize:10,padding:"2px 8px",borderRadius:999,background:"#F3F4F6",color:"#6B7280",fontWeight:600}}>{yarn.yarnLength} {yarn.yarnLengthUnit||"yd"}</span>}
                   </div>
                 )}
               </div>
