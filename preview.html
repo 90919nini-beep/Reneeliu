@@ -6907,7 +6907,7 @@ function SignInModal({provider, onClose, onSuccess}) {
   );
 }
 
-function SettingsPage({settings, setSettings, lang, setLang, onBack}) {
+function SettingsPage({settings, setSettings, lang, setLang, onBack, rewards=REWARD_DEFAULTS, setRewards}) {
   const {t} = useLang();
   const set = (k, v) => setSettings(s => ({...s, [k]: v}));
   const [signInModal, setSignInModal] = useState(null); // "google" | "apple" | null
@@ -6964,11 +6964,7 @@ function SettingsPage({settings, setSettings, lang, setLang, onBack}) {
           {/* Photo picker */}
           <div style={{display:"flex",justifyContent:"center",marginBottom:16}}>
             <div style={{position:"relative",cursor:"pointer"}} onClick={()=>photoInputRef.current?.click()}>
-              <div style={{width:76,height:76,borderRadius:999,background:"#F3F4F6",overflow:"hidden",border:"2px solid #E5E7EB",display:"flex",alignItems:"center",justifyContent:"center"}}>
-                {settings.profilePhoto
-                  ? <img src={settings.profilePhoto} style={{width:"100%",height:"100%",objectFit:"cover"}}/>
-                  : <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="#C0C8D0" strokeWidth="1.5"><path strokeLinecap="round" strokeLinejoin="round" d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>}
-              </div>
+              <FramedAvatar src={settings.profilePhoto||""} size={76} frameId={rewards.activeFrame}/>
               <div style={{position:"absolute",bottom:0,right:0,width:24,height:24,borderRadius:999,background:"#247BA0",border:"2px solid #fff",display:"flex",alignItems:"center",justifyContent:"center"}}>
                 <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.5"><path strokeLinecap="round" strokeLinejoin="round" d="M23 19a2 2 0 01-2 2H3a2 2 0 01-2-2V8a2 2 0 012-2h4l2-3h6l2 3h4a2 2 0 012 2z"/><circle cx="12" cy="13" r="4"/></svg>
               </div>
@@ -7005,6 +7001,30 @@ function SettingsPage({settings, setSettings, lang, setLang, onBack}) {
             />
           </div>
         </SectionCard>
+
+        {/* Avatar Frames */}
+        {rewards.unlockedFrames.length>0&&setRewards&&(
+          <SectionCard title="Avatar Frame">
+            <div style={{display:"flex",gap:14,flexWrap:"wrap"}}>
+              {AVATAR_FRAMES.map(f=>{
+                const unlocked=rewards.unlockedFrames.includes(f.id);
+                const active=rewards.activeFrame===f.id;
+                return(
+                  <button key={f.id} onClick={()=>unlocked&&setRewards(r=>({...r,activeFrame:active?null:f.id}))}
+                    style={{display:"flex",flexDirection:"column",alignItems:"center",gap:6,background:"none",border:"none",
+                      cursor:unlocked?"pointer":"default",opacity:unlocked?1:0.38,padding:0}}>
+                    <div style={{border:`2px solid ${active?"#247BA0":"transparent"}`,borderRadius:999,padding:2}}>
+                      <FramedAvatar src={settings.profilePhoto||""} size={52} frameId={unlocked?f.id:null}/>
+                    </div>
+                    <span style={{fontSize:10,fontWeight:700,color:unlocked?active?"#247BA0":"#374151":"#9CA3AF",textAlign:"center",maxWidth:60}}>
+                      {unlocked?f.name:`${f.req} projects`}
+                    </span>
+                  </button>
+                );
+              })}
+            </div>
+          </SectionCard>
+        )}
 
         {/* Language */}
         <SectionCard title={t.settingsLanguage}>
@@ -7198,6 +7218,27 @@ const DEFAULT_SETTINGS = {
   readHighlightColor: "#BFD7EA",
   canvasBg: "#FDFAF6",
 };
+
+/* ─── Milestone Reward System ───────────────────────────────────────────────── */
+
+// Sticker artwork TBD — replace image:null with data-URL or hosted URL when ready
+const STICKER_POOL=[];  // fill in: [{id:"st1",name:"...",image:"..."}]
+
+const AVATAR_FRAMES=[
+  {id:"f10",name:"Crochet Frame", req:10,  image:null, fallbackColor:"#247BA0"},
+  {id:"f25",name:"Gold Frame",    req:25,  image:null, fallbackColor:"#F59E0B"},
+  {id:"f50",name:"Rare Frame",    req:50,  image:null, fallbackColor:"#8B5CF6", animated:true},
+];
+
+const MILESTONE_MAP={
+  1:{sticker:true},
+  5:{sticker:true},
+  10:{sticker:true,frame:"f10"},
+  25:{frame:"f25"},
+  50:{frame:"f50"},
+};
+
+const REWARD_DEFAULTS={unlockedStickers:[],unlockedFrames:[],activeFrame:null,placedStickers:[],claimedMilestones:[]};
 
 /* ─── Yarn Ball ─────────────────────────────────────────────────────────────── */
 function YarnBall(){
@@ -9370,10 +9411,19 @@ function CircularPatternMaker({initialPattern=null,onSave=null,onClose=null,yarn
 }
 
 /* ─── Projects View (active + archive) ─────────────────────────────────────── */
-function ProjectsView({projects, setProjects, setEditingProject, setPickPatternFor, t}) {
+function ProjectsView({projects, setProjects, setEditingProject, setPickPatternFor, t, rewards=REWARD_DEFAULTS, setRewards}) {
   const [showArchive, setShowArchive] = useState(false);
+  const [decorateMode, setDecorateMode] = useState(false);
   const active = projects.filter(p => !p.archived);
   const archived = projects.filter(p => p.archived);
+  const placeSticker=(stickerId)=>{
+    if(!setRewards)return;
+    setRewards(r=>({...r,placedStickers:[...r.placedStickers,{id:uid(),stickerId,x:10+Math.random()*80,y:10+Math.random()*80}]}));
+  };
+  const removeSticker=(id)=>{
+    if(!setRewards)return;
+    setRewards(r=>({...r,placedStickers:r.placedStickers.filter(s=>s.id!==id)}));
+  };
 
   const archiveProject = (id) => setProjects(prev => prev.map(x => x.id===id ? {...x, archived:true} : x));
   const unarchiveProject = (id) => setProjects(prev => prev.map(x => x.id===id ? {...x, archived:false} : x));
@@ -9398,10 +9448,43 @@ function ProjectsView({projects, setProjects, setEditingProject, setPickPatternF
 
   return (
     <div style={{flex:1, overflowY:"auto", padding:"0 16px 80px", position:"relative", zIndex:1}}>
+      {/* Decorate mode toggle button */}
+      {rewards.unlockedStickers.length>0&&(
+        <div style={{maxWidth:360,margin:"0 auto",paddingBottom:8,display:"flex",justifyContent:"flex-end"}}>
+          <button onClick={()=>setDecorateMode(v=>!v)}
+            style={{fontSize:11,fontWeight:700,color:decorateMode?"#247BA0":"#6B7280",background:decorateMode?"#D6EAF4":"#F3F4F6",
+              border:"none",borderRadius:20,padding:"5px 12px",cursor:"pointer",transition:"all .15s"}}>
+            {decorateMode?"✓ Done":"🎨 Decorate"}
+          </button>
+        </div>
+      )}
+
+      {/* Sticker overlay */}
+      {rewards.placedStickers.length>0&&(
+        <div style={{position:"fixed",inset:0,pointerEvents:decorateMode?"auto":"none",zIndex:decorateMode?20:15}}>
+          {rewards.placedStickers.map(ps=>{
+            const s=STICKER_POOL.find(x=>x.id===ps.stickerId);
+            return(
+              <div key={ps.id}
+                style={{position:"absolute",left:`${ps.x}%`,top:`${ps.y}%`,width:56,height:56,
+                  cursor:decorateMode?"pointer":"default",userSelect:"none",transform:"translate(-50%,-50%)",
+                  filter:"drop-shadow(0 2px 6px rgba(0,0,0,.18))"}}
+                onClick={()=>decorateMode&&removeSticker(ps.id)}
+              >
+                {s?.image
+                  ?<img src={s.image} style={{width:"100%",height:"100%",objectFit:"contain"}}/>
+                  :<div style={{width:"100%",height:"100%",borderRadius:8,background:"#F3F4F6",
+                      display:"flex",alignItems:"center",justifyContent:"center",
+                      fontSize:9,color:"#9CA3AF",fontWeight:700}}>{s?.name||"?"}</div>}
+              </div>
+            );
+          })}
+        </div>
+      )}
+
       <div style={{maxWidth:360, margin:"0 auto", display:"flex", flexDirection:"column", gap:14}}>
         {active.length===0 ? (
           <div style={{textAlign:"center", padding:"60px 20px", color:"#9CA3AF"}}>
-            <div style={{fontSize:40, marginBottom:12}}>🧶</div>
             <div style={{fontSize:16, fontWeight:600, color:"#4B5563"}}>{t.emptyTitle}</div>
             <div style={{fontSize:13, marginTop:4}}>{t.emptyHint}</div>
           </div>
@@ -9433,7 +9516,29 @@ function ProjectsView({projects, setProjects, setEditingProject, setPickPatternF
           </div>
         )}
       </div>
-      <YarnBall/>
+
+      {/* Sticker tray — shown in decorate mode */}
+      {decorateMode&&(
+        <div style={{position:"fixed",bottom:80,left:0,right:0,zIndex:30,display:"flex",justifyContent:"center",pointerEvents:"none"}}>
+          <div style={{background:"white",borderRadius:20,padding:"12px 16px",boxShadow:"0 8px 32px rgba(0,0,0,.18)",
+            display:"flex",gap:10,alignItems:"center",pointerEvents:"auto",maxWidth:340,overflowX:"auto"}}>
+            <span style={{fontSize:11,fontWeight:700,color:"#9CA3AF",whiteSpace:"nowrap"}}>Tap to place:</span>
+            {rewards.unlockedStickers.map(sid=>{
+              const s=STICKER_POOL.find(x=>x.id===sid);
+              if(!s)return null;
+              return(
+                <button key={sid} onClick={()=>placeSticker(sid)}
+                  style={{width:44,height:44,borderRadius:10,border:"1.5px solid #E5E7EB",background:"#F9FAFB",
+                    cursor:"pointer",padding:4,flexShrink:0,display:"flex",alignItems:"center",justifyContent:"center"}}>
+                  {s.image
+                    ?<img src={s.image} style={{width:32,height:32,objectFit:"contain"}}/>
+                    :<span style={{fontSize:9,color:"#9CA3AF",fontWeight:700}}>{s.name||"?"}</span>}
+                </button>
+              );
+            })}
+          </div>
+        </div>
+      )}
     </div>
   );
 }
@@ -10487,9 +10592,103 @@ function PartiesPage({myPartyIds,setMyPartyIds,joinedParties,setJoinedParties,se
   );
 }
 
+/* ─── FramedAvatar ── renders profile photo with optional earned frame ─────── */
+function FramedAvatar({src,size=76,frameId,style={}}){
+  const f=AVATAR_FRAMES.find(x=>x.id===frameId);
+  const ringStyle=f&&!f.image?{
+    boxShadow:`0 0 0 3px ${f.fallbackColor},0 0 14px ${f.fallbackColor}50`,
+    ...(f.animated?{animation:"rw-frame 3s linear infinite"}:{})
+  }:{};
+  return(
+    <div style={{position:"relative",width:size,height:size,flexShrink:0,...style}}>
+      {src
+        ?<img src={src} style={{width:size,height:size,borderRadius:999,objectFit:"cover",...ringStyle}}/>
+        :<div style={{width:size,height:size,borderRadius:999,background:"#F3F4F6",display:"flex",alignItems:"center",justifyContent:"center",...ringStyle}}>
+          <svg width={size*0.5} height={size*0.5} viewBox="0 0 24 24" fill="none" stroke="#C0C8D0" strokeWidth="1.5"><path strokeLinecap="round" strokeLinejoin="round" d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+        </div>}
+      {f?.image&&<img src={f.image} style={{position:"absolute",inset:0,width:"100%",height:"100%",pointerEvents:"none"}}/>}
+    </div>
+  );
+}
+
+/* ─── RewardModal ── shown when a milestone is crossed ─────────────────────── */
+function RewardModal({milestone,rewards,setRewards,setPendingMilestone,settings}){
+  const rewardDef=MILESTONE_MAP[milestone]||{};
+  // Pick random unlocked sticker not already collected
+  const pickedSticker=useMemo(()=>{
+    if(!rewardDef.sticker||!STICKER_POOL.length)return null;
+    const available=STICKER_POOL.filter(s=>!rewards.unlockedStickers.includes(s.id));
+    const pool=available.length?available:STICKER_POOL;
+    return pool[Math.floor(Math.random()*pool.length)];
+  },[milestone]);
+  const frameReward=rewardDef.frame?AVATAR_FRAMES.find(f=>f.id===rewardDef.frame):null;
+
+  const collect=(applyFrame=false)=>{
+    setRewards(r=>{
+      const next={...r,claimedMilestones:[...r.claimedMilestones,milestone]};
+      if(pickedSticker) next.unlockedStickers=[...r.unlockedStickers,pickedSticker.id];
+      if(frameReward) next.unlockedFrames=[...new Set([...r.unlockedFrames,frameReward.id])];
+      if(applyFrame&&frameReward) next.activeFrame=frameReward.id;
+      return next;
+    });
+    setPendingMilestone(null);
+  };
+
+  return(
+    <div style={{position:"fixed",inset:0,zIndex:500,background:"rgba(0,0,0,0.72)",display:"flex",alignItems:"center",justifyContent:"center",padding:20}}>
+      <style>{`
+        @keyframes rw-pop{0%{transform:scale(0.4);opacity:0}70%{transform:scale(1.15)}100%{transform:scale(1);opacity:1}}
+        @keyframes rw-frame{0%,100%{box-shadow:0 0 0 3px #8B5CF6,0 0 18px #8B5CF680}50%{box-shadow:0 0 0 3px #EC4899,0 0 22px #EC489980}}
+      `}</style>
+      <div style={{background:"white",borderRadius:28,padding:"28px 24px 24px",width:"100%",maxWidth:320,textAlign:"center",boxShadow:"0 24px 64px rgba(0,0,0,.35)"}}>
+        <div style={{fontSize:36,marginBottom:6}}>🎉</div>
+        <div style={{fontSize:17,fontWeight:800,color:"#111",marginBottom:4}}>Milestone Reached!</div>
+        <div style={{fontSize:13,color:"#6B7280",marginBottom:20}}>You completed {milestone} project{milestone!==1?"s":""}</div>
+
+        {/* Rewards display */}
+        <div style={{display:"flex",gap:16,justifyContent:"center",marginBottom:22}}>
+          {pickedSticker&&(
+            <div style={{display:"flex",flexDirection:"column",alignItems:"center",gap:6}}>
+              <div style={{width:80,height:80,borderRadius:16,background:"#F3F4F6",display:"flex",alignItems:"center",justifyContent:"center",animation:"rw-pop .5s ease forwards"}}>
+                {pickedSticker.image
+                  ?<img src={pickedSticker.image} style={{width:64,height:64,objectFit:"contain"}}/>
+                  :<span style={{fontSize:11,color:"#9CA3AF",fontWeight:700}}>Sticker</span>}
+              </div>
+              <span style={{fontSize:11,fontWeight:700,color:"#374151"}}>{pickedSticker.name||"Sticker"}</span>
+            </div>
+          )}
+          {frameReward&&(
+            <div style={{display:"flex",flexDirection:"column",alignItems:"center",gap:6}}>
+              <div style={{animation:"rw-pop .5s .15s ease both"}}>
+                <FramedAvatar src={settings?.profilePhoto||""} size={80} frameId={frameReward.id}/>
+              </div>
+              <span style={{fontSize:11,fontWeight:700,color:"#374151"}}>{frameReward.name}</span>
+            </div>
+          )}
+        </div>
+
+        {/* Actions */}
+        <div style={{display:"flex",flexDirection:"column",gap:8}}>
+          {frameReward&&(
+            <button onClick={()=>collect(true)}
+              style={{padding:"12px",borderRadius:14,border:"none",background:"#247BA0",color:"white",fontWeight:700,fontSize:14,cursor:"pointer"}}>
+              Apply Frame Now
+            </button>
+          )}
+          <button onClick={()=>collect(false)}
+            style={{padding:"12px",borderRadius:14,border:"none",background:frameReward?"#F3F4F6":"#247BA0",color:frameReward?"#374151":"white",fontWeight:700,fontSize:14,cursor:"pointer"}}>
+            Collect{frameReward?" (apply later)":""}
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 /* ─── App ───────────────────────────────────────────────────────────────────── */
 function App(){
-  const[projects,setProjects]=useState(DEFAULTS);
+  const[projects,setProjects]=useState(()=>{try{const s=localStorage.getItem("sc_projects");return s?JSON.parse(s):DEFAULTS;}catch{return DEFAULTS;}});
+  useEffect(()=>{try{localStorage.setItem("sc_projects",JSON.stringify(projects));}catch{};},[projects]);
   const[yarnLib,setYarnLib]=useState(DEFAULT_YARNS);
   const[tools,setTools]=useState(DEFAULT_TOOLS);
   const[patterns,setPatterns]=useState(()=>{try{const s=localStorage.getItem("sc_pattern_lib");return s?JSON.parse(s):DEFAULT_PATTERNS;}catch{return DEFAULT_PATTERNS;}});
@@ -10506,6 +10705,19 @@ function App(){
   useEffect(()=>{try{localStorage.setItem("sc_my_parties",JSON.stringify(myPartyIds));}catch{};},[myPartyIds]);
   const[joinedParties,setJoinedParties]=useState(()=>{try{return JSON.parse(localStorage.getItem("sc_joined_parties")||"[]");}catch{return[];}});
   useEffect(()=>{try{localStorage.setItem("sc_joined_parties",JSON.stringify(joinedParties));}catch{};},[joinedParties]);
+  const[rewards,setRewards]=useState(()=>{try{const s=localStorage.getItem("sc_rewards");return s?JSON.parse(s):REWARD_DEFAULTS;}catch{return REWARD_DEFAULTS;}});
+  useEffect(()=>{try{localStorage.setItem("sc_rewards",JSON.stringify(rewards));}catch{};},[rewards]);
+  const[pendingMilestone,setPendingMilestone]=useState(null);
+  const prevCompletedRef=useRef(null);
+  useEffect(()=>{
+    const n=projects.filter(p=>p.status==="Completed").length;
+    if(prevCompletedRef.current===null){prevCompletedRef.current=n;return;}
+    if(n>prevCompletedRef.current){
+      const milestone=[1,5,10,25,50].filter(m=>m<=n&&!rewards.claimedMilestones.includes(m)).sort((a,b)=>b-a)[0];
+      if(milestone) setPendingMilestone(milestone);
+    }
+    prevCompletedRef.current=n;
+  },[projects]);
 
   return(
     <LangCtx.Provider value={{lang,t}}>
@@ -10531,13 +10743,13 @@ function App(){
         )}
 
         {page==="projects"?(
-          <ProjectsView projects={projects} setProjects={setProjects} setEditingProject={setEditingProject} setPickPatternFor={setPickPatternFor} t={t}/>
+          <ProjectsView projects={projects} setProjects={setProjects} setEditingProject={setEditingProject} setPickPatternFor={setPickPatternFor} t={t} rewards={rewards} setRewards={setRewards}/>
         ):page==="dashboard"?(
           <DashboardPage projects={projects} yarnLib={yarnLib} patterns={patterns} myPartyIds={myPartyIds} setMyPartyIds={setMyPartyIds} joinedParties={joinedParties} setJoinedParties={setJoinedParties} settings={settings} setPage={setPage}/>
         ):page==="parties"?(
           <PartiesPage myPartyIds={myPartyIds} setMyPartyIds={setMyPartyIds} joinedParties={joinedParties} setJoinedParties={setJoinedParties} settings={settings}/>
         ):page==="settings"?(
-          <SettingsPage settings={settings} setSettings={setSettings} lang={lang} setLang={setLang} onBack={()=>setPage("projects")}/>
+          <SettingsPage settings={settings} setSettings={setSettings} lang={lang} setLang={setLang} onBack={()=>setPage("projects")} rewards={rewards} setRewards={setRewards}/>
         ):page==="chart"?(
           <CircularPatternMaker/>
         ):(
@@ -10573,6 +10785,15 @@ function App(){
               ));
               setPickPatternFor(null);
             }}
+          />
+        )}
+        {pendingMilestone&&(
+          <RewardModal
+            milestone={pendingMilestone}
+            rewards={rewards}
+            setRewards={setRewards}
+            setPendingMilestone={setPendingMilestone}
+            settings={settings}
           />
         )}
       </div>
