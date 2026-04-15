@@ -4540,7 +4540,7 @@ function KnitReadChart({grid,onBack,progressMarker=null,onSaveProgress}){
   useEffect(()=>{
     const el=containerRef.current;if(!el)return;
     const onTS=e=>{if(e.touches.length===2){e.preventDefault();krcPinchRef.current=Math.hypot(e.touches[0].clientX-e.touches[1].clientX,e.touches[0].clientY-e.touches[1].clientY);}};
-    const onTM=e=>{if(e.touches.length===2&&krcPinchRef.current!==null){e.preventDefault();const d=Math.hypot(e.touches[0].clientX-e.touches[1].clientX,e.touches[0].clientY-e.touches[1].clientY);setScale(s=>Math.max(0.5,Math.min(4,s*d/krcPinchRef.current)));krcPinchRef.current=d;}};
+    const onTM=e=>{if(e.touches.length===2&&krcPinchRef.current!==null){e.preventDefault();const d=Math.hypot(e.touches[0].clientX-e.touches[1].clientX,e.touches[0].clientY-e.touches[1].clientY);setScale(s=>Math.max(0.3,Math.min(4,s*d/krcPinchRef.current)));krcPinchRef.current=d;}};
     const onTE=e=>{if(e.touches.length<2)krcPinchRef.current=null;};
     el.addEventListener("touchstart",onTS,{passive:false});
     el.addEventListener("touchmove",onTM,{passive:false});
@@ -4548,8 +4548,14 @@ function KnitReadChart({grid,onBack,progressMarker=null,onSaveProgress}){
     return()=>{el.removeEventListener("touchstart",onTS);el.removeEventListener("touchmove",onTM);el.removeEventListener("touchend",onTE);};
   },[]);
 
+  useEffect(()=>{
+    const el=containerRef.current;if(!el)return;
+    const h=e=>{e.preventDefault();setScale(s=>Math.max(0.3,Math.min(4,+(s*(e.deltaY<0?1.12:1/1.12)).toFixed(2))));};
+    el.addEventListener("wheel",h,{passive:false});
+    return()=>el.removeEventListener("wheel",h);
+  },[]);
+
   const resetView=useCallback(()=>{setScale(1);setPan({x:0,y:0});},[]);
-  // Auto-reset pan whenever scale drops to 100% (covers both the % button and the − zoom button)
   useEffect(()=>{if(scale<=1)setPan({x:0,y:0});},[scale]);
 
   /* ── Draw ── */
@@ -4687,10 +4693,6 @@ function KnitReadChart({grid,onBack,progressMarker=null,onSaveProgress}){
           </div>
           <button onClick={()=>navRow(-1)} title="Next row" style={{width:22,height:22,borderRadius:5,border:"none",background:"transparent",fontSize:14,fontWeight:700,cursor:"pointer",color:"#374151",display:"flex",alignItems:"center",justifyContent:"center"}}>+</button>
         </div>
-        {/* Zoom controls */}
-        <button onClick={()=>setScale(s=>Math.max(0.5,+(s-.25).toFixed(2)))} style={{width:22,height:22,borderRadius:5,border:"1.5px solid #BFD7EA",background:"white",fontSize:14,fontWeight:700,cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center",color:"#374151",flexShrink:0}}>−</button>
-        <button onClick={resetView} title="Reset zoom &amp; pan" style={{minWidth:36,height:22,borderRadius:5,border:"1.5px solid #BFD7EA",background:"white",fontSize:9,fontWeight:800,cursor:"pointer",color:"#374151",flexShrink:0}}>{Math.round(scale*100)}%</button>
-        <button onClick={()=>setScale(s=>Math.min(4,+(s+.25).toFixed(2)))} style={{width:22,height:22,borderRadius:5,border:"1.5px solid #BFD7EA",background:"white",fontSize:14,fontWeight:700,cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center",color:"#374151",flexShrink:0}}>+</button>
         {onSaveProgress&&(
           <button onClick={()=>{if(activeRow!==null)onSaveProgress(activeRow);}} disabled={activeRow===null}
             title={activeRow===null?"Select a row first":"Save progress here"}
@@ -5469,7 +5471,7 @@ function CrochetChartView({stitches=[],highlightY=null,currentRowY=null,onRowCli
     const el=containerRef.current;if(!el)return;
     let pinch=null;
     const onTS=e=>{if(e.touches.length===2){e.preventDefault();pinch=Math.hypot(e.touches[0].clientX-e.touches[1].clientX,e.touches[0].clientY-e.touches[1].clientY);}};
-    const onTM=e=>{if(e.touches.length===2&&pinch!==null){e.preventDefault();const d=Math.hypot(e.touches[0].clientX-e.touches[1].clientX,e.touches[0].clientY-e.touches[1].clientY);setZoom(z=>Math.max(0.25,Math.min(4,z*d/pinch)));pinch=d;}};
+    const onTM=e=>{if(e.touches.length===2&&pinch!==null){e.preventDefault();const d=Math.hypot(e.touches[0].clientX-e.touches[1].clientX,e.touches[0].clientY-e.touches[1].clientY);setZoom(z=>Math.max(0.3,Math.min(4,z*d/pinch)));pinch=d;}};
     const onTE=e=>{if(e.touches.length<2)pinch=null;};
     el.addEventListener("touchstart",onTS,{passive:false});
     el.addEventListener("touchmove",onTM,{passive:false});
@@ -5641,7 +5643,7 @@ function CrochetChartView({stitches=[],highlightY=null,currentRowY=null,onRowCli
     const mx=e.clientX-rect.left,my=e.clientY-rect.top;
     const factor=e.deltaY<0?1.12:1/1.12;
     setZoom(z=>{
-      const nz=Math.max(0.25,Math.min(4,z*factor));
+      const nz=Math.max(0.3,Math.min(4,z*factor));
       setPan(p=>({x:mx-(mx-p.x)*(nz/z),y:my-(my-p.y)*(nz/z)}));
       return nz;
     });
@@ -5689,13 +5691,6 @@ function CrochetChartView({stitches=[],highlightY=null,currentRowY=null,onRowCli
       onPointerDown={showControls?onPointerDown:undefined} onPointerMove={showControls?onPointerMove:undefined} onPointerUp={showControls?onPointerUp:undefined} onPointerCancel={showControls?onPointerUp:undefined}
     >
       <canvas ref={canvasRef} style={{display:"block",position:"absolute",top:0,left:0,pointerEvents:"none"}}/>
-      {/* Floating zoom controls */}
-      {showControls&&<div style={{position:"absolute",top:8,right:8,display:"flex",gap:3,zIndex:10,background:"rgba(255,255,255,0.93)",borderRadius:8,padding:"3px",boxShadow:"0 1px 6px rgba(0,0,0,0.10)",pointerEvents:"auto"}} onPointerDown={e=>e.stopPropagation()}>
-        <button onClick={()=>setZoom(z=>Math.max(0.25,+(z-0.15).toFixed(2)))} style={{width:22,height:22,borderRadius:5,border:"1.5px solid #BFD7EA",background:"white",fontSize:14,fontWeight:700,cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center",color:"#374151"}}>−</button>
-        <button style={{minWidth:36,height:22,borderRadius:5,border:"1.5px solid #BFD7EA",background:"white",fontSize:9,fontWeight:800,color:"#374151",cursor:"default"}}>{Math.round(zoom*100)}%</button>
-        <button onClick={()=>setZoom(z=>Math.min(4,+(z+0.15).toFixed(2)))} style={{width:22,height:22,borderRadius:5,border:"1.5px solid #BFD7EA",background:"white",fontSize:14,fontWeight:700,cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center",color:"#374151"}}>+</button>
-        <button onClick={resetView} style={{height:22,padding:"0 7px",borderRadius:5,border:"1.5px solid #BFD7EA",background:"white",fontSize:9,fontWeight:800,cursor:"pointer",color:"#247BA0"}}>Fit</button>
-      </div>}
     </div>
   );
 }
@@ -7807,7 +7802,7 @@ function useCpmCanvas(svgRef){
 
   useEffect(()=>{
     const el=svgRef.current; if(!el) return;
-    const h=(e)=>{e.preventDefault();setScale(s=>Math.max(0.28,Math.min(4,+(s+(e.deltaY<0?.13:-.13)).toFixed(2))));};
+    const h=(e)=>{e.preventDefault();setScale(s=>Math.max(0.3,Math.min(4,+(s*(e.deltaY<0?1.12:1/1.12)).toFixed(2))));};
     el.addEventListener("wheel",h,{passive:false});
     return()=>el.removeEventListener("wheel",h);
   },[svgRef]);
@@ -7816,7 +7811,7 @@ function useCpmCanvas(svgRef){
     const el=svgRef.current;if(!el)return;
     let pinch=null;
     const onTS=e=>{if(e.touches.length===2){e.preventDefault();pinch=Math.hypot(e.touches[0].clientX-e.touches[1].clientX,e.touches[0].clientY-e.touches[1].clientY);}};
-    const onTM=e=>{if(e.touches.length===2&&pinch!==null){e.preventDefault();const d=Math.hypot(e.touches[0].clientX-e.touches[1].clientX,e.touches[0].clientY-e.touches[1].clientY);setScale(s=>Math.max(0.28,Math.min(4,+(s*d/pinch).toFixed(2))));pinch=d;}};
+    const onTM=e=>{if(e.touches.length===2&&pinch!==null){e.preventDefault();const d=Math.hypot(e.touches[0].clientX-e.touches[1].clientX,e.touches[0].clientY-e.touches[1].clientY);setScale(s=>Math.max(0.3,Math.min(4,+(s*d/pinch).toFixed(2))));pinch=d;}};
     const onTE=e=>{if(e.touches.length<2)pinch=null;};
     el.addEventListener("touchstart",onTS,{passive:false});
     el.addEventListener("touchmove",onTM,{passive:false});
@@ -8650,7 +8645,7 @@ function CPM_Preview({pattern,onBack,themeColor="#111111",notes}){
     if(!radii.length)return;
     const outerR=(isSquare?radii[radii.length-1]*Math.SQRT2:radii[radii.length-1])+50;
     const fit=(CPM_SVG_W/2-16)/outerR;
-    if(fit<1) setScale(Math.max(0.28,parseFloat(fit.toFixed(2))));
+    if(fit<1) setScale(Math.max(0.3,parseFloat(fit.toFixed(2))));
   },[]);
 
   useEffect(()=>{
@@ -8668,11 +8663,7 @@ function CPM_Preview({pattern,onBack,themeColor="#111111",notes}){
       {/* Preview header bar */}
       <div style={{padding:"9px 12px",background:"#EBF6FC",borderBottom:"1px solid #BFD7EA",display:"flex",alignItems:"center",gap:6,flexShrink:0}}>
         <div style={{fontSize:11,fontWeight:700,color:"#247BA0",letterSpacing:"0.07em",marginRight:"auto"}}>READ CHART MODE</div>
-        <button onClick={()=>setScale(s=>Math.max(0.28,+(s-.15).toFixed(2)))} style={{width:22,height:22,borderRadius:5,border:"1.5px solid #BFD7EA",background:"white",fontSize:14,fontWeight:700,cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center",color:"#374151",flexShrink:0}}>−</button>
-        <button onClick={resetView} title="Reset zoom" style={{minWidth:36,height:22,borderRadius:5,border:"1.5px solid #BFD7EA",background:"white",fontSize:9,fontWeight:800,cursor:"pointer",color:"#374151",flexShrink:0}}>{Math.round(scale*100)}%</button>
-        <button onClick={()=>setScale(s=>Math.min(4,+(s+.15).toFixed(2)))} style={{width:22,height:22,borderRadius:5,border:"1.5px solid #BFD7EA",background:"white",fontSize:14,fontWeight:700,cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center",color:"#374151",flexShrink:0}}>+</button>
-        <button onClick={resetView} style={{height:22,padding:"0 7px",borderRadius:5,border:"1.5px solid #BFD7EA",background:"white",fontSize:9,fontWeight:800,cursor:"pointer",color:"#247BA0",flexShrink:0}}>Fit</button>
-        <button onClick={onBack} style={{padding:"6px 14px",borderRadius:11,border:"none",background:"#247BA0",color:"white",fontSize:12,fontWeight:600,cursor:"pointer",marginLeft:4}}>← Editor</button>
+        <button onClick={onBack} style={{padding:"6px 14px",borderRadius:11,border:"none",background:"#247BA0",color:"white",fontSize:12,fontWeight:600,cursor:"pointer"}}>← Editor</button>
       </div>
 
       {/* Canvas */}
@@ -8834,7 +8825,7 @@ function CPM_RoundsReader({pattern,themeColor,onBack,notes}){
     if(!radii.length)return;
     const outerR=(isSquare?radii[radii.length-1]*Math.SQRT2:radii[radii.length-1])+50;
     const fit=(CPM_SVG_W/2-16)/outerR;
-    if(fit<1) setScale(Math.max(0.28,parseFloat(fit.toFixed(2))));
+    if(fit<1) setScale(Math.max(0.3,parseFloat(fit.toFixed(2))));
   },[]);
 
   useEffect(()=>{
@@ -8852,11 +8843,7 @@ function CPM_RoundsReader({pattern,themeColor,onBack,notes}){
       {/* Header — matches row read mode header style */}
       <div style={{padding:"9px 12px",background:"#EBF6FC",borderBottom:"1px solid #BFD7EA",display:"flex",alignItems:"center",gap:6,flexShrink:0}}>
         <div style={{fontSize:11,fontWeight:700,color:"#247BA0",letterSpacing:"0.07em",flex:1}}>READ CHART MODE</div>
-        <button onClick={()=>setScale(s=>Math.max(0.28,+(s-.15).toFixed(2)))} style={{width:22,height:22,borderRadius:5,border:"1.5px solid #BFD7EA",background:"white",fontSize:14,fontWeight:700,cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center",color:"#374151",flexShrink:0}}>−</button>
-        <button onClick={resetView} title="Reset zoom" style={{minWidth:36,height:22,borderRadius:5,border:"1.5px solid #BFD7EA",background:"white",fontSize:9,fontWeight:800,cursor:"pointer",color:"#374151",flexShrink:0}}>{Math.round(scale*100)}%</button>
-        <button onClick={()=>setScale(s=>Math.min(4,+(s+.15).toFixed(2)))} style={{width:22,height:22,borderRadius:5,border:"1.5px solid #BFD7EA",background:"white",fontSize:14,fontWeight:700,cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center",color:"#374151",flexShrink:0}}>+</button>
-        <button onClick={resetView} style={{height:22,padding:"0 7px",borderRadius:5,border:"1.5px solid #BFD7EA",background:"white",fontSize:9,fontWeight:800,cursor:"pointer",color:"#247BA0",flexShrink:0}}>Fit</button>
-        {onBack&&<button onClick={onBack} style={{padding:"6px 14px",borderRadius:11,border:"none",background:"#247BA0",color:"white",fontSize:12,fontWeight:600,cursor:"pointer",marginLeft:4}}>← Back</button>}
+        {onBack&&<button onClick={onBack} style={{padding:"6px 14px",borderRadius:11,border:"none",background:"#247BA0",color:"white",fontSize:12,fontWeight:600,cursor:"pointer"}}>← Back</button>}
       </div>
       <div style={{flex:1,position:"relative",overflow:"hidden"}}>
         <svg ref={svgRef} viewBox={`0 0 ${CPM_SVG_W} ${CPM_SVG_W}`} overflow="visible"
