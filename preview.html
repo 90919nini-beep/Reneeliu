@@ -3375,70 +3375,68 @@ function PatternViewModal({pattern,notes,onClose,onEdit,onDesign,onSaveRowNotes,
             />
           </div>
 
-          {/* Bottom navigation panel — mirrors CPM_Preview panel */}
-          <div style={{background:"white",borderTop:"1px solid #E8F4FB",flexShrink:0,overflowY:"auto",maxHeight:320}}>
-            <div style={{padding:"12px 14px"}}>
-              {/* Active row info + prev/next */}
-              <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:10,gap:8}}>
-                <div style={{minWidth:0}}>
-                  <div style={{fontSize:9,color:"#247BA0",fontWeight:700,letterSpacing:"0.08em",textTransform:"uppercase"}}>{isFndActive?"Foundation":"Active Row"}</div>
-                  <div style={{fontSize:22,fontWeight:800,color:isFndActive?"#92400E":"#4C1D95",lineHeight:1.2}}>{isFndActive?"Foundation Chain":`Row ${rowNum}`}</div>
-                  <div style={{fontSize:11,color:"#7AC2E1",marginTop:1}}>{currentRowStitchCount} {isFndActive?"chains":"stitches"}</div>
-                </div>
-                <div style={{display:"flex",gap:8,flexShrink:0}}>
-                  {navBtn(()=>{setRowIdx(i=>Math.max(0,i-1));setNoteOpen(false);},rowIdx===0,"←")}
-                  {navBtn(()=>{setRowIdx(i=>Math.min(totalRows-1,i+1));setNoteOpen(false);},rowIdx===totalRows-1,"→")}
-                  {onSaveProgress&&(
-                    <button type="button" onClick={()=>onSaveProgress(rowIdx)} title="Save progress here"
-                      style={{width:36,height:36,borderRadius:10,border:"1.5px solid rgba(5,150,105,0.35)",background:"rgba(5,150,105,0.08)",cursor:"pointer",fontSize:16,display:"flex",alignItems:"center",justifyContent:"center",color:"#059669",flexShrink:0}}>
-                      📌
-                    </button>
-                  )}
-                </div>
+          {/* Bottom navigation panel */}
+          <div style={{padding:"12px 14px",background:"white",borderTop:"1px solid #E8F4FB",flexShrink:0}}>
+            {/* Active row info + prev/next */}
+            <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:10,gap:8}}>
+              <div style={{minWidth:0}}>
+                <div style={{fontSize:9,color:"#247BA0",fontWeight:700,letterSpacing:"0.08em",textTransform:"uppercase"}}>{isFndActive?"Foundation":"Active Row"}</div>
+                <div style={{fontSize:22,fontWeight:800,color:isFndActive?"#92400E":"#4C1D95",lineHeight:1.2}}>{isFndActive?"Foundation Chain":`Row ${rowNum}`}</div>
+                <div style={{fontSize:11,color:"#7AC2E1",marginTop:1}}>{currentRowStitchCount} {isFndActive?"chains":"stitches"}</div>
               </div>
-              {/* Progress bar */}
-              <div style={{height:3,background:"#E8F4FB",borderRadius:99,overflow:"hidden",marginBottom:9}}>
-                <div style={{height:"100%",width:`${((rowIdx+1)/totalRows)*100}%`,background:"#247BA0",borderRadius:99,transition:"width 0.35s ease"}}/>
+              <div style={{display:"flex",gap:8,flexShrink:0}}>
+                {navBtn(()=>{setRowIdx(i=>Math.max(0,i-1));setNoteOpen(false);},rowIdx===0,"←")}
+                {navBtn(()=>{setRowIdx(i=>Math.min(totalRows-1,i+1));setNoteOpen(false);},rowIdx===totalRows-1,"→")}
+                {onSaveProgress&&(
+                  <button type="button" onClick={()=>onSaveProgress(rowIdx)} title="Save progress here"
+                    style={{width:36,height:36,borderRadius:10,border:"1.5px solid rgba(5,150,105,0.35)",background:"rgba(5,150,105,0.08)",cursor:"pointer",fontSize:16,display:"flex",alignItems:"center",justifyContent:"center",color:"#059669",flexShrink:0}}>
+                    📌
+                  </button>
+                )}
               </div>
-              {/* Row pills */}
-              <div style={{display:"flex",gap:5,flexWrap:"wrap",marginBottom:6}}>
-                {rowLevels.map((y,i)=>{
-                  const isFnd=y===0;
-                  const label=isFnd?"FC":`R${actualRowLevels.indexOf(y)+1}`;
-                  const active=i===rowIdx;
-                  const isProgress=!!onSaveProgress&&i===pattern.progressMarker;
-                  return(
-                    <button key={i} onClick={()=>{setRowIdx(i);setNoteOpen(false);}}
-                      style={{padding:"4px 10px",borderRadius:20,cursor:"pointer",
-                        border:isProgress?"1.5px solid #059669":"none",
-                        background:active?(isFnd?"#92400E":"#247BA0"):(isFnd?"#FEF3C7":"#E8F4FB"),
-                        color:active?"white":(isFnd?"#92400E":"#247BA0"),
-                        fontSize:11,fontWeight:active?700:500,transition:"all 0.18s ease"}}>
-                      {label}{isProgress?" 📌":""}
-                    </button>
-                  );
-                })}
-              </div>
-              <div style={{fontSize:10,color:"#7AC2E1",textAlign:"center"}}>Use ← → arrow keys to navigate</div>
-              {(stitches.length>0||(onSaveRowNotes&&Object.keys(rowNotes).some(k=>(rowNotes[k]||"").trim()))||notes)&&(
-                <div style={{display:"flex",gap:6,justifyContent:"center",marginTop:8}}>
-                  {stitches.length>0&&(
-                    <button type="button" onClick={()=>setShowSymbols(true)}
-                      style={{padding:"5px 13px",borderRadius:20,border:"none",cursor:"pointer",
-                        background:"#EBF6FC",color:"#247BA0",fontSize:11,fontWeight:700}}>
-                      ≡ Symbols
-                    </button>
-                  )}
-                  {((onSaveRowNotes&&Object.keys(rowNotes).some(k=>(rowNotes[k]||"").trim()))||notes)&&(
-                    <button type="button" onClick={()=>setShowSheetNotes(true)}
-                      style={{padding:"5px 13px",borderRadius:20,border:"none",cursor:"pointer",
-                        background:"#EBF6FC",color:"#247BA0",fontSize:11,fontWeight:700}}>
-                      ✎ Notes
-                    </button>
-                  )}
-                </div>
-              )}
             </div>
+            {/* Progress bar */}
+            <div style={{height:3,background:"#E8F4FB",borderRadius:99,overflow:"hidden",marginBottom:9}}>
+              <div style={{height:"100%",width:`${((rowIdx+1)/totalRows)*100}%`,background:"#247BA0",borderRadius:99,transition:"width 0.35s ease"}}/>
+            </div>
+            {/* Row pills */}
+            <div style={{display:"flex",gap:5,flexWrap:"wrap"}}>
+              {rowLevels.map((y,i)=>{
+                const isFnd=y===0;
+                const label=isFnd?"FC":`R${actualRowLevels.indexOf(y)+1}`;
+                const active=i===rowIdx;
+                const isProgress=!!onSaveProgress&&i===pattern.progressMarker;
+                return(
+                  <button key={i} onClick={()=>{setRowIdx(i);setNoteOpen(false);}}
+                    style={{padding:"4px 10px",borderRadius:20,cursor:"pointer",
+                      border:isProgress?"1.5px solid #059669":"none",
+                      background:active?(isFnd?"#92400E":"#247BA0"):(isFnd?"#FEF3C7":"#E8F4FB"),
+                      color:active?"white":(isFnd?"#92400E":"#247BA0"),
+                      fontSize:11,fontWeight:active?700:500,transition:"all 0.18s ease"}}>
+                    {label}{isProgress?" 📌":""}
+                  </button>
+                );
+              })}
+            </div>
+            <div style={{marginTop:8,fontSize:10,color:"#7AC2E1",textAlign:"center"}}>Use ← → arrow keys to navigate</div>
+            {(stitches.length>0||(onSaveRowNotes&&Object.keys(rowNotes).some(k=>(rowNotes[k]||"").trim()))||notes)&&(
+              <div style={{display:"flex",gap:6,justifyContent:"center",marginTop:8}}>
+                {stitches.length>0&&(
+                  <button type="button" onClick={()=>setShowSymbols(true)}
+                    style={{padding:"5px 13px",borderRadius:20,border:"none",cursor:"pointer",
+                      background:"#EBF6FC",color:"#247BA0",fontSize:11,fontWeight:700}}>
+                    ≡ Symbols
+                  </button>
+                )}
+                {((onSaveRowNotes&&Object.keys(rowNotes).some(k=>(rowNotes[k]||"").trim()))||notes)&&(
+                  <button type="button" onClick={()=>setShowSheetNotes(true)}
+                    style={{padding:"5px 13px",borderRadius:20,border:"none",cursor:"pointer",
+                      background:"#EBF6FC",color:"#247BA0",fontSize:11,fontWeight:700}}>
+                    ✎ Notes
+                  </button>
+                )}
+              </div>
+            )}
           </div>
       </>
 
