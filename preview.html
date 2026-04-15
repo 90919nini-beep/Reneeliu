@@ -3265,8 +3265,12 @@ function SymbolLegendPanel({stitches,rowY}){
   );
 }
 
-function PatternViewModal({pattern,notes,onClose,onEdit,onDesign,onSaveRowNotes}){
-  const[rowIdx,setRowIdx]=useState(0);
+function PatternViewModal({pattern,notes,onClose,onEdit,onDesign,onSaveRowNotes,onSaveProgress}){
+  const[rowIdx,setRowIdx]=useState(()=>{
+    const rl=[...new Set((pattern?.crochetStitches||[]).map(s=>Math.round(s.y)))].sort((a,b)=>b-a);
+    const pm=pattern.progressMarker;
+    return(pm!=null&&pm>=0&&pm<rl.length)?pm:0;
+  });
   const[shareDone,setShareDone]=useState(false);
   const[rowNotes,setRowNotes]=useState(()=>pattern?.rowNotes||{});
   const[noteOpen,setNoteOpen]=useState(false);
@@ -3312,6 +3316,10 @@ function PatternViewModal({pattern,notes,onClose,onEdit,onDesign,onSaveRowNotes}
 
   const currentRowStitchCount=currentY!==null?stitches.filter(s=>Math.round(s.y)===currentY).length:0;
 
+  if(pattern.type==="knit"){
+    return createPortal(<KnitReadChart grid={pattern.grid||[]} onBack={onClose} progressMarker={pattern.progressMarker??null} onSaveProgress={onSaveProgress}/>,document.body);
+  }
+
   return createPortal(
     <div style={{position:"fixed",inset:0,zIndex:99999,background:"white",display:"flex",flexDirection:"column"}}>
       <StitchCounter/>
@@ -3324,8 +3332,7 @@ function PatternViewModal({pattern,notes,onClose,onEdit,onDesign,onSaveRowNotes}
       </div>
 
 
-      {pattern.type==="crochet"?(
-        <>
+      <>
           {/* Chart — flex:1, fills viewport with pan+zoom canvas */}
           <div style={{flex:1,overflow:"hidden",display:"flex"}}>
             <CrochetChartView
@@ -3349,6 +3356,12 @@ function PatternViewModal({pattern,notes,onClose,onEdit,onDesign,onSaveRowNotes}
                 <div style={{display:"flex",gap:8,flexShrink:0}}>
                   {navBtn(()=>{setRowIdx(i=>Math.max(0,i-1));setNoteOpen(false);},rowIdx===0,"←")}
                   {navBtn(()=>{setRowIdx(i=>Math.min(totalRows-1,i+1));setNoteOpen(false);},rowIdx===totalRows-1,"→")}
+                  {onSaveProgress&&(
+                    <button type="button" onClick={()=>onSaveProgress(rowIdx)} title="Save progress here"
+                      style={{width:36,height:36,borderRadius:10,border:"1.5px solid rgba(5,150,105,0.35)",background:"rgba(5,150,105,0.08)",cursor:"pointer",fontSize:16,display:"flex",alignItems:"center",justifyContent:"center",color:"#059669",flexShrink:0}}>
+                      📌
+                    </button>
+                  )}
                 </div>
               </div>
               {/* Progress bar */}
@@ -3361,13 +3374,15 @@ function PatternViewModal({pattern,notes,onClose,onEdit,onDesign,onSaveRowNotes}
                   const isFnd=y===0;
                   const label=isFnd?"FC":`R${actualRowLevels.indexOf(y)+1}`;
                   const active=i===rowIdx;
+                  const isProgress=!!onSaveProgress&&i===pattern.progressMarker;
                   return(
                     <button key={i} onClick={()=>{setRowIdx(i);setNoteOpen(false);}}
-                      style={{padding:"4px 10px",borderRadius:20,border:"none",cursor:"pointer",
+                      style={{padding:"4px 10px",borderRadius:20,cursor:"pointer",
+                        border:isProgress?"1.5px solid #059669":"none",
                         background:active?(isFnd?"#92400E":"#247BA0"):(isFnd?"#FEF3C7":"#E8F4FB"),
                         color:active?"white":(isFnd?"#92400E":"#247BA0"),
                         fontSize:11,fontWeight:active?700:500,transition:"all 0.18s ease"}}>
-                      {label}
+                      {label}{isProgress?" 📌":""}
                     </button>
                   );
                 })}
@@ -3421,21 +3436,7 @@ function PatternViewModal({pattern,notes,onClose,onEdit,onDesign,onSaveRowNotes}
               </div>
             )}
           </div>
-        </>
-      ):(
-        /* Knit — unchanged scrollable layout */
-        <div style={{overflowY:"auto",flex:1,padding:16,display:"flex",flexDirection:"column",gap:14}}>
-          <div style={{background:"white",borderRadius:14,overflow:"hidden",boxShadow:"0 1px 6px rgba(0,0,0,0.06)"}}>
-            <div style={{padding:12}}><ReadOnlyKnitGrid grid={pattern.grid}/></div>
-          </div>
-          {notes&&(
-            <div style={{background:"white",borderRadius:14,padding:"12px 14px",boxShadow:"0 1px 6px rgba(0,0,0,0.06)"}}>
-              <div style={{fontSize:9,fontWeight:800,color:"rgba(59,95,138,0.45)",letterSpacing:"0.08em",textTransform:"uppercase",marginBottom:8}}>Pattern Notes</div>
-              <div style={{fontSize:13,color:"#1e3a5f",lineHeight:1.7,whiteSpace:"pre-wrap"}}>{notes}</div>
-            </div>
-          )}
-        </div>
-      )}
+      </>
 
     </div>,
     document.body
@@ -3554,7 +3555,7 @@ function Card({project,onDelete,onEdit,onPickPattern,onDuplicate,onMarkComplete,
 
   return(<>
     {showCongrats&&<CongratsOverlay onDone={()=>setShowCongrats(false)}/>}
-    {showPatternView&&project.pattern&&<PatternViewModal pattern={project.pattern} notes={project.notes} onClose={()=>setShowPatternView(false)} onSaveRowNotes={onUpdatePattern?(rn=>onUpdatePattern({...project.pattern,rowNotes:rn})):undefined}/>}
+    {showPatternView&&project.pattern&&<PatternViewModal pattern={project.pattern} notes={project.notes} onClose={()=>setShowPatternView(false)} onSaveRowNotes={onUpdatePattern?(rn=>onUpdatePattern({...project.pattern,rowNotes:rn})):undefined} onSaveProgress={onUpdatePattern?(idx=>onUpdatePattern({...project.pattern,progressMarker:idx})):undefined}/>}
     <div className="shadow-card bg-white rounded-3xl overflow-hidden w-full">
 
       {/* ── Always-visible collapsed view ── */}
@@ -3610,9 +3611,9 @@ function Card({project,onDelete,onEdit,onPickPattern,onDuplicate,onMarkComplete,
         <>
           <div style={{height:1,background:"#F3F4F6"}}/>
           {/* Stats grid */}
-          <div style={{display:"grid",gridTemplateColumns:"1fr 1fr 1fr",borderBottom:"1px solid #F3F4F6"}}>
-            {[[t.hook,project.hookSize||"—"],[t.weight,project.weight||"—"],[t.balls,(project.yarns||[]).reduce((a,y)=>a+(Number(y.balls)||0),0)]].map(([l,v],i)=>(
-              <div key={l} style={{display:"flex",flexDirection:"column",alignItems:"center",padding:"10px 0",borderRight:i<2?"1px solid #F3F4F6":"none"}}>
+          <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",borderBottom:"1px solid #F3F4F6"}}>
+            {[[t.hook,project.hookSize||"—"],[t.balls,(project.yarns||[]).reduce((a,y)=>a+(Number(y.balls)||0),0)]].map(([l,v],i)=>(
+              <div key={l} style={{display:"flex",flexDirection:"column",alignItems:"center",padding:"10px 0",borderRight:i<1?"1px solid #F3F4F6":"none"}}>
                 <span style={{fontSize:14,fontWeight:700,color:"#111"}}>{v}</span>
                 <span style={{fontSize:10,color:"#9CA3AF",marginTop:1}}>{l}</span>
               </div>
@@ -3887,7 +3888,6 @@ function ProjectModal({onClose,onSave,yarnLib,editMode=false,initialProject=null
 
           <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:12}}>
             <FormField label={t.hookSize}><input style={iS} value={form.hookSize} onChange={e=>sf("hookSize",e.target.value)} placeholder="5.0mm"/></FormField>
-            <FormField label={t.yarnWeight}><select style={{...iS,appearance:"none"}} value={form.weight} onChange={e=>sf("weight",e.target.value)}>{WEIGHTS.map(w=><option key={w}>{w}</option>)}</select></FormField>
             <FormField label={t.rowsDone}><input style={iS} type="number" min="0" value={form.rowsCompleted} onChange={e=>sf("rowsCompleted",Number(e.target.value))}/></FormField>
             <FormField label={t.totalRows}><input style={iS} type="number" min="1" value={form.totalRows} onChange={e=>sf("totalRows",Number(e.target.value))}/></FormField>
             <FormField label={t.dueDate}><input style={iS} type="date" value={form.dueDate} onChange={e=>sf("dueDate",e.target.value)}/></FormField>
@@ -4481,12 +4481,12 @@ function PatternFormModal({onClose,onSave,initial,yarnLib=[]}){
 }
 
 /* ── Knit Grid Read Chart ── */
-function KnitReadChart({grid,onBack}){
+function KnitReadChart({grid,onBack,progressMarker=null,onSaveProgress}){
   const{canvasBg="#FDFAF6"}=useSettings();
   const rows=grid.length;
   const cols=grid[0]?.length||0;
   const[scale,setScale]=useState(1);
-  const[activeRow,setActiveRow]=useState(null);
+  const[activeRow,setActiveRow]=useState(()=>progressMarker!=null&&progressMarker>=0&&progressMarker<grid.length?progressMarker:null);
   const[pan,setPan]=useState({x:0,y:0});
   const[grabbing,setGrabbing]=useState(false);
   const canvasRef=useRef(null);
@@ -4576,7 +4576,13 @@ function KnitReadChart({grid,onBack}){
       ctx.textBaseline="middle"; ctx.fillText(String(x),cx,MT/2);       // top
       ctx.textBaseline="middle"; ctx.fillText(String(x),cx,MT+gH+MB/2); // bottom
     }
-  },[grid,rows,cols,scale,activeRow,canvasBg]);
+    // Progress marker — small green right-pointing triangle in left margin
+    if(progressMarker!==null&&progressMarker>=0&&progressMarker<rows){
+      const cy=MT+(progressMarker+0.5)*cellSize;
+      ctx.fillStyle="#059669";ctx.globalAlpha=1;
+      ctx.beginPath();ctx.moveTo(2,cy-5);ctx.lineTo(12,cy);ctx.lineTo(2,cy+5);ctx.fill();
+    }
+  },[grid,rows,cols,scale,activeRow,canvasBg,progressMarker]);
 
   useLayoutEffect(()=>{draw();},[draw]);
 
@@ -4643,6 +4649,13 @@ function KnitReadChart({grid,onBack}){
         <button onClick={()=>setScale(s=>Math.max(0.5,+(s-.25).toFixed(2)))} style={{width:22,height:22,borderRadius:5,border:"1.5px solid #BFD7EA",background:"white",fontSize:14,fontWeight:700,cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center",color:"#374151",flexShrink:0}}>−</button>
         <button onClick={resetView} title="Reset zoom &amp; pan" style={{minWidth:36,height:22,borderRadius:5,border:"1.5px solid #BFD7EA",background:"white",fontSize:9,fontWeight:800,cursor:"pointer",color:"#374151",flexShrink:0}}>{Math.round(scale*100)}%</button>
         <button onClick={()=>setScale(s=>Math.min(4,+(s+.25).toFixed(2)))} style={{width:22,height:22,borderRadius:5,border:"1.5px solid #BFD7EA",background:"white",fontSize:14,fontWeight:700,cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center",color:"#374151",flexShrink:0}}>+</button>
+        {onSaveProgress&&(
+          <button onClick={()=>{if(activeRow!==null)onSaveProgress(activeRow);}} disabled={activeRow===null}
+            title={activeRow===null?"Select a row first":"Save progress here"}
+            style={{padding:"4px 10px",borderRadius:8,border:"1.5px solid #BFD7EA",background:activeRow!==null?"rgba(5,150,105,0.08)":"#F3F4F6",color:activeRow!==null?"#059669":"#9CA3AF",fontSize:11,fontWeight:700,cursor:activeRow!==null?"pointer":"default",flexShrink:0,marginLeft:4}}>
+            📌 {activeRow!==null?`Row ${rows-activeRow}`:"—"}
+          </button>
+        )}
         <button onClick={onBack} style={{padding:"6px 14px",borderRadius:11,border:"none",background:"#247BA0",color:"white",fontSize:12,fontWeight:600,cursor:"pointer",marginLeft:4}}>← Back</button>
       </div>
       {/* Canvas area — overflow:hidden + pointer-driven pan */}
