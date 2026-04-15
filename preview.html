@@ -3265,6 +3265,36 @@ function SymbolLegendPanel({stitches,rowY}){
   );
 }
 
+function ReadModeBottomSheet({title,open,onClose,children}){
+  if(!open)return null;
+  return createPortal(
+    <div onClick={onClose} style={{position:"fixed",inset:0,zIndex:210,display:"flex",
+      flexDirection:"column",justifyContent:"flex-end",background:"rgba(0,0,0,0.18)"}}>
+      <div onClick={e=>e.stopPropagation()}
+        style={{background:"white",borderRadius:"16px 16px 0 0",
+          boxShadow:"0 -4px 28px rgba(0,0,0,0.13)",maxHeight:"58vh",
+          display:"flex",flexDirection:"column"}}>
+        <div style={{display:"flex",justifyContent:"center",padding:"10px 0 4px"}}>
+          <div style={{width:36,height:4,borderRadius:999,background:"#E5E7EB"}}/>
+        </div>
+        <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",
+          padding:"2px 16px 10px"}}>
+          <div style={{fontSize:13,fontWeight:800,color:"#1e3a5f"}}>{title}</div>
+          <button onClick={onClose} style={{width:28,height:28,borderRadius:999,border:"none",
+            background:"#F3F4F6",cursor:"pointer",display:"flex",alignItems:"center",
+            justifyContent:"center",flexShrink:0}}>
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#6B7280" strokeWidth="2.5">
+              <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12"/>
+            </svg>
+          </button>
+        </div>
+        <div style={{overflowY:"auto",padding:"0 16px 24px"}}>{children}</div>
+      </div>
+    </div>,
+    document.body
+  );
+}
+
 function PatternViewModal({pattern,notes,onClose,onEdit,onDesign,onSaveRowNotes,onSaveProgress}){
   const[rowIdx,setRowIdx]=useState(()=>{
     const rl=[...new Set((pattern?.crochetStitches||[]).map(s=>Math.round(s.y)))].sort((a,b)=>b-a);
@@ -3274,6 +3304,8 @@ function PatternViewModal({pattern,notes,onClose,onEdit,onDesign,onSaveRowNotes,
   const[shareDone,setShareDone]=useState(false);
   const[rowNotes,setRowNotes]=useState(()=>pattern?.rowNotes||{});
   const[noteOpen,setNoteOpen]=useState(false);
+  const[showSymbols,setShowSymbols]=useState(false);
+  const[showSheetNotes,setShowSheetNotes]=useState(false);
 
   const stitches=pattern?.crochetStitches||[];
   // All y-levels sorted descending (y=0 = foundation chain at bottom, negative y = rows above)
@@ -3388,55 +3420,67 @@ function PatternViewModal({pattern,notes,onClose,onEdit,onDesign,onSaveRowNotes,
                 })}
               </div>
               <div style={{fontSize:10,color:"#7AC2E1",textAlign:"center"}}>Use ← → arrow keys to navigate</div>
+              {(stitches.length>0||(onSaveRowNotes&&Object.keys(rowNotes).some(k=>(rowNotes[k]||"").trim()))||notes)&&(
+                <div style={{display:"flex",gap:6,justifyContent:"center",marginTop:8}}>
+                  {stitches.length>0&&(
+                    <button type="button" onClick={()=>setShowSymbols(true)}
+                      style={{padding:"5px 13px",borderRadius:20,border:"none",cursor:"pointer",
+                        background:"#EBF6FC",color:"#247BA0",fontSize:11,fontWeight:700}}>
+                      ≡ Symbols
+                    </button>
+                  )}
+                  {((onSaveRowNotes&&Object.keys(rowNotes).some(k=>(rowNotes[k]||"").trim()))||notes)&&(
+                    <button type="button" onClick={()=>setShowSheetNotes(true)}
+                      style={{padding:"5px 13px",borderRadius:20,border:"none",cursor:"pointer",
+                        background:"#EBF6FC",color:"#247BA0",fontSize:11,fontWeight:700}}>
+                      ✎ Notes
+                    </button>
+                  )}
+                </div>
+              )}
             </div>
-
-            {/* Symbols legend */}
-            {stitches.length>0&&(
-              <div style={{padding:"0 14px 12px",borderTop:"1px solid #E8F4FB"}}>
-                <div style={{fontSize:9,fontWeight:800,color:"rgba(59,95,138,0.45)",letterSpacing:"0.08em",textTransform:"uppercase",marginBottom:8,paddingTop:10}}>
-                  {currentY===null?"Used Symbols":isFndActive?"Foundation Chain Symbols":`Row ${rowNum} Symbols`}
-                </div>
-                <div style={{display:"flex",flexWrap:"wrap",gap:6}}>
-                  {[...new Map((legendSt.length?legendSt:stitches).map(s=>[s.id,s])).values()].map(s=>{
-                    const sym=STITCH_LIBRARY.find(cs=>cs.id===s.id);
-                    return(
-                      <div key={s.id} style={{display:"flex",alignItems:"center",gap:6,padding:"4px 10px",borderRadius:20,background:"#F7F9FF",border:"1px solid rgba(59,95,138,0.14)"}}>
-                        <SymSVG id={s.id} color={s.color} size={16}/>
-                        <div>
-                          <div style={{fontSize:10,fontWeight:700,color:"#1e3a5f"}}>{sym?.desc||s.id}</div>
-                          <div style={{fontSize:9,color:"rgba(59,95,138,0.45)"}}>{sym?.label||""}</div>
-                        </div>
-                      </div>
-                    );
-                  })}
-                </div>
-              </div>
-            )}
-
-            {/* Row notes summary */}
-            {onSaveRowNotes&&Object.keys(rowNotes).some(k=>(rowNotes[k]||"").trim())&&(
-              <div style={{padding:"0 14px 12px",borderTop:"1px solid #E8F4FB"}}>
-                <div style={{fontSize:9,fontWeight:800,color:"rgba(180,100,0,0.55)",letterSpacing:"0.08em",textTransform:"uppercase",marginBottom:8,paddingTop:10}}>Row Notes</div>
-                <div style={{display:"flex",flexDirection:"column",gap:6}}>
-                  {Object.keys(rowNotes).filter(k=>(rowNotes[k]||"").trim()).sort((a,b)=>+a-+b).map(k=>(
-                    <div key={k} style={{display:"flex",gap:8,alignItems:"flex-start"}}>
-                      <span style={{fontSize:10,fontWeight:800,color:"#92400e",background:"rgba(245,158,11,0.15)",borderRadius:6,padding:"2px 7px",flexShrink:0,marginTop:1}}>R{k}</span>
-                      <span style={{fontSize:12,color:"#1e3a5f",lineHeight:1.55}}>{rowNotes[k]}</span>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            )}
-
-            {/* Pattern notes */}
-            {notes&&(
-              <div style={{padding:"0 14px 12px",borderTop:"1px solid #E8F4FB"}}>
-                <div style={{fontSize:9,fontWeight:800,color:"rgba(59,95,138,0.45)",letterSpacing:"0.08em",textTransform:"uppercase",marginBottom:8,paddingTop:10}}>Pattern Notes</div>
-                <div style={{fontSize:13,color:"#1e3a5f",lineHeight:1.7,whiteSpace:"pre-wrap"}}>{notes}</div>
-              </div>
-            )}
           </div>
       </>
+
+      <ReadModeBottomSheet
+        title={currentY===null?"Symbols":isFndActive?"Foundation Chain Symbols":`Row ${rowNum} Symbols`}
+        open={showSymbols} onClose={()=>setShowSymbols(false)}>
+        <div style={{display:"flex",flexWrap:"wrap",gap:6,paddingTop:4}}>
+          {[...new Map((legendSt.length?legendSt:stitches).map(s=>[s.id,s])).values()].map(s=>{
+            const sym=STITCH_LIBRARY.find(cs=>cs.id===s.id);
+            return(
+              <div key={s.id} style={{display:"flex",alignItems:"center",gap:6,padding:"4px 10px",borderRadius:20,background:"#F7F9FF",border:"1px solid rgba(59,95,138,0.14)"}}>
+                <SymSVG id={s.id} color={s.color} size={16}/>
+                <div>
+                  <div style={{fontSize:10,fontWeight:700,color:"#1e3a5f"}}>{sym?.desc||s.id}</div>
+                  <div style={{fontSize:9,color:"rgba(59,95,138,0.45)"}}>{sym?.label||""}</div>
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      </ReadModeBottomSheet>
+      <ReadModeBottomSheet title="Notes" open={showSheetNotes} onClose={()=>setShowSheetNotes(false)}>
+        {onSaveRowNotes&&Object.keys(rowNotes).some(k=>(rowNotes[k]||"").trim())&&(
+          <div style={{marginBottom:notes?16:0}}>
+            <div style={{fontSize:9,fontWeight:800,color:"rgba(180,100,0,0.55)",letterSpacing:"0.08em",textTransform:"uppercase",marginBottom:8}}>Row Notes</div>
+            <div style={{display:"flex",flexDirection:"column",gap:6}}>
+              {Object.keys(rowNotes).filter(k=>(rowNotes[k]||"").trim()).sort((a,b)=>+a-+b).map(k=>(
+                <div key={k} style={{display:"flex",gap:8,alignItems:"flex-start"}}>
+                  <span style={{fontSize:10,fontWeight:800,color:"#92400e",background:"rgba(245,158,11,0.15)",borderRadius:6,padding:"2px 7px",flexShrink:0,marginTop:1}}>R{k}</span>
+                  <span style={{fontSize:12,color:"#1e3a5f",lineHeight:1.55}}>{rowNotes[k]}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+        {notes&&(
+          <div>
+            <div style={{fontSize:9,fontWeight:800,color:"rgba(59,95,138,0.45)",letterSpacing:"0.08em",textTransform:"uppercase",marginBottom:8}}>Pattern Notes</div>
+            <div style={{fontSize:13,color:"#1e3a5f",lineHeight:1.7,whiteSpace:"pre-wrap"}}>{notes}</div>
+          </div>
+        )}
+      </ReadModeBottomSheet>
 
     </div>,
     document.body
@@ -8597,6 +8641,10 @@ function CPM_Preview({pattern,onBack,themeColor="#111111"}){
   const active=rounds[activeIdx];
   const cum=rounds.slice(0,activeIdx+1).reduce((s,r)=>s+r.stitches.length,0);
   const isSquare=pattern.baseShape==="square";
+  const[showSymbols,setShowSymbols]=useState(false);
+  const[showNotes,setShowNotes]=useState(false);
+  const activeSymTypes=[...new Set(active.stitches.map(s=>s.type))].filter(t=>t!=="mr");
+  const CPM_LABEL=Object.fromEntries(STITCH_LIBRARY.map(s=>[s.id,s.desc]));
 
   // Auto-fit: compute full content radius and scale so everything is visible.
   // Square corners extend radius*√2 from center; circle uses radius directly.
@@ -8730,7 +8778,43 @@ function CPM_Preview({pattern,onBack,themeColor="#111111"}){
           ))}
         </div>
         <div style={{marginTop:8,fontSize:10,color:"#7AC2E1",textAlign:"center"}}>Use ← → arrow keys to navigate</div>
+        {(activeSymTypes.length>0||pattern.notes)&&(
+          <div style={{display:"flex",gap:6,justifyContent:"center",marginTop:8}}>
+            {activeSymTypes.length>0&&(
+              <button type="button" onClick={()=>setShowSymbols(true)}
+                style={{padding:"5px 13px",borderRadius:20,border:"none",cursor:"pointer",
+                  background:"#EBF6FC",color:"#247BA0",fontSize:11,fontWeight:700}}>
+                ≡ Symbols
+              </button>
+            )}
+            {pattern.notes&&(
+              <button type="button" onClick={()=>setShowNotes(true)}
+                style={{padding:"5px 13px",borderRadius:20,border:"none",cursor:"pointer",
+                  background:"#EBF6FC",color:"#247BA0",fontSize:11,fontWeight:700}}>
+                ✎ Notes
+              </button>
+            )}
+          </div>
+        )}
       </div>
+      <ReadModeBottomSheet
+        title={`Round ${active.roundIndex} Symbols`}
+        open={showSymbols} onClose={()=>setShowSymbols(false)}>
+        <div style={{display:"flex",flexWrap:"wrap",gap:8,paddingTop:4}}>
+          {activeSymTypes.map(type=>(
+            <div key={type} style={{display:"flex",alignItems:"center",gap:8,padding:"5px 12px",
+              borderRadius:20,background:"#F7F9FF",border:"1px solid rgba(59,95,138,0.14)"}}>
+              <svg viewBox="0 0 100 100" width={28} height={28} style={{overflow:"visible",flexShrink:0}}>
+                <g transform="translate(50,80)">{ccSym(type,28,"#374151")}</g>
+              </svg>
+              <div style={{fontSize:11,fontWeight:700,color:"#1e3a5f"}}>{CPM_LABEL[type]||type}</div>
+            </div>
+          ))}
+        </div>
+      </ReadModeBottomSheet>
+      <ReadModeBottomSheet title="Pattern Notes" open={showNotes} onClose={()=>setShowNotes(false)}>
+        <div style={{fontSize:13,color:"#1e3a5f",lineHeight:1.7,whiteSpace:"pre-wrap"}}>{pattern.notes}</div>
+      </ReadModeBottomSheet>
     </div>
   );
 }
@@ -8746,6 +8830,10 @@ function CPM_RoundsReader({pattern,themeColor,onBack}){
   const active=rounds[activeIdx];
   const cum=rounds.slice(0,activeIdx+1).reduce((s,r)=>s+r.stitches.length,0);
   const isSquare=pattern.baseShape==="square";
+  const[showSymbols,setShowSymbols]=useState(false);
+  const[showNotes,setShowNotes]=useState(false);
+  const activeSymTypes=[...new Set(active.stitches.map(s=>s.type))].filter(t=>t!=="mr");
+  const CPM_LABEL=Object.fromEntries(STITCH_LIBRARY.map(s=>[s.id,s.desc]));
 
   // Auto-fit on mount: scale down so all rings fit inside the 800×800 viewBox
   useEffect(()=>{
@@ -8868,7 +8956,43 @@ function CPM_RoundsReader({pattern,themeColor,onBack}){
           ))}
         </div>
         <div style={{marginTop:8,fontSize:10,color:"#7AC2E1",textAlign:"center"}}>Use ← → arrow keys to navigate</div>
+        {(activeSymTypes.length>0||pattern.notes)&&(
+          <div style={{display:"flex",gap:6,justifyContent:"center",marginTop:8}}>
+            {activeSymTypes.length>0&&(
+              <button type="button" onClick={()=>setShowSymbols(true)}
+                style={{padding:"5px 13px",borderRadius:20,border:"none",cursor:"pointer",
+                  background:"#EBF6FC",color:"#247BA0",fontSize:11,fontWeight:700}}>
+                ≡ Symbols
+              </button>
+            )}
+            {pattern.notes&&(
+              <button type="button" onClick={()=>setShowNotes(true)}
+                style={{padding:"5px 13px",borderRadius:20,border:"none",cursor:"pointer",
+                  background:"#EBF6FC",color:"#247BA0",fontSize:11,fontWeight:700}}>
+                ✎ Notes
+              </button>
+            )}
+          </div>
+        )}
       </div>
+      <ReadModeBottomSheet
+        title={`Round ${active.roundIndex} Symbols`}
+        open={showSymbols} onClose={()=>setShowSymbols(false)}>
+        <div style={{display:"flex",flexWrap:"wrap",gap:8,paddingTop:4}}>
+          {activeSymTypes.map(type=>(
+            <div key={type} style={{display:"flex",alignItems:"center",gap:8,padding:"5px 12px",
+              borderRadius:20,background:"#F7F9FF",border:"1px solid rgba(59,95,138,0.14)"}}>
+              <svg viewBox="0 0 100 100" width={28} height={28} style={{overflow:"visible",flexShrink:0}}>
+                <g transform="translate(50,80)">{ccSym(type,28,"#374151")}</g>
+              </svg>
+              <div style={{fontSize:11,fontWeight:700,color:"#1e3a5f"}}>{CPM_LABEL[type]||type}</div>
+            </div>
+          ))}
+        </div>
+      </ReadModeBottomSheet>
+      <ReadModeBottomSheet title="Pattern Notes" open={showNotes} onClose={()=>setShowNotes(false)}>
+        <div style={{fontSize:13,color:"#1e3a5f",lineHeight:1.7,whiteSpace:"pre-wrap"}}>{pattern.notes}</div>
+      </ReadModeBottomSheet>
     </div>
   );
 }
