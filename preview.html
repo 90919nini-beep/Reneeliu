@@ -3381,12 +3381,8 @@ function PatternViewModal({pattern,notes,onClose,onEdit,onDesign,onSaveRowNotes,
             {/* Active row info + prev/next */}
             <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:10,gap:8}}>
               <div style={{minWidth:0}}>
-                <div style={{fontSize:9,color:"#247BA0",fontWeight:700,letterSpacing:"0.08em",textTransform:"uppercase"}}>Active Row</div>
-                <div style={{fontSize:22,fontWeight:800,color:"#4C1D95",lineHeight:1.2}}>{isFndActive?"Foundation Chain":`Row ${rowNum}`}</div>
-                <div style={{fontSize:11,color:"#7AC2E1",marginTop:1}}>
-                  {currentRowStitchCount} {isFndActive?"chains":"stitches"}
-                  {rowIdx>0&&<span style={{color:"#7AC2E1"}}> · {cumRowStitchCount} total</span>}
-                </div>
+                <div style={{fontSize:10,color:"#9CA3AF",fontWeight:600,marginBottom:1}}>{isFndActive?"FC":`R${rowNum}`}</div>
+                <div style={{fontSize:22,fontWeight:800,color:"#4C1D95",lineHeight:1.1}}>{currentRowStitchCount} <span style={{fontSize:12,fontWeight:600,color:"#7AC2E1"}}>{isFndActive?"ch":"sts"}</span></div>
               </div>
               <div style={{display:"flex",gap:8,flexShrink:0}}>
                 {navBtn(()=>{setRowIdx(i=>Math.max(0,i-1));setNoteOpen(false);},rowIdx===0,"←")}
@@ -8752,12 +8748,8 @@ function CPM_Preview({pattern,onBack,themeColor="#111111"}){
         {/* Active round info + prev/next */}
         <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:10,gap:8}}>
           <div style={{minWidth:0}}>
-            <div style={{fontSize:9,color:"#247BA0",fontWeight:700,letterSpacing:"0.08em",textTransform:"uppercase"}}>Active Round</div>
-            <div style={{fontSize:22,fontWeight:800,color:"#4C1D95",lineHeight:1.2}}>Round {active.roundIndex}</div>
-            <div style={{fontSize:11,color:"#7AC2E1",marginTop:1}}>
-              {active.stitches.length} stitches
-              {activeIdx>0&&<span style={{color:"#7AC2E1"}}> · {cum} total</span>}
-            </div>
+            <div style={{fontSize:10,color:"#9CA3AF",fontWeight:600,marginBottom:1}}>R{active.roundIndex}</div>
+            <div style={{fontSize:22,fontWeight:800,color:"#4C1D95",lineHeight:1.1}}>{active.stitches.length} <span style={{fontSize:12,fontWeight:600,color:"#7AC2E1"}}>sts</span></div>
           </div>
           <div style={{display:"flex",gap:8,flexShrink:0}}>
             <NavBtn onClick={()=>setActiveIdx(i=>Math.max(0,i-1))} disabled={activeIdx===0} label="←"/>
@@ -8935,9 +8927,8 @@ function CPM_RoundsReader({pattern,themeColor,onBack}){
       <div style={{padding:"12px 14px",background:"white",borderTop:"1px solid #E8F4FB",flexShrink:0}}>
         <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:8,gap:8}}>
           <div style={{minWidth:0}}>
-            <div style={{fontSize:9,color:"#247BA0",fontWeight:700,letterSpacing:"0.08em",textTransform:"uppercase"}}>Round {active.roundIndex} of {rounds.length}</div>
-            <div style={{fontSize:22,fontWeight:800,color:"#4C1D95",lineHeight:1.2}}>{active.stitches.length} stitches</div>
-            {activeIdx>0&&<div style={{fontSize:11,color:"#7AC2E1",marginTop:1}}>{cum} total</div>}
+            <div style={{fontSize:10,color:"#9CA3AF",fontWeight:600,marginBottom:1}}>R{active.roundIndex}</div>
+            <div style={{fontSize:22,fontWeight:800,color:"#4C1D95",lineHeight:1.1}}>{active.stitches.length} <span style={{fontSize:12,fontWeight:600,color:"#7AC2E1"}}>sts</span></div>
           </div>
           <div style={{display:"flex",gap:8,flexShrink:0}}>
             <NavBtn onClick={()=>setActiveIdx(i=>Math.max(0,i-1))} disabled={activeIdx===0} label="←"/>
