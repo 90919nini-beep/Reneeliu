@@ -4772,7 +4772,7 @@ function PatternDetailModal({pat,onClose,onEdit,onDelete,onUpdate,yarnLib=[]}){
   );
   if(showRoundsRead) return(
     <div style={{position:"fixed",inset:0,background:"white",zIndex:100,display:"flex",flexDirection:"column"}}>
-      <CPM_RoundsReader pattern={pat.designData} themeColor={pat.designData?.themeColor||accentColor} onBack={()=>setShowRoundsRead(false)}/>
+      <CPM_RoundsReader pattern={pat.designData} themeColor={pat.designData?.themeColor||accentColor} onBack={()=>setShowRoundsRead(false)} notes={pat.notes}/>
     </div>
   );
   if(showKnitRead) return(
@@ -8629,7 +8629,7 @@ function CPM_Editor({pattern,setPattern,onPreview,onSave=null,themeColor="#11111
 }
 
 // ── Preview (Read Chart) Mode ─────────────────────────────────────────────────
-function CPM_Preview({pattern,onBack,themeColor="#111111"}){
+function CPM_Preview({pattern,onBack,themeColor="#111111",notes}){
   const[activeIdx,setActiveIdx]=useState(0);
   const svgRef=useRef(null);
   const{readHighlightColor="#BFD7EA",canvasBg="#FDFAF6"}=useSettings();
@@ -8772,7 +8772,7 @@ function CPM_Preview({pattern,onBack,themeColor="#111111"}){
           ))}
         </div>
         <div style={{marginTop:8,fontSize:10,color:"#7AC2E1",textAlign:"center"}}>Use ← → arrow keys to navigate</div>
-        {(activeSymTypes.length>0||pattern.notes)&&(
+        {(activeSymTypes.length>0||notes)&&(
           <div style={{display:"flex",gap:6,justifyContent:"center",marginTop:8}}>
             {activeSymTypes.length>0&&(
               <button type="button" onClick={()=>setShowSymbols(true)}
@@ -8781,7 +8781,7 @@ function CPM_Preview({pattern,onBack,themeColor="#111111"}){
                 ≡ Symbols
               </button>
             )}
-            {pattern.notes&&(
+            {notes&&(
               <button type="button" onClick={()=>setShowNotes(true)}
                 style={{padding:"5px 13px",borderRadius:20,border:"none",cursor:"pointer",
                   background:"#EBF6FC",color:"#247BA0",fontSize:11,fontWeight:700}}>
@@ -8807,14 +8807,14 @@ function CPM_Preview({pattern,onBack,themeColor="#111111"}){
         </div>
       </ReadModeBottomSheet>
       <ReadModeBottomSheet title="Pattern Notes" open={showNotes} onClose={()=>setShowNotes(false)}>
-        <div style={{fontSize:13,color:"#1e3a5f",lineHeight:1.7,whiteSpace:"pre-wrap"}}>{pattern.notes}</div>
+        <div style={{fontSize:13,color:"#1e3a5f",lineHeight:1.7,whiteSpace:"pre-wrap"}}>{notes}</div>
       </ReadModeBottomSheet>
     </div>
   );
 }
 
 // ── Standalone Rounds Reader (used by CPM_ReadModal) ─────────────────────────
-function CPM_RoundsReader({pattern,themeColor,onBack}){
+function CPM_RoundsReader({pattern,themeColor,onBack,notes}){
   const[activeIdx,setActiveIdx]=useState(0);
   const svgRef=useRef(null);
   const{readHighlightColor="#BFD7EA",canvasBg="#FDFAF6"}=useSettings();
@@ -8949,7 +8949,7 @@ function CPM_RoundsReader({pattern,themeColor,onBack}){
           ))}
         </div>
         <div style={{marginTop:8,fontSize:10,color:"#7AC2E1",textAlign:"center"}}>Use ← → arrow keys to navigate</div>
-        {(activeSymTypes.length>0||pattern.notes)&&(
+        {(activeSymTypes.length>0||notes)&&(
           <div style={{display:"flex",gap:6,justifyContent:"center",marginTop:8}}>
             {activeSymTypes.length>0&&(
               <button type="button" onClick={()=>setShowSymbols(true)}
@@ -8958,7 +8958,7 @@ function CPM_RoundsReader({pattern,themeColor,onBack}){
                 ≡ Symbols
               </button>
             )}
-            {pattern.notes&&(
+            {notes&&(
               <button type="button" onClick={()=>setShowNotes(true)}
                 style={{padding:"5px 13px",borderRadius:20,border:"none",cursor:"pointer",
                   background:"#EBF6FC",color:"#247BA0",fontSize:11,fontWeight:700}}>
@@ -8984,7 +8984,7 @@ function CPM_RoundsReader({pattern,themeColor,onBack}){
         </div>
       </ReadModeBottomSheet>
       <ReadModeBottomSheet title="Pattern Notes" open={showNotes} onClose={()=>setShowNotes(false)}>
-        <div style={{fontSize:13,color:"#1e3a5f",lineHeight:1.7,whiteSpace:"pre-wrap"}}>{pattern.notes}</div>
+        <div style={{fontSize:13,color:"#1e3a5f",lineHeight:1.7,whiteSpace:"pre-wrap"}}>{notes}</div>
       </ReadModeBottomSheet>
     </div>
   );
@@ -9026,7 +9026,7 @@ function CPM_ReadModal({pat,onClose,onUpdate}){
           </button>
         </div>
       </div>
-      <CPM_RoundsReader pattern={pattern} themeColor={themeColor}/>
+      <CPM_RoundsReader pattern={pattern} themeColor={themeColor} notes={pat.notes}/>
     </div>
   );
 }
