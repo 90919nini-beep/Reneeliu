@@ -1530,9 +1530,9 @@ function KnitGrid({initialGrid,onGridChange,yarnColors}){
           }}
           onMouseUp={()=>{painting.current=false;sync();}}
           onMouseLeave={()=>{painting.current=false;setHoverCell(null);sync();}}
-          onTouchStart={e=>{if(e.touches.length===2){e.preventDefault();kgPinchRef.current=Math.hypot(e.touches[0].clientX-e.touches[1].clientX,e.touches[0].clientY-e.touches[1].clientY);}}}
-          onTouchMove={e=>{if(e.touches.length===2&&kgPinchRef.current!==null){e.preventDefault();const d=Math.hypot(e.touches[0].clientX-e.touches[1].clientX,e.touches[0].clientY-e.touches[1].clientY);setKgZoom(z=>Math.max(0.5,Math.min(4,z*d/kgPinchRef.current)));kgPinchRef.current=d;}}}
-          onTouchEnd={e=>{if(e.touches.length<2)kgPinchRef.current=null;}}/>
+          onTouchStart={e=>{if(e.touches.length===2){e.preventDefault();painting.current=false;kgPinchRef.current=Math.hypot(e.touches[0].clientX-e.touches[1].clientX,e.touches[0].clientY-e.touches[1].clientY);}}}
+          onTouchMove={e=>{if(e.touches.length===2&&kgPinchRef.current!==null){e.preventDefault();const d=Math.hypot(e.touches[0].clientX-e.touches[1].clientX,e.touches[0].clientY-e.touches[1].clientY);setKgZoom(z=>Math.max(0.3,Math.min(4,z*d/kgPinchRef.current)));kgPinchRef.current=d;}}}
+          onTouchEnd={e=>{if(e.touches.length<2){if(kgPinchRef.current!==null){e.preventDefault();painting.current=false;}kgPinchRef.current=null;}}}/>
       </div>
       <div style={{display:"flex",gap:8,marginTop:10,alignItems:"center",flexShrink:0}}>
         <span style={{fontSize:11,color:"#6B7280",fontWeight:600}}>Cols</span>
@@ -2632,15 +2632,28 @@ function CrochetBuilder({stitches,setStitches,layout,setLayout,yarnColors}){
     if(ir.current.isDragging){setDragSt(null);setGuides([]);}
     ir.current={};setHoverCell(null);setGuides([]);
   };
+  const ccPinchHappenedRef=useRef(false);
   const handleTouchStart=e=>{
-    if(e.touches.length===2){e.preventDefault();ccPinchRef.current=Math.hypot(e.touches[0].clientX-e.touches[1].clientX,e.touches[0].clientY-e.touches[1].clientY);}
-    else{ccPinchRef.current=null;onMouseDown(e);}
+    if(e.touches.length>=2){
+      e.preventDefault();
+      ccPinchHappenedRef.current=true;
+      ir.current={};// cancel any in-progress stitch drag
+      ccPinchRef.current=Math.hypot(e.touches[0].clientX-e.touches[1].clientX,e.touches[0].clientY-e.touches[1].clientY);
+    } else if(!ccPinchHappenedRef.current){
+      ccPinchRef.current=null;
+      onMouseDown(e);
+    }
   };
   const handleTouchMove=e=>{
     if(e.touches.length===2&&ccPinchRef.current!==null){e.preventDefault();const d=Math.hypot(e.touches[0].clientX-e.touches[1].clientX,e.touches[0].clientY-e.touches[1].clientY);setZoom(z=>Math.max(0.25,Math.min(3,z*d/ccPinchRef.current)));ccPinchRef.current=d;}
-    else if(e.touches.length!==2){ccPinchRef.current=null;onMouseMove(e);}
+    else if(e.touches.length!==2&&!ccPinchHappenedRef.current){ccPinchRef.current=null;onMouseMove(e);}
   };
-  const handleTouchEnd=e=>{if(e.touches.length<2)ccPinchRef.current=null;onMouseUp(e);};
+  const handleTouchEnd=e=>{
+    if(e.touches.length<2)ccPinchRef.current=null;
+    const wasPinch=ccPinchHappenedRef.current;
+    if(e.touches.length===0)ccPinchHappenedRef.current=false;
+    if(!wasPinch)onMouseUp(e);
+  };
   // Re-trigger draw when container is resized (fixes initial sizing issues)
   const[_contSz,setContSz]=useState(0);
   useEffect(()=>{
@@ -7811,7 +7824,7 @@ function useCpmCanvas(svgRef){
     const el=svgRef.current;if(!el)return;
     let pinch=null;
     const onTS=e=>{if(e.touches.length===2){e.preventDefault();pinch=Math.hypot(e.touches[0].clientX-e.touches[1].clientX,e.touches[0].clientY-e.touches[1].clientY);}};
-    const onTM=e=>{if(e.touches.length===2&&pinch!==null){e.preventDefault();const d=Math.hypot(e.touches[0].clientX-e.touches[1].clientX,e.touches[0].clientY-e.touches[1].clientY);setScale(s=>Math.max(0.3,Math.min(4,+(s*d/pinch).toFixed(2))));pinch=d;}};
+    const onTM=e=>{if(e.touches.length===2&&pinch!==null){e.preventDefault();const d=Math.hypot(e.touches[0].clientX-e.touches[1].clientX,e.touches[0].clientY-e.touches[1].clientY);setScale(s=>Math.max(0.3,Math.min(4,s*d/pinch)));pinch=d;}};
     const onTE=e=>{if(e.touches.length<2)pinch=null;};
     el.addEventListener("touchstart",onTS,{passive:false});
     el.addEventListener("touchmove",onTM,{passive:false});
