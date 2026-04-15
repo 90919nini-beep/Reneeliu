@@ -3347,6 +3347,7 @@ function PatternViewModal({pattern,notes,onClose,onEdit,onDesign,onSaveRowNotes,
   );
 
   const currentRowStitchCount=currentY!==null?stitches.filter(s=>Math.round(s.y)===currentY).length:0;
+  const cumRowStitchCount=rowLevels.slice(0,rowIdx+1).reduce((s,y)=>s+stitches.filter(st=>Math.round(st.y)===y).length,0);
 
   if(pattern.type==="knit"){
     return createPortal(<KnitReadChart grid={pattern.grid||[]} onBack={onClose} progressMarker={pattern.progressMarker??null} onSaveProgress={onSaveProgress}/>,document.body);
@@ -3380,9 +3381,12 @@ function PatternViewModal({pattern,notes,onClose,onEdit,onDesign,onSaveRowNotes,
             {/* Active row info + prev/next */}
             <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:10,gap:8}}>
               <div style={{minWidth:0}}>
-                <div style={{fontSize:9,color:"#247BA0",fontWeight:700,letterSpacing:"0.08em",textTransform:"uppercase"}}>{isFndActive?"Foundation":"Active Row"}</div>
-                <div style={{fontSize:22,fontWeight:800,color:isFndActive?"#92400E":"#4C1D95",lineHeight:1.2}}>{isFndActive?"Foundation Chain":`Row ${rowNum}`}</div>
-                <div style={{fontSize:11,color:"#7AC2E1",marginTop:1}}>{currentRowStitchCount} {isFndActive?"chains":"stitches"}</div>
+                <div style={{fontSize:9,color:"#247BA0",fontWeight:700,letterSpacing:"0.08em",textTransform:"uppercase"}}>Active Row</div>
+                <div style={{fontSize:22,fontWeight:800,color:"#4C1D95",lineHeight:1.2}}>{isFndActive?"Foundation Chain":`Row ${rowNum}`}</div>
+                <div style={{fontSize:11,color:"#7AC2E1",marginTop:1}}>
+                  {currentRowStitchCount} {isFndActive?"chains":"stitches"}
+                  {rowIdx>0&&<span style={{color:"#7AC2E1"}}> · {cumRowStitchCount} total</span>}
+                </div>
               </div>
               <div style={{display:"flex",gap:8,flexShrink:0}}>
                 {navBtn(()=>{setRowIdx(i=>Math.max(0,i-1));setNoteOpen(false);},rowIdx===0,"←")}
