@@ -2006,33 +2006,18 @@ function CrochetSymIcon({id,color,w=32,h=32}){
 }
 
 // Unified stitch button — used in both editors' main toolbar row.
-function CrochetStitchBtn({id,label,active,activeColor,onClick,desc="",onUnpin=null}){
-  const[hov,setHov]=useState(false);
+function CrochetStitchBtn({id,label,active,activeColor,onClick,desc=""}){
   return(
-    <div style={{position:"relative",flexShrink:0,display:"inline-flex"}}
-      onMouseEnter={()=>onUnpin&&setHov(true)} onMouseLeave={()=>setHov(false)}>
-      <button type="button" onClick={onClick} title={desc||label}
-        style={{flexShrink:0,display:"flex",flexDirection:"column",alignItems:"center",
-          justifyContent:"center",padding:"4px 5px",gap:2,borderRadius:8,cursor:"pointer",
-          border:active?"2px solid #247BA0":"1.5px solid #E5E7EB",
-          background:active?"#D6EAF4":"white",minWidth:44,height:52}}>
-        <div style={{width:32,height:32,flexShrink:0,display:"flex",alignItems:"center",justifyContent:"center",overflow:"hidden"}}>
-          <CrochetSymIcon id={id} color={active?"#247BA0":activeColor||"#374151"} w={32} h={32}/>
-        </div>
-        <span style={{fontSize:8,fontWeight:700,color:active?"#247BA0":"#9CA3AF",lineHeight:1}}>{label}</span>
-      </button>
-      {onUnpin&&hov&&(
-        <button type="button" onClick={e=>{e.stopPropagation();onUnpin();}}
-          title="Remove from toolbar"
-          style={{position:"absolute",top:-5,right:-5,width:14,height:14,borderRadius:999,
-            background:"#9CA3AF",border:"none",cursor:"pointer",padding:0,zIndex:10,
-            display:"flex",alignItems:"center",justifyContent:"center"}}>
-          <svg width="7" height="7" viewBox="0 0 8 8" fill="none">
-            <path d="M1.5 1.5l5 5M6.5 1.5l-5 5" stroke="white" strokeWidth="1.8" strokeLinecap="round"/>
-          </svg>
-        </button>
-      )}
-    </div>
+    <button type="button" onClick={onClick} title={desc||label}
+      style={{flexShrink:0,display:"flex",flexDirection:"column",alignItems:"center",
+        justifyContent:"center",padding:"4px 5px",gap:2,borderRadius:8,cursor:"pointer",
+        border:active?"2px solid #247BA0":"1.5px solid #E5E7EB",
+        background:active?"#D6EAF4":"white",minWidth:44,height:52}}>
+      <div style={{width:30,height:30,flexShrink:0,display:"flex",alignItems:"center",justifyContent:"center",overflow:"hidden"}}>
+        <CrochetSymIcon id={id} color={activeColor||"#374151"} w={30} h={30}/>
+      </div>
+      <span style={{fontSize:8,fontWeight:700,color:active?"#247BA0":"#9CA3AF",lineHeight:1}}>{label}</span>
+    </button>
   );
 }
 
@@ -2191,7 +2176,7 @@ function CrochetMorePanel({pos,groups,activeId,activeGroup,activeColor,
   );
 }
 
-function CrochetBuilder({stitches,setStitches,layout,setLayout,yarnColors}){
+function CrochetBuilder({stitches,setStitches,layout,setLayout,yarnColors,onSave}){
   const{t}=useLang();
   const{canvasBg="#FDFAF6",chartGridVisible=true,chartHighlightRow=true}=useSettings();
   const[snapEnabled,setSnapEnabled]=useState(true);
@@ -2238,6 +2223,7 @@ function CrochetBuilder({stitches,setStitches,layout,setLayout,yarnColors}){
   const lastTouchRef=useRef(0);
   const autoScaleRef=useRef(1);
   const ccPinchRef=useRef(null);
+  const ccPinchRatioRef=useRef(1);
   const rowRenderOffRef=useRef({});
   const SYM_COLS=["#247BA0","#E07B8A","#F59E0B","#3B6FD4","#059669","#111111"];
   const CELL=32, CELL_H=40, SNAP_R=1.6;
@@ -2645,11 +2631,24 @@ function CrochetBuilder({stitches,setStitches,layout,setLayout,yarnColors}){
     }
   };
   const handleTouchMove=e=>{
-    if(e.touches.length===2&&ccPinchRef.current!==null){e.preventDefault();const d=Math.hypot(e.touches[0].clientX-e.touches[1].clientX,e.touches[0].clientY-e.touches[1].clientY);setZoom(z=>Math.max(0.25,Math.min(3,z*d/ccPinchRef.current)));ccPinchRef.current=d;}
-    else if(e.touches.length!==2&&!ccPinchHappenedRef.current){ccPinchRef.current=null;onMouseMove(e);}
+    if(e.touches.length===2&&ccPinchRef.current!==null){
+      e.preventDefault();
+      const d=Math.hypot(e.touches[0].clientX-e.touches[1].clientX,e.touches[0].clientY-e.touches[1].clientY);
+      ccPinchRatioRef.current*=d/ccPinchRef.current;
+      ccPinchRef.current=d;
+      const cv=canvasRef.current;
+      if(cv){cv.style.transform=`scale(${Math.max(0.25,Math.min(3,ccPinchRatioRef.current))})`;cv.style.transformOrigin='center center';}
+    } else if(e.touches.length!==2&&!ccPinchHappenedRef.current){ccPinchRef.current=null;onMouseMove(e);}
   };
   const handleTouchEnd=e=>{
-    if(e.touches.length<2)ccPinchRef.current=null;
+    if(e.touches.length<2){
+      if(ccPinchRef.current!==null){
+        setZoom(z=>Math.max(0.25,Math.min(3,z*ccPinchRatioRef.current)));
+        const cv=canvasRef.current;if(cv)cv.style.transform='';
+      }
+      ccPinchRef.current=null;
+      ccPinchRatioRef.current=1;
+    }
     const wasPinch=ccPinchHappenedRef.current;
     if(e.touches.length===0)ccPinchHappenedRef.current=false;
     if(!wasPinch)onMouseUp(e);
@@ -2681,15 +2680,21 @@ function CrochetBuilder({stitches,setStitches,layout,setLayout,yarnColors}){
         </button>
         <div style={{width:1,height:16,background:"#E5E7EB",margin:"0 2px"}}/>
         <button type="button" onClick={undo} disabled={!history.length} title="Undo"
-          style={{...ccPanelBtnSt,opacity:history.length?1:0.3,cursor:history.length?"pointer":"default",fontSize:13}}>↩</button>
+          style={{...ccPanelBtnSt,opacity:history.length?1:0.3,cursor:history.length?"pointer":"default"}}>
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#9CA3AF" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 .49-3.84"/></svg>
+        </button>
         <button type="button" onClick={redo} disabled={!future.length} title="Redo"
-          style={{...ccPanelBtnSt,opacity:future.length?1:0.3,cursor:future.length?"pointer":"default",fontSize:13}}>↪</button>
+          style={{...ccPanelBtnSt,opacity:future.length?1:0.3,cursor:future.length?"pointer":"default"}}>
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#9CA3AF" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-.49-3.84"/></svg>
+        </button>
         <button type="button" onClick={clearAll} title="Clear all"
-          style={{...ccPanelBtnSt,color:"#FCA5A5",fontSize:12}}>✕</button>
+          style={{...ccPanelBtnSt}}>
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#FCA5A5" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg>
+        </button>
         {/* Right actions */}
         <div style={{marginLeft:"auto",display:"flex",gap:4,alignItems:"center"}}>
-          <button type="button" onClick={savePNG} title="Save PNG"
-            style={{...ccPanelBtnSt,fontSize:13}}>💾</button>
+          {onSave&&<button type="button" onClick={onSave}
+            style={{padding:"4px 12px",borderRadius:7,border:"none",background:"#247BA0",color:"white",cursor:"pointer",fontSize:10,fontWeight:700}}>✓ Save</button>}
           <div style={{width:1,height:16,background:"#E5E7EB",margin:"0 2px"}}/>
           <button type="button" onClick={()=>setPanelOpen(v=>!v)} title="Settings"
             style={{...ccPanelBtnSt,border:`1.5px solid ${panelOpen?"#247BA0":"#E5E7EB"}`,background:panelOpen?"#D6EAF4":"white"}}>
@@ -2707,8 +2712,7 @@ function CrochetBuilder({stitches,setStitches,layout,setLayout,yarnColors}){
           return(
             <CrochetStitchBtn key={id} id={id} label={sym.label} desc={sym.desc}
               active={activeSym===id&&!activeGroup} activeColor={activeColor}
-              onClick={()=>{setActiveSym(id);setActiveGroup(null);}}
-              onUnpin={()=>unpin(id)}/>
+              onClick={()=>{setActiveSym(id);setActiveGroup(null);}}/>
           );
         })}
         <div ref={moreAnchorRef} className="cc-more-root" style={{position:"relative",flexShrink:0,display:"flex"}}>
@@ -2916,7 +2920,45 @@ function PatternMaker({pattern,onSave,onClose,yarnColors,forcedType,onBack}){
   const[crochetLayout,setCrochetLayout]=useState(pattern?.crochetLayout||"rows");
   const crochetRoundsRef=useRef(pattern?.crochetRoundsData||null);
   const headerLabel=forcedType==="knit"?"Knit Grid Pattern":forcedType==="crochet"?"Crochet Pattern · Rows":t.patternMaker;
-  const handleSave=()=>{onSave({type,grid:knitRef.current,crochetStitches,crochetLayout,crochetRoundsData:crochetRoundsRef.current});if(onBack)onBack();else onClose();};
+
+  // ── Draft auto-save ────────────────────────────────────────────────────────
+  const DRAFT_KEY="sc_draft_pattern";
+  const draftTimer=useRef(null);
+  const[hasDraft,setHasDraft]=useState(()=>{try{return!!localStorage.getItem(DRAFT_KEY);}catch{return false;}});
+  const[saveFlash,setSaveFlash]=useState(false);
+
+  const writeDraft=useRef(null);
+  writeDraft.current=()=>{
+    try{localStorage.setItem(DRAFT_KEY,JSON.stringify({type,crochetStitches,crochetLayout,knitGrid:knitRef.current,savedAt:Date.now()}));}catch{}
+  };
+  useEffect(()=>{
+    clearTimeout(draftTimer.current);
+    draftTimer.current=setTimeout(()=>writeDraft.current(),800);
+    return()=>clearTimeout(draftTimer.current);
+  },[crochetStitches,crochetLayout,type]);
+
+  const restoreDraft=()=>{
+    try{
+      const d=JSON.parse(localStorage.getItem(DRAFT_KEY)||"null");
+      if(!d)return;
+      if(d.type)setType(d.type);
+      if(d.crochetStitches)setCrochetStitches(d.crochetStitches);
+      if(d.crochetLayout)setCrochetLayout(d.crochetLayout);
+      if(d.knitGrid)knitRef.current=d.knitGrid;
+    }catch{}
+    localStorage.removeItem(DRAFT_KEY);
+    setHasDraft(false);
+  };
+  const dismissDraft=()=>{localStorage.removeItem(DRAFT_KEY);setHasDraft(false);};
+
+  // ── Save (no auto-close) ──────────────────────────────────────────────────
+  const handleSave=()=>{
+    onSave({type,grid:knitRef.current,crochetStitches,crochetLayout,crochetRoundsData:crochetRoundsRef.current});
+    localStorage.removeItem(DRAFT_KEY);
+    setSaveFlash(true);
+    setTimeout(()=>setSaveFlash(false),2000);
+  };
+
   /* Crochet rounds → open CircularPatternMaker as the single circular editor */
   if(type==="crochet"&&crochetLayout==="rounds") return(
     <div style={{position:"fixed",inset:0,background:"white",zIndex:220,display:"flex",flexDirection:"column"}}>
@@ -2925,7 +2967,7 @@ function PatternMaker({pattern,onSave,onClose,yarnColors,forcedType,onBack}){
         onSave={design=>{
           crochetRoundsRef.current=design;
           onSave({...design,type:"rounds"});
-          if(onBack)onBack();else onClose();
+          localStorage.removeItem(DRAFT_KEY);
         }}
         onClose={()=>setCrochetLayout(null)}
       />
@@ -2933,7 +2975,7 @@ function PatternMaker({pattern,onSave,onClose,yarnColors,forcedType,onBack}){
   );
   return(
     <div style={{position:"fixed",inset:0,background:"white",zIndex:200,display:"flex",flexDirection:"column"}}>
-      {/* Page header — matches CircularPatternMaker */}
+      {/* Page header */}
       <div style={{padding:"12px 14px 10px",background:"white",borderBottom:"1px solid #E8F4FB",display:"flex",alignItems:"center",justifyContent:"space-between",flexShrink:0}}>
         <div style={{minWidth:0,flex:1}}>
           <div style={{fontSize:10,fontWeight:700,color:"#247BA0",letterSpacing:"0.08em",textTransform:"uppercase"}}>
@@ -2942,14 +2984,24 @@ function PatternMaker({pattern,onSave,onClose,yarnColors,forcedType,onBack}){
           <div style={{fontSize:16,fontWeight:800,color:"#1C160E",overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{headerLabel}</div>
         </div>
         <div style={{display:"flex",gap:6,alignItems:"center",flexShrink:0}}>
-          <button type="button" onClick={handleSave} style={{padding:"6px 13px",borderRadius:10,background:"#247BA0",color:"white",border:"none",cursor:"pointer",fontWeight:700,fontSize:12}}>{t.savePattern}</button>
-          {onClose&&(
-            <button type="button" onClick={onClose} style={{width:30,height:30,borderRadius:999,background:"#F3F4F6",border:"none",cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center"}}>
+          {saveFlash&&(
+            <span style={{fontSize:12,fontWeight:700,color:"#059669",background:"#F0FDF4",padding:"4px 10px",borderRadius:8}}>Saved ✓</span>
+          )}
+          {(onBack||onClose)&&(
+            <button type="button" onClick={onBack||onClose} style={{width:30,height:30,borderRadius:999,background:"#F3F4F6",border:"none",cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center"}}>
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#6B7280" strokeWidth="2.5"><path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12"/></svg>
             </button>
           )}
         </div>
       </div>
+      {/* Restore draft banner */}
+      {hasDraft&&(
+        <div style={{background:"#FFF7ED",borderBottom:"1px solid #FED7AA",padding:"8px 14px",display:"flex",alignItems:"center",gap:10,flexShrink:0}}>
+          <span style={{fontSize:12,color:"#92400E",flex:1}}>Unsaved work found — restore it?</span>
+          <button onClick={restoreDraft} style={{fontSize:12,fontWeight:700,color:"#247BA0",background:"none",border:"none",cursor:"pointer",padding:"2px 6px"}}>Restore</button>
+          <button onClick={dismissDraft} style={{fontSize:12,color:"#9CA3AF",background:"none",border:"none",cursor:"pointer",padding:"2px 6px"}}>Dismiss</button>
+        </div>
+      )}
       {/* Type tabs */}
       {!forcedType&&(
         <div style={{display:"flex",padding:"8px 14px",gap:8,flexShrink:0,borderBottom:"1px solid #F3F4F6"}}>
@@ -2957,11 +3009,11 @@ function PatternMaker({pattern,onSave,onClose,yarnColors,forcedType,onBack}){
           <button type="button" onClick={()=>setType("crochet")} style={{flex:1,padding:"7px",borderRadius:10,border:"none",background:type==="crochet"?"#111":"#F3F4F6",color:type==="crochet"?"white":"#374151",fontWeight:700,cursor:"pointer",fontSize:13}}>🪝 {t.crochetTab}</button>
         </div>
       )}
-      {/* Content — full height, no side padding */}
+      {/* Content */}
       <div style={{flex:1,minHeight:0,overflow:"hidden",display:"flex",flexDirection:"column"}}>
         {type==="knit"
-          ?<KnitGrid initialGrid={knitRef.current} onGridChange={g=>{knitRef.current=g;}} yarnColors={yarnColors}/>
-          :<CrochetBuilder stitches={crochetStitches} setStitches={setCrochetStitches} layout={crochetLayout} setLayout={setCrochetLayout} yarnColors={yarnColors}/>
+          ?<KnitGrid initialGrid={knitRef.current} onGridChange={g=>{knitRef.current=g;clearTimeout(draftTimer.current);draftTimer.current=setTimeout(()=>writeDraft.current(),800);}} yarnColors={yarnColors}/>
+          :<CrochetBuilder stitches={crochetStitches} setStitches={setCrochetStitches} layout={crochetLayout} setLayout={setCrochetLayout} yarnColors={yarnColors} onSave={handleSave}/>
         }
       </div>
     </div>
@@ -3505,67 +3557,19 @@ const SPARKLE_SHAPES = [
   "M12 2.5 L12 21.5 M3 7 L21 17 M3 17 L21 7",
 ];
 
-function CongratsOverlay({onDone}) {
-  const [fading, setFading] = useState(false);
-  useEffect(()=>{
-    const t1 = setTimeout(()=>setFading(true), 2400);
-    const t2 = setTimeout(()=>onDone(), 3000);
-    return ()=>{clearTimeout(t1);clearTimeout(t2);};
-  },[]);
-
-  const sparkles = [
-    {x:"12%", y:"38%", size:28, shape:0, delay:0,    color:"#F9C846"},
-    {x:"88%", y:"30%", size:22, shape:1, delay:0.07, color:"#A78BB5"},
-    {x:"25%", y:"65%", size:20, shape:2, delay:0.12, color:"#7AC2E1"},
-    {x:"75%", y:"62%", size:25, shape:0, delay:0.05, color:"#F9A8A8"},
-    {x:"50%", y:"20%", size:18, shape:1, delay:0.16, color:"#F9C846"},
-    {x:"5%",  y:"20%", size:16, shape:2, delay:0.09, color:"#7AC2E1"},
-    {x:"95%", y:"68%", size:18, shape:0, delay:0.2,  color:"#A78BB5"},
-    {x:"38%", y:"78%", size:15, shape:1, delay:0.14, color:"#F9C846"},
-    {x:"65%", y:"82%", size:20, shape:2, delay:0.04, color:"#F9A8A8"},
-    {x:"50%", y:"88%", size:16, shape:0, delay:0.18, color:"#7AC2E1"},
-  ];
-
-  return createPortal(
-    <div style={{
-      position:"fixed", inset:0, zIndex:9999,
-      display:"flex", alignItems:"center", justifyContent:"center",
-      pointerEvents:"none",
-      animation: fading ? "overlayFadeOut 0.6s ease-in forwards" : "fadeIn 0.3s ease-out",
-    }}>
-      {/* Sparkles scattered across screen */}
-      {sparkles.map((s,i)=>(
-        <svg key={i} width={s.size} height={s.size} viewBox="0 0 24 24" fill="none"
-          style={{
-            position:"fixed", left:s.x, top:s.y,
-            transform:"translate(-50%,-50%)",
-            filter:"drop-shadow(0 0 3px rgba(255,255,255,0.6))",
-            animation: `starPop 0.55s ${s.delay}s cubic-bezier(.34,1.56,.64,1) both, starShine 2s ${s.delay+0.55}s ease-in-out infinite`,
-          }}>
-          {s.shape===2
-            ? <path d={SPARKLE_SHAPES[2]} stroke={s.color} strokeWidth="2.5" strokeLinecap="round"/>
-            : <path d={SPARKLE_SHAPES[s.shape]} stroke={s.color} strokeWidth="2" fill="none" strokeLinecap="round"/>}
-        </svg>
-      ))}
-      {/* Congrats card */}
-      <div style={{
-        position:"fixed", bottom:120, left:"50%",
-        animation: "congratsPop 0.6s 0.1s cubic-bezier(.34,1.56,.64,1) both",
-        background:"white",
-        borderRadius:24,
-        padding:"18px 28px",
-        textAlign:"center",
-        boxShadow:"0 8px 40px rgba(0,0,0,0.18)",
-        border:"2px solid #F9C846",
-      }}>
-        <div style={{fontSize:36, lineHeight:1, marginBottom:8}}>🎉</div>
-        <div style={{fontSize:20, fontWeight:900, color:"#111", letterSpacing:"-0.01em"}}>Congrats!</div>
-        <div style={{fontSize:13, color:"#A78BB5", fontWeight:600, marginTop:4}}>You finished your project ✨</div>
-      </div>
-    </div>,
-    document.body
-  );
-}
+/* SPARKLE_POSITIONS used by RewardModal */
+const REWARD_SPARKLES=[
+  {x:"12%",y:"38%",size:28,shape:0,delay:0,    color:"#F9C846"},
+  {x:"88%",y:"30%",size:22,shape:1,delay:0.07, color:"#A78BB5"},
+  {x:"25%",y:"65%",size:20,shape:2,delay:0.12, color:"#7AC2E1"},
+  {x:"75%",y:"62%",size:25,shape:0,delay:0.05, color:"#F9A8A8"},
+  {x:"50%",y:"20%",size:18,shape:1,delay:0.16, color:"#F9C846"},
+  {x:"5%", y:"20%",size:16,shape:2,delay:0.09, color:"#7AC2E1"},
+  {x:"95%",y:"68%",size:18,shape:0,delay:0.2,  color:"#A78BB5"},
+  {x:"38%",y:"78%",size:15,shape:1,delay:0.14, color:"#F9C846"},
+  {x:"65%",y:"82%",size:20,shape:2,delay:0.04, color:"#F9A8A8"},
+  {x:"50%",y:"88%",size:16,shape:0,delay:0.18, color:"#7AC2E1"},
+];
 
 function Card({project,onDelete,onEdit,onPickPattern,onDuplicate,onMarkComplete,onUpdateRows,onUpdatePattern,onFinishedPhoto,onArchive,isArchived=false}){
   const{lang,t}=useLang();
@@ -3579,7 +3583,6 @@ function Card({project,onDelete,onEdit,onPickPattern,onDuplicate,onMarkComplete,
   const[showPatternView,setShowPatternView]=useState(false);
   const photoCardRef=useRef(null);
   const[processingPhoto,setProcessingPhoto]=useState(false);
-  const[showCongrats,setShowCongrats]=useState(false);
 
   const doShare=()=>{
     const yarnsText=(project.yarns||[]).map(y=>[y.brand,y.name].filter(Boolean).join(" ")).join(", ")||"—";
@@ -3609,7 +3612,6 @@ function Card({project,onDelete,onEdit,onPickPattern,onDuplicate,onMarkComplete,
   },[project.pattern]);
 
   return(<>
-    {showCongrats&&<CongratsOverlay onDone={()=>setShowCongrats(false)}/>}
     {showPatternView&&project.pattern&&<PatternViewModal pattern={project.pattern} notes={project.notes} onClose={()=>setShowPatternView(false)} onSaveRowNotes={onUpdatePattern?(rn=>onUpdatePattern({...project.pattern,rowNotes:rn})):undefined} onSaveProgress={onUpdatePattern?(idx=>onUpdatePattern({...project.pattern,progressMarker:idx})):undefined}/>}
     <div className="shadow-card bg-white rounded-3xl overflow-hidden w-full">
 
@@ -3784,7 +3786,6 @@ function Card({project,onDelete,onEdit,onPickPattern,onDuplicate,onMarkComplete,
                   catch(err){console.warn("Background removal failed, using original:",err);}
                   setProcessingPhoto(false);
                   onFinishedPhoto({original,cutout});
-                  setShowCongrats(true);
                 };
                 reader.readAsDataURL(f);
               }}/>
@@ -4432,7 +4433,7 @@ function PatternFormModal({onClose,onSave,initial,yarnLib=[]}){
     <div style={{position:"fixed",inset:0,background:"white",zIndex:100,display:"flex",flexDirection:"column"}}>
       <CircularPatternMaker
         initialPattern={form.designData?.type==="rounds"?form.designData:null}
-        onSave={design=>{s("designData",{...design,type:"rounds"});setOpenMaker(null);}}
+        onSave={design=>{s("designData",{...design,type:"rounds"});}}
         onClose={()=>setOpenMaker(null)}
       />
     </div>
@@ -5051,7 +5052,7 @@ function PatternDetailModal({pat,onClose,onEdit,onDelete,onUpdate,yarnLib=[]}){
     <div style={{position:"fixed",inset:0,background:"white",zIndex:100,display:"flex",flexDirection:"column"}}>
       <CircularPatternMaker
         initialPattern={pat.designData?.type==="rounds"?pat.designData:null}
-        onSave={design=>{onUpdate({...pat,designData:{...design,type:"rounds"}});setOpenRoundsMaker(false);}}
+        onSave={design=>{onUpdate({...pat,designData:{...design,type:"rounds"}});}}
         onClose={()=>setOpenRoundsMaker(false)}
         yarnColors={yarnColors.length?yarnColors:undefined}
       />
@@ -5787,10 +5788,23 @@ function CrochetChartView({stitches=[],highlightY=null,currentRowY=null,onRowCli
   useEffect(()=>{
     if(!showControls)return;
     const el=containerRef.current;if(!el)return;
-    let pinch=null;
-    const onTS=e=>{if(e.touches.length===2){e.preventDefault();pinch=Math.hypot(e.touches[0].clientX-e.touches[1].clientX,e.touches[0].clientY-e.touches[1].clientY);}};
-    const onTM=e=>{if(e.touches.length===2&&pinch!==null){e.preventDefault();const d=Math.hypot(e.touches[0].clientX-e.touches[1].clientX,e.touches[0].clientY-e.touches[1].clientY);setZoom(z=>Math.max(0.3,Math.min(4,z*d/pinch)));pinch=d;}};
-    const onTE=e=>{if(e.touches.length<2)pinch=null;};
+    let pinch=null,pinchRatio=1;
+    const onTS=e=>{if(e.touches.length===2){e.preventDefault();pinch=Math.hypot(e.touches[0].clientX-e.touches[1].clientX,e.touches[0].clientY-e.touches[1].clientY);pinchRatio=1;}};
+    const onTM=e=>{
+      if(e.touches.length===2&&pinch!==null){
+        e.preventDefault();
+        const d=Math.hypot(e.touches[0].clientX-e.touches[1].clientX,e.touches[0].clientY-e.touches[1].clientY);
+        pinchRatio*=d/pinch;pinch=d;
+        const cv=canvasRef.current;
+        if(cv){cv.style.transform=`scale(${Math.max(0.3,Math.min(4,pinchRatio))})`;cv.style.transformOrigin='center center';}
+      }
+    };
+    const onTE=e=>{
+      if(e.touches.length<2){
+        if(pinch!==null){setZoom(z=>Math.max(0.3,Math.min(4,z*pinchRatio)));const cv=canvasRef.current;if(cv)cv.style.transform='';}
+        pinch=null;pinchRatio=1;
+      }
+    };
     el.addEventListener("touchstart",onTS,{passive:false});
     el.addEventListener("touchmove",onTM,{passive:false});
     el.addEventListener("touchend",onTE);
@@ -6484,14 +6498,6 @@ function DashboardPage({projects,yarnLib,patterns,myPartyIds,setMyPartyIds,joine
     <div style={{flex:1,overflowY:"auto",padding:"4px 16px 90px"}}>
       <div style={{maxWidth:360,margin:"0 auto"}}>
 
-        {/* ── Customize button ── */}
-        <div style={{display:"flex",justifyContent:"flex-end",marginBottom:8,marginTop:12}}>
-          <button onClick={()=>setShowLayoutModal(true)} style={{display:"flex",alignItems:"center",gap:5,padding:"5px 12px",borderRadius:10,background:"white",border:"1.5px solid #E5E7EB",color:"#6B7280",fontSize:11,fontWeight:700,cursor:"pointer",boxShadow:"0 1px 3px rgba(0,0,0,.06)"}}>
-            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-4 0v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83 0 2 2 0 010-2.83l.06-.06A1.65 1.65 0 004.68 15a1.65 1.65 0 00-1.51-1H3a2 2 0 010-4h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 010-2.83 2 2 0 012.83 0l.06.06A1.65 1.65 0 009 4.68a1.65 1.65 0 001-1.51V3a2 2 0 014 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 0 2 2 0 010 2.83l-.06.06A1.65 1.65 0 0019.4 9a1.65 1.65 0 001.51 1H21a2 2 0 010 4h-.09a1.65 1.65 0 00-1.51 1z"/></svg>
-            {t.dashCustomize}
-          </button>
-        </div>
-
         {/* ── Sections rendered in user-configured order ── */}
         {(()=>{
           const sectionMap={
@@ -6557,14 +6563,10 @@ function DashboardPage({projects,yarnLib,patterns,myPartyIds,setMyPartyIds,joine
                         filter:"drop-shadow(0 4px 10px rgba(0,0,0,0.16))",
                       }}>
                       {p.finishedPhotoCutout
-                        /* Cutout — baked white outline + shadow already in PNG */
                         ?<img src={p.finishedPhotoCutout} alt={p.title}
                             style={{width:"100%",display:"block",objectFit:"contain",pointerEvents:"none"}}/>
-                        /* Fallback — polaroid frame */
-                        :<div style={{background:"white",padding:"4px 4px 12px",borderRadius:4,boxShadow:"0 2px 8px rgba(0,0,0,.22)",lineHeight:0}}>
-                            <img src={p.finishedPhoto} alt={p.title}
-                              style={{width:"100%",aspectRatio:"1/1",objectFit:"cover",display:"block",borderRadius:2,pointerEvents:"none"}}/>
-                          </div>
+                        :<img src={p.finishedPhoto} alt={p.title}
+                            style={{width:"100%",display:"block",objectFit:"contain",pointerEvents:"none",borderRadius:4}}/>
                       }
                     </div>
                   );
@@ -6674,6 +6676,14 @@ function DashboardPage({projects,yarnLib,patterns,myPartyIds,setMyPartyIds,joine
           ));
         })()}
 
+        {/* ── Customize button ── */}
+        <div style={{display:"flex",justifyContent:"flex-end",marginBottom:8,marginTop:4}}>
+          <button onClick={()=>setShowLayoutModal(true)} style={{display:"flex",alignItems:"center",gap:5,padding:"5px 12px",borderRadius:10,background:"white",border:"1.5px solid #E5E7EB",color:"#6B7280",fontSize:11,fontWeight:700,cursor:"pointer",boxShadow:"0 1px 3px rgba(0,0,0,.06)"}}>
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-4 0v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83 0 2 2 0 010-2.83l.06-.06A1.65 1.65 0 004.68 15a1.65 1.65 0 00-1.51-1H3a2 2 0 010-4h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 010-2.83 2 2 0 012.83 0l.06.06A1.65 1.65 0 009 4.68a1.65 1.65 0 001-1.51V3a2 2 0 014 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 0 2 2 0 010 2.83l-.06.06A1.65 1.65 0 0019.4 9a1.65 1.65 0 001.51 1H21a2 2 0 010 4h-.09a1.65 1.65 0 00-1.51 1z"/></svg>
+            {t.dashCustomize}
+          </button>
+        </div>
+
       </div>
 
       {showLayoutModal&&<DashLayoutModal layout={dashLayout} setLayout={setDashLayout} onClose={()=>setShowLayoutModal(false)}/>}
@@ -6706,7 +6716,11 @@ function DashboardPage({projects,yarnLib,patterns,myPartyIds,setMyPartyIds,joine
                       style={{maxWidth:"100%",maxHeight:220,objectFit:"contain",display:"block",
                         filter:"drop-shadow(0 4px 14px rgba(0,0,0,0.18))"}}/>
                   </div>
-                :<img src={selectedSticker.finishedPhoto} alt={selectedSticker.title} style={{width:"100%",aspectRatio:"1/1",objectFit:"cover",display:"block"}}/>
+                :<div style={{background:"linear-gradient(135deg,#f8f4ff,#f0f8ff)",padding:"16px",display:"flex",alignItems:"center",justifyContent:"center",minHeight:200}}>
+                    <img src={selectedSticker.finishedPhoto} alt={selectedSticker.title}
+                      style={{maxWidth:"100%",maxHeight:220,objectFit:"contain",display:"block",
+                        filter:"drop-shadow(0 4px 14px rgba(0,0,0,0.18))",borderRadius:4}}/>
+                  </div>
               }
               <button onClick={()=>setSelectedSticker(null)} style={{position:"absolute",top:10,right:10,width:30,height:30,borderRadius:999,background:"rgba(0,0,0,.45)",border:"none",cursor:"pointer",color:"white",fontSize:16,display:"flex",alignItems:"center",justifyContent:"center"}}>✕</button>
             </div>
@@ -6907,11 +6921,82 @@ function SignInModal({provider, onClose, onSuccess}) {
   );
 }
 
+function AvatarPage({config={}, onChange, onBack}){
+  const[tab,setTab]=useState("hair");
+  const options=AVATAR_PARTS[tab]||[];
+  const set=(k,v)=>onChange({...config,[k]:v});
+  return(
+    <div style={{position:"fixed",inset:0,background:"white",zIndex:210,display:"flex",flexDirection:"column"}}>
+      {/* Header */}
+      <div style={{padding:"12px 16px 10px",borderBottom:"1px solid #E8F4FB",display:"flex",alignItems:"center",gap:12,flexShrink:0}}>
+        <button onClick={onBack} style={{background:"none",border:"none",cursor:"pointer",fontSize:20,color:"#247BA0",padding:"4px 8px 4px 0",lineHeight:1}}>←</button>
+        <div style={{fontSize:18,fontWeight:800,color:"#111"}}>My Avatar</div>
+      </div>
+      <div style={{flex:1,overflowY:"auto",padding:"20px 16px 60px"}}>
+        <div style={{maxWidth:360,margin:"0 auto",display:"flex",flexDirection:"column",alignItems:"center"}}>
+          {/* Live preview */}
+          <div style={{marginBottom:22}}>
+            <div style={{width:130,height:130,borderRadius:999,overflow:"hidden",border:"3px solid #E8F4FB",background:"#F9F9F9",flexShrink:0}}>
+              <AvatarDisplay config={config} size={130}/>
+            </div>
+          </div>
+          {/* Category tabs */}
+          <div style={{display:"flex",gap:5,marginBottom:14,flexWrap:"wrap",justifyContent:"center"}}>
+            {Object.keys(AVATAR_PART_LABELS).map(k=>(
+              <button key={k} onClick={()=>setTab(k)}
+                style={{flexShrink:0,padding:"6px 14px",borderRadius:20,border:"none",
+                  background:tab===k?"#247BA0":"#F3F4F6",
+                  color:tab===k?"white":"#374151",
+                  fontWeight:700,fontSize:12,cursor:"pointer",transition:"all .15s"}}>
+                {AVATAR_PART_LABELS[k]}
+              </button>
+            ))}
+          </div>
+          {/* Options grid */}
+          <div style={{display:"flex",gap:10,flexWrap:"wrap",justifyContent:"center",width:"100%"}}>
+            {options.map(val=>{
+              const selected=(config[tab]??null)===val;
+              return(
+                <button key={val||"none"} onClick={()=>set(tab,val)}
+                  style={{width:68,height:68,borderRadius:16,
+                    border:`2.5px solid ${selected?"#247BA0":"#E5E7EB"}`,
+                    background:selected?"#EBF6FC":"#F9FAFB",
+                    cursor:"pointer",padding:4,flexShrink:0,
+                    display:"flex",alignItems:"center",justifyContent:"center",
+                    transition:"border-color .15s,background .15s",
+                    boxShadow:selected?"0 0 0 1px #247BA022":"none"}}>
+                  {val===null
+                    ?<span style={{fontSize:22,color:"#9CA3AF",fontWeight:300,lineHeight:1}}>—</span>
+                    :<div style={{position:"relative",width:"100%",height:"100%"}}>
+                        <img src="avatar/face.png" style={{position:"absolute",inset:0,width:"100%",height:"100%",objectFit:"contain"}}/>
+                        <img src={`avatar/${val}.png`} style={{position:"absolute",inset:0,width:"100%",height:"100%",objectFit:"contain"}}/>
+                      </div>
+                  }
+                </button>
+              );
+            })}
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 function SettingsPage({settings, setSettings, lang, setLang, onBack, rewards=REWARD_DEFAULTS, setRewards}) {
   const {t} = useLang();
   const set = (k, v) => setSettings(s => ({...s, [k]: v}));
-  const [signInModal, setSignInModal] = useState(null); // "google" | "apple" | null
+  const [signInModal, setSignInModal] = useState(null);
+  const [showAvatarPage, setShowAvatarPage] = useState(false);
+  const [editingProfile, setEditingProfile] = useState(false);
   const photoInputRef = React.useRef(null);
+
+  if(showAvatarPage) return(
+    <AvatarPage
+      config={settings.avatarConfig||{}}
+      onChange={cfg=>set("avatarConfig",cfg)}
+      onBack={()=>setShowAvatarPage(false)}
+    />
+  );
 
   const handlePhotoChange = (e) => {
     const file = e.target.files?.[0];
@@ -6961,28 +7046,77 @@ function SettingsPage({settings, setSettings, lang, setLang, onBack, rewards=REW
 
         {/* Profile */}
         <SectionCard title={t.settingsProfile}>
-          {/* Photo picker */}
-          <div style={{display:"flex",justifyContent:"center",marginBottom:16}}>
-            <div style={{position:"relative",cursor:"pointer"}} onClick={()=>photoInputRef.current?.click()}>
-              <FramedAvatar src={settings.profilePhoto||""} size={76} frameId={rewards.activeFrame}/>
-              <div style={{position:"absolute",bottom:0,right:0,width:24,height:24,borderRadius:999,background:"#247BA0",border:"2px solid #fff",display:"flex",alignItems:"center",justifyContent:"center"}}>
-                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.5"><path strokeLinecap="round" strokeLinejoin="round" d="M23 19a2 2 0 01-2 2H3a2 2 0 01-2-2V8a2 2 0 012-2h4l2-3h6l2 3h4a2 2 0 012 2z"/><circle cx="12" cy="13" r="4"/></svg>
+          {/* Photo + Avatar side by side */}
+          <div style={{display:"flex",justifyContent:"center",gap:28,marginBottom:16}}>
+            {/* Profile photo */}
+            <div style={{display:"flex",flexDirection:"column",alignItems:"center",gap:6}}>
+              <div style={{position:"relative",cursor:"pointer"}} onClick={()=>photoInputRef.current?.click()}>
+                {settings.profilePhoto
+                  ?<img src={settings.profilePhoto} style={{width:76,height:76,borderRadius:999,objectFit:"cover"}}/>
+                  :<div style={{width:76,height:76,borderRadius:999,background:"#F3F4F6",display:"flex",alignItems:"center",justifyContent:"center"}}>
+                    <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#C0C8D0" strokeWidth="1.5"><path strokeLinecap="round" strokeLinejoin="round" d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+                  </div>
+                }
+                <div style={{position:"absolute",bottom:0,right:0,width:24,height:24,borderRadius:999,background:"#247BA0",border:"2px solid #fff",display:"flex",alignItems:"center",justifyContent:"center"}}>
+                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.5"><path strokeLinecap="round" strokeLinejoin="round" d="M23 19a2 2 0 01-2 2H3a2 2 0 01-2-2V8a2 2 0 012-2h4l2-3h6l2 3h4a2 2 0 012 2z"/><circle cx="12" cy="13" r="4"/></svg>
+                </div>
+              </div>
+              <span style={{fontSize:11,fontWeight:600,color:"#6B7280"}}>Photo</span>
+            </div>
+            {/* Avatar */}
+            <div style={{display:"flex",flexDirection:"column",alignItems:"center",gap:6}}>
+              <div style={{position:"relative",cursor:"pointer"}} onClick={()=>setShowAvatarPage(true)}>
+                <div style={{width:76,height:76,borderRadius:999,overflow:"hidden",border:"2px solid #E8F4FB",background:"#F9F9F9"}}>
+                  <AvatarDisplay config={settings.avatarConfig||{}} size={76}/>
+                </div>
+                <div style={{position:"absolute",bottom:0,right:0,width:24,height:24,borderRadius:999,background:"#7C5CBF",border:"2px solid #fff",display:"flex",alignItems:"center",justifyContent:"center"}}>
+                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.5"><path strokeLinecap="round" strokeLinejoin="round" d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path strokeLinecap="round" strokeLinejoin="round" d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+                </div>
+              </div>
+              <span style={{fontSize:11,fontWeight:600,color:"#6B7280"}}>Avatar</span>
+            </div>
+          </div>
+          <input ref={photoInputRef} type="file" accept="image/*" style={{display:"none"}} onChange={handlePhotoChange}/>
+          {editingProfile?(
+            <>
+              <SettingRow label={t.settingsName}>
+                <input value={settings.profileName} onChange={e=>set("profileName",e.target.value)} placeholder={t.settingsNamePh} style={inputStyle} autoFocus/>
+              </SettingRow>
+              <SettingRow label={t.settingsBio}>
+                <input value={settings.profileBio} onChange={e=>set("profileBio",e.target.value)} placeholder={t.settingsBioPh} style={inputStyle}/>
+              </SettingRow>
+              <SettingRow label={t.settingsCountry}>
+                <select value={settings.profileCountry||""} onChange={e=>set("profileCountry",e.target.value)} style={selectStyle}>
+                  <option value="">{t.settingsCountryPh}</option>
+                  {COUNTRIES.map(c=><option key={c} value={c}>{c}</option>)}
+                </select>
+              </SettingRow>
+              <button onClick={()=>setEditingProfile(false)}
+                style={{width:"100%",marginTop:8,padding:"11px",borderRadius:12,border:"none",background:"#247BA0",color:"white",fontWeight:700,fontSize:14,cursor:"pointer"}}>
+                Save
+              </button>
+            </>
+          ):(
+            <div style={{padding:"4px 0 8px"}}>
+              <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start"}}>
+                <div style={{flex:1}}>
+                  <div style={{fontSize:16,fontWeight:700,color:settings.profileName?"#111":"#C4C4C4"}}>
+                    {settings.profileName||t.settingsNamePh}
+                  </div>
+                  {settings.profileBio&&(
+                    <div style={{fontSize:13,color:"#6B7280",marginTop:3,lineHeight:1.4}}>{settings.profileBio}</div>
+                  )}
+                  {settings.profileCountry&&(
+                    <div style={{fontSize:12,color:"#9CA3AF",marginTop:4}}>{settings.profileCountry}</div>
+                  )}
+                </div>
+                <button onClick={()=>setEditingProfile(true)}
+                  style={{flexShrink:0,marginLeft:12,padding:"5px 12px",borderRadius:10,border:"1.5px solid #E5E7EB",background:"white",color:"#374151",fontWeight:600,fontSize:12,cursor:"pointer"}}>
+                  Edit
+                </button>
               </div>
             </div>
-            <input ref={photoInputRef} type="file" accept="image/*" style={{display:"none"}} onChange={handlePhotoChange}/>
-          </div>
-          <SettingRow label={t.settingsName}>
-            <input value={settings.profileName} onChange={e=>set("profileName",e.target.value)} placeholder={t.settingsNamePh} style={inputStyle}/>
-          </SettingRow>
-          <SettingRow label={t.settingsBio}>
-            <input value={settings.profileBio} onChange={e=>set("profileBio",e.target.value)} placeholder={t.settingsBioPh} style={inputStyle}/>
-          </SettingRow>
-          <SettingRow label={t.settingsCountry}>
-            <select value={settings.profileCountry||""} onChange={e=>set("profileCountry",e.target.value)} style={selectStyle}>
-              <option value="">{t.settingsCountryPh}</option>
-              {COUNTRIES.map(c=><option key={c} value={c}>{c}</option>)}
-            </select>
-          </SettingRow>
+          )}
           <div style={{borderTop:"1px solid #F3F4F6",paddingTop:10,display:"flex",flexDirection:"column",gap:8}}>
             <div style={{fontSize:11,fontWeight:700,color:"#9CA3AF",letterSpacing:"0.06em",textTransform:"uppercase",marginBottom:2}}>{t.settingsLinkedAccounts}</div>
             <SocialSignInButton
@@ -7206,6 +7340,15 @@ const DEFAULT_PATTERNS=[
   {id:"pt2",name:"Simple Beanie",category:"Hat",craft:"Knitting",difficulty:"Beginner",source:"",notes:"My go-to hat pattern for quick gifts.",tags:["Hat","Quick"]},
 ];
 
+const AVATAR_PARTS={
+  hair:   [null,"hair_1","hair_2","hair_3","hair_4","hair_5","hair_6","hair_7","hair_8"],
+  eyes:   ["eyes_1","eyes_2","eyes_3","eyes_4","eyes_5","eyes_6","eyes_7"],
+  nose:   ["nose_1","nose_2","nose_3","nose_4","nose_5"],
+  mouth:  ["mouth_1","mouth_2","mouth_3","mouth_4","mouth_5","mouth_6"],
+  glasses:[null,"glasses_1","glasses_2","glasses_3","glasses_4"],
+};
+const AVATAR_PART_LABELS={hair:"Hair",eyes:"Eyes",nose:"Nose",mouth:"Mouth",glasses:"Glasses"};
+
 const DEFAULT_SETTINGS = {
   profileName: "", profileBio: "", profileCountry: "", profilePhoto: "", googleAccount: null, appleAccount: null,
   theme: "light",
@@ -7217,6 +7360,7 @@ const DEFAULT_SETTINGS = {
   chartHighlightRow: true,
   readHighlightColor: "#BFD7EA",
   canvasBg: "#FDFAF6",
+  avatarConfig: {hair:"hair_1",eyes:"eyes_1",nose:"nose_1",mouth:"mouth_1",glasses:null},
 };
 
 /* ─── Milestone Reward System ───────────────────────────────────────────────── */
@@ -8168,10 +8312,23 @@ function useCpmCanvas(svgRef){
 
   useEffect(()=>{
     const el=svgRef.current;if(!el)return;
-    let pinch=null;
-    const onTS=e=>{if(e.touches.length===2){e.preventDefault();pinch=Math.hypot(e.touches[0].clientX-e.touches[1].clientX,e.touches[0].clientY-e.touches[1].clientY);}};
-    const onTM=e=>{if(e.touches.length===2&&pinch!==null){e.preventDefault();const d=Math.hypot(e.touches[0].clientX-e.touches[1].clientX,e.touches[0].clientY-e.touches[1].clientY);setScale(s=>Math.max(0.3,Math.min(4,s*d/pinch)));pinch=d;}};
-    const onTE=e=>{if(e.touches.length<2)pinch=null;};
+    let pinch=null,pinchRatio=1;
+    const onTS=e=>{if(e.touches.length===2){e.preventDefault();pinch=Math.hypot(e.touches[0].clientX-e.touches[1].clientX,e.touches[0].clientY-e.touches[1].clientY);pinchRatio=1;}};
+    const onTM=e=>{
+      if(e.touches.length===2&&pinch!==null){
+        e.preventDefault();
+        const d=Math.hypot(e.touches[0].clientX-e.touches[1].clientX,e.touches[0].clientY-e.touches[1].clientY);
+        pinchRatio*=d/pinch;pinch=d;
+        el.style.transform=`scale(${Math.max(0.3,Math.min(4,pinchRatio))})`;
+        el.style.transformOrigin='center center';
+      }
+    };
+    const onTE=e=>{
+      if(e.touches.length<2){
+        if(pinch!==null){setScale(s=>Math.max(0.3,Math.min(4,s*pinchRatio)));el.style.transform='';}
+        pinch=null;pinchRatio=1;
+      }
+    };
     el.addEventListener("touchstart",onTS,{passive:false});
     el.addEventListener("touchmove",onTM,{passive:false});
     el.addEventListener("touchend",onTE);
@@ -8658,11 +8815,17 @@ function CPM_Editor({pattern,setPattern,onPreview,onSave=null,themeColor="#11111
         </>}
         <div style={{width:1,height:16,background:"#E5E7EB",margin:"0 2px"}}/>
         <button type="button" onClick={cpmUndo} disabled={!cpmHistory.length} title="Undo"
-          style={{...panelBtnSt,opacity:cpmHistory.length?1:0.3,cursor:cpmHistory.length?"pointer":"default",fontSize:13}}>↩</button>
+          style={{...panelBtnSt,opacity:cpmHistory.length?1:0.3,cursor:cpmHistory.length?"pointer":"default"}}>
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#9CA3AF" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 .49-3.84"/></svg>
+        </button>
         <button type="button" onClick={cpmRedo} disabled={!cpmFuture.length} title="Redo"
-          style={{...panelBtnSt,opacity:cpmFuture.length?1:0.3,cursor:cpmFuture.length?"pointer":"default",fontSize:13}}>↪</button>
+          style={{...panelBtnSt,opacity:cpmFuture.length?1:0.3,cursor:cpmFuture.length?"pointer":"default"}}>
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#9CA3AF" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-.49-3.84"/></svg>
+        </button>
         <button type="button" onClick={clearPattern} title="Clear all"
-          style={{...panelBtnSt,color:"#FCA5A5",fontSize:12}}>✕</button>
+          style={{...panelBtnSt}}>
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#FCA5A5" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg>
+        </button>
         {/* Right actions */}
         <div style={{marginLeft:"auto",display:"flex",gap:4,alignItems:"center"}}>
           {onPreview&&<button type="button" onClick={onPreview} style={{padding:"4px 10px",borderRadius:7,border:"1.5px solid #E5E7EB",background:"white",cursor:"pointer",fontSize:10,fontWeight:600,color:"#247BA0"}}>Read ›</button>}
@@ -8685,8 +8848,7 @@ function CPM_Editor({pattern,setPattern,onPreview,onSave=null,themeColor="#11111
           return(
             <CrochetStitchBtn key={id} id={id} label={st.label||st.name||id}
               active={toolActive&&selType===id} activeColor={themeColor}
-              onClick={()=>activateTool(id)}
-              onUnpin={()=>cpmUnpin(id)}/>
+              onClick={()=>activateTool(id)}/>
           );
         })}
         <div ref={moreAnchorRef} className="cc-more-root" style={{position:"relative",flexShrink:0,display:"flex"}}>
@@ -9346,7 +9508,7 @@ function CPM_ReadModal({pat,onClose,onUpdate}){
     <div style={{position:"fixed",inset:0,background:"white",zIndex:110,display:"flex",flexDirection:"column"}}>
       <CircularPatternMaker
         initialPattern={pattern}
-        onSave={design=>{onUpdate({...pat,designData:{...design,type:"rounds"}});setShowEditor(false);}}
+        onSave={design=>{onUpdate({...pat,designData:{...design,type:"rounds"}});}}
         onClose={()=>setShowEditor(false)}
       />
     </div>
@@ -9382,6 +9544,39 @@ function CircularPatternMaker({initialPattern=null,onSave=null,onClose=null,yarn
   const[mode,setMode]=useState("editor");
   const[pattern,setPattern]=useState(initialPattern||cpmInitPattern("MR",6));
   const[themeColor,setThemeColor]=useState(initialPattern?.themeColor||"#111111");
+  const[saveFlash,setSaveFlash]=useState(false);
+
+  // ── Draft auto-save ────────────────────────────────────────────────────────
+  const CPM_DRAFT_KEY="sc_draft_rounds";
+  const cpmDraftTimer=useRef(null);
+  const[hasDraft,setHasDraft]=useState(()=>{try{return onSave&&!!localStorage.getItem(CPM_DRAFT_KEY);}catch{return false;}});
+
+  useEffect(()=>{
+    if(!onSave)return; // standalone explorer — don't draft
+    clearTimeout(cpmDraftTimer.current);
+    cpmDraftTimer.current=setTimeout(()=>{
+      try{localStorage.setItem(CPM_DRAFT_KEY,JSON.stringify({...pattern,themeColor,savedAt:Date.now()}));}catch{}
+    },800);
+    return()=>clearTimeout(cpmDraftTimer.current);
+  },[pattern,themeColor]);
+
+  const restoreCpmDraft=()=>{
+    try{
+      const d=JSON.parse(localStorage.getItem(CPM_DRAFT_KEY)||"null");
+      if(d){setPattern(d);if(d.themeColor)setThemeColor(d.themeColor);}
+    }catch{}
+    localStorage.removeItem(CPM_DRAFT_KEY);
+    setHasDraft(false);
+  };
+  const dismissCpmDraft=()=>{localStorage.removeItem(CPM_DRAFT_KEY);setHasDraft(false);};
+
+  // ── Wrapped save — stays open, shows flash ─────────────────────────────────
+  const handleSave=onSave?design=>{
+    onSave(design);
+    localStorage.removeItem(CPM_DRAFT_KEY);
+    setSaveFlash(true);
+    setTimeout(()=>setSaveFlash(false),2000);
+  }:null;
 
   const startOver=()=>{setPattern(cpmInitPattern("MR",6));setMode("editor");};
 
@@ -9393,7 +9588,10 @@ function CircularPatternMaker({initialPattern=null,onSave=null,onClose=null,yarn
           <div style={{fontSize:10,fontWeight:700,color:"#247BA0",letterSpacing:"0.08em",textTransform:"uppercase"}}>Circular Crochet</div>
           <div style={{fontSize:16,fontWeight:800,color:"#1C160E"}}>Pattern Maker</div>
         </div>
-        <div style={{display:"flex",gap:6}}>
+        <div style={{display:"flex",gap:6,alignItems:"center"}}>
+          {saveFlash&&(
+            <span style={{fontSize:12,fontWeight:700,color:"#059669",background:"#F0FDF4",padding:"4px 10px",borderRadius:8}}>Saved ✓</span>
+          )}
           {!onSave&&(
             <button onClick={startOver} style={{padding:"6px 13px",borderRadius:10,border:"1px solid #E5DDD0",background:"white",color:"#7A6651",fontSize:11,fontWeight:600,cursor:"pointer"}}>New</button>
           )}
@@ -9404,14 +9602,22 @@ function CircularPatternMaker({initialPattern=null,onSave=null,onClose=null,yarn
           )}
         </div>
       </div>
-      {mode==="editor"&&<CPM_Editor pattern={pattern} setPattern={setPattern} onPreview={()=>setMode("preview")} onSave={onSave} themeColor={themeColor} setThemeColor={setThemeColor} yarnColors={yarnColors}/>}
+      {/* Restore draft banner */}
+      {hasDraft&&(
+        <div style={{background:"#FFF7ED",borderBottom:"1px solid #FED7AA",padding:"8px 14px",display:"flex",alignItems:"center",gap:10,flexShrink:0}}>
+          <span style={{fontSize:12,color:"#92400E",flex:1}}>Unsaved work found — restore it?</span>
+          <button onClick={restoreCpmDraft} style={{fontSize:12,fontWeight:700,color:"#247BA0",background:"none",border:"none",cursor:"pointer",padding:"2px 6px"}}>Restore</button>
+          <button onClick={dismissCpmDraft} style={{fontSize:12,color:"#9CA3AF",background:"none",border:"none",cursor:"pointer",padding:"2px 6px"}}>Dismiss</button>
+        </div>
+      )}
+      {mode==="editor"&&<CPM_Editor pattern={pattern} setPattern={setPattern} onPreview={()=>setMode("preview")} onSave={handleSave} themeColor={themeColor} setThemeColor={setThemeColor} yarnColors={yarnColors}/>}
       {mode==="preview"&&pattern&&<CPM_Preview pattern={pattern} onBack={()=>setMode("editor")} themeColor={themeColor}/>}
     </div>
   );
 }
 
 /* ─── Projects View (active + archive) ─────────────────────────────────────── */
-function ProjectsView({projects, setProjects, setEditingProject, setPickPatternFor, t, rewards=REWARD_DEFAULTS, setRewards}) {
+function ProjectsView({projects, setProjects, setEditingProject, setPickPatternFor, t, rewards=REWARD_DEFAULTS, setRewards, onJustCompleted}) {
   const [showArchive, setShowArchive] = useState(false);
   const [decorateMode, setDecorateMode] = useState(false);
   const active = projects.filter(p => !p.archived);
@@ -9436,7 +9642,10 @@ function ProjectsView({projects, setProjects, setEditingProject, setPickPatternF
     onEdit: () => setEditingProject(p),
     onPickPattern: isArchived ? undefined : () => setPickPatternFor(p.id),
     onDuplicate: () => setProjects(prev => [{...p, id:uid(), title:p.title+" (copy)", archived:false}, ...prev]),
-    onMarkComplete: () => setProjects(prev => prev.map(x => x.id===p.id ? {...x, status:"Completed", progress:100} : x)),
+    onMarkComplete: () => {
+      setProjects(prev => prev.map(x => x.id===p.id ? {...x, status:"Completed", progress:100} : x));
+      if(!p.finishedPhoto && onJustCompleted) onJustCompleted(p.id);
+    },
     onUpdateRows: rows => setProjects(prev => prev.map(x => x.id===p.id ? {...x, rowsCompleted:rows, progress:x.totalRows?Math.round(rows/x.totalRows*100):0} : x)),
     onUpdatePattern: pat => setProjects(prev => prev.map(x => x.id===p.id ? {...x, pattern:pat} : x)),
     onFinishedPhoto: ({original, cutout}) => {
@@ -10592,6 +10801,97 @@ function PartiesPage({myPartyIds,setMyPartyIds,joinedParties,setJoinedParties,se
   );
 }
 
+/* ─── PhotoReminderModal ── shown after marking a project complete ──────────── */
+function PhotoReminderModal({project,onPhoto,onSkip}){
+  const cameraRef=useRef(null);
+  const galleryRef=useRef(null);
+  const[processing,setProcessing]=useState(false);
+  const handleFile=async e=>{
+    const f=e.target.files?.[0];if(!f)return;
+    e.target.value="";
+    const original=await new Promise(res=>{const r=new FileReader();r.onload=ev=>res(ev.target.result);r.readAsDataURL(f);});
+    setProcessing(true);
+    let cutout=null;
+    try{cutout=await applyBgRemoval(original);}catch(err){console.warn("bg removal failed:",err);}
+    setProcessing(false);
+    onPhoto({original,cutout});
+  };
+  return(
+    <div style={{position:"fixed",inset:0,zIndex:490,background:"rgba(0,0,0,0.72)",display:"flex",alignItems:"center",justifyContent:"center",padding:20}}>
+      <div style={{background:"white",borderRadius:28,padding:"28px 24px 24px",width:"100%",maxWidth:320,textAlign:"center",boxShadow:"0 24px 64px rgba(0,0,0,.35)"}}>
+        {processing?(
+          <>
+            <div style={{width:56,height:56,borderRadius:999,background:"#F0F9FF",display:"flex",alignItems:"center",justifyContent:"center",margin:"0 auto 14px"}}>
+              <div style={{width:26,height:26,border:"3px solid #247BA0",borderTopColor:"transparent",borderRadius:"50%",animation:"spin 0.7s linear infinite"}}/>
+            </div>
+            <div style={{fontSize:16,fontWeight:800,color:"#111",marginBottom:4}}>Creating sticker…</div>
+            <div style={{fontSize:13,color:"#6B7280"}}>Removing background</div>
+          </>
+        ):(
+          <>
+            <div style={{width:56,height:56,borderRadius:999,background:"#F0F9FF",display:"flex",alignItems:"center",justifyContent:"center",margin:"0 auto 14px"}}>
+              <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#247BA0" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M23 19a2 2 0 01-2 2H3a2 2 0 01-2-2V8a2 2 0 012-2h4l2-3h6l2 3h4a2 2 0 012 2z"/>
+                <circle cx="12" cy="13" r="4"/>
+              </svg>
+            </div>
+            <div style={{fontSize:17,fontWeight:800,color:"#111",marginBottom:4}}>Add a Finished Photo</div>
+            <div style={{fontSize:13,color:"#6B7280",marginBottom:22,lineHeight:1.5}}>
+              Show off your <span style={{fontWeight:700,color:"#374151"}}>"{project.title}"</span>!<br/>
+              It'll appear as a sticker on your dashboard.
+            </div>
+            <div style={{display:"flex",flexDirection:"column",gap:8}}>
+              <div style={{display:"flex",gap:8}}>
+                <button onClick={()=>cameraRef.current?.click()}
+                  style={{flex:1,padding:"12px 8px",borderRadius:14,border:"1.5px solid #247BA0",background:"white",color:"#247BA0",fontWeight:700,fontSize:13,cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center",gap:6}}>
+                  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <path d="M23 19a2 2 0 01-2 2H3a2 2 0 01-2-2V8a2 2 0 012-2h4l2-3h6l2 3h4a2 2 0 012 2z"/>
+                    <circle cx="12" cy="13" r="4"/>
+                  </svg>
+                  Take Photo
+                </button>
+                <button onClick={()=>galleryRef.current?.click()}
+                  style={{flex:1,padding:"12px 8px",borderRadius:14,border:"none",background:"#247BA0",color:"white",fontWeight:700,fontSize:13,cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center",gap:6}}>
+                  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/>
+                    <polyline points="21 15 16 10 5 21"/>
+                  </svg>
+                  Upload
+                </button>
+              </div>
+              <button onClick={onSkip}
+                style={{padding:"12px",borderRadius:14,border:"none",background:"#F3F4F6",color:"#374151",fontWeight:700,fontSize:14,cursor:"pointer"}}>
+                Skip for now
+              </button>
+            </div>
+          </>
+        )}
+        <input ref={cameraRef} type="file" accept="image/*" capture="environment" style={{display:"none"}} onChange={handleFile}/>
+        <input ref={galleryRef} type="file" accept="image/*" style={{display:"none"}} onChange={handleFile}/>
+      </div>
+    </div>
+  );
+}
+
+/* ─── AvatarDisplay ── stacks layered face PNGs ────────────────────────────── */
+function AvatarDisplay({config={},size=80}){
+  const layers=[
+    config.hair    && `avatar/${config.hair}.png`,
+    "avatar/face.png",
+    config.eyes    && `avatar/${config.eyes}.png`,
+    config.nose    && `avatar/${config.nose}.png`,
+    config.mouth   && `avatar/${config.mouth}.png`,
+    config.glasses && `avatar/${config.glasses}.png`,
+  ].filter(Boolean);
+  return(
+    <div style={{position:"relative",width:size,height:size,flexShrink:0}}>
+      {layers.map(src=>(
+        <img key={src} src={src} style={{position:"absolute",inset:0,width:"100%",height:"100%",objectFit:"contain",pointerEvents:"none"}}/>
+      ))}
+    </div>
+  );
+}
+
 /* ─── FramedAvatar ── renders profile photo with optional earned frame ─────── */
 function FramedAvatar({src,size=76,frameId,style={}}){
   const f=AVATAR_FRAMES.find(x=>x.id===frameId);
@@ -10611,10 +10911,10 @@ function FramedAvatar({src,size=76,frameId,style={}}){
   );
 }
 
-/* ─── RewardModal ── shown when a milestone is crossed ─────────────────────── */
-function RewardModal({milestone,rewards,setRewards,setPendingMilestone,settings}){
-  const rewardDef=MILESTONE_MAP[milestone]||{};
-  // Pick random unlocked sticker not already collected
+/* ─── RewardModal ── shown after a project is completed ─────────────────────── */
+function RewardModal({celebration,rewards,setRewards,setPendingCelebration,settings}){
+  const{count,milestone}=celebration;
+  const rewardDef=milestone?(MILESTONE_MAP[milestone]||{}):{};
   const pickedSticker=useMemo(()=>{
     if(!rewardDef.sticker||!STICKER_POOL.length)return null;
     const available=STICKER_POOL.filter(s=>!rewards.unlockedStickers.includes(s.id));
@@ -10624,14 +10924,16 @@ function RewardModal({milestone,rewards,setRewards,setPendingMilestone,settings}
   const frameReward=rewardDef.frame?AVATAR_FRAMES.find(f=>f.id===rewardDef.frame):null;
 
   const collect=(applyFrame=false)=>{
-    setRewards(r=>{
-      const next={...r,claimedMilestones:[...r.claimedMilestones,milestone]};
-      if(pickedSticker) next.unlockedStickers=[...r.unlockedStickers,pickedSticker.id];
-      if(frameReward) next.unlockedFrames=[...new Set([...r.unlockedFrames,frameReward.id])];
-      if(applyFrame&&frameReward) next.activeFrame=frameReward.id;
-      return next;
-    });
-    setPendingMilestone(null);
+    if(milestone){
+      setRewards(r=>{
+        const next={...r,claimedMilestones:[...r.claimedMilestones,milestone]};
+        if(pickedSticker)next.unlockedStickers=[...r.unlockedStickers,pickedSticker.id];
+        if(frameReward)next.unlockedFrames=[...new Set([...r.unlockedFrames,frameReward.id])];
+        if(applyFrame&&frameReward)next.activeFrame=frameReward.id;
+        return next;
+      });
+    }
+    setPendingCelebration(null);
   };
 
   return(
@@ -10640,46 +10942,72 @@ function RewardModal({milestone,rewards,setRewards,setPendingMilestone,settings}
         @keyframes rw-pop{0%{transform:scale(0.4);opacity:0}70%{transform:scale(1.15)}100%{transform:scale(1);opacity:1}}
         @keyframes rw-frame{0%,100%{box-shadow:0 0 0 3px #8B5CF6,0 0 18px #8B5CF680}50%{box-shadow:0 0 0 3px #EC4899,0 0 22px #EC489980}}
       `}</style>
-      <div style={{background:"white",borderRadius:28,padding:"28px 24px 24px",width:"100%",maxWidth:320,textAlign:"center",boxShadow:"0 24px 64px rgba(0,0,0,.35)"}}>
-        <div style={{fontSize:36,marginBottom:6}}>🎉</div>
-        <div style={{fontSize:17,fontWeight:800,color:"#111",marginBottom:4}}>Milestone Reached!</div>
-        <div style={{fontSize:13,color:"#6B7280",marginBottom:20}}>You completed {milestone} project{milestone!==1?"s":""}</div>
+      {/* Hand-drawn sparkles scattered across screen */}
+      {REWARD_SPARKLES.map((s,i)=>(
+        <svg key={i} width={s.size} height={s.size} viewBox="0 0 24 24" fill="none"
+          style={{
+            position:"fixed",left:s.x,top:s.y,zIndex:501,
+            transform:"translate(-50%,-50%)",
+            filter:"drop-shadow(0 0 3px rgba(255,255,255,0.6))",
+            animation:`starPop 0.55s ${s.delay}s cubic-bezier(.34,1.56,.64,1) both, starShine 2s ${s.delay+0.55}s ease-in-out infinite`,
+            pointerEvents:"none",
+          }}>
+          {s.shape===2
+            ?<path d={SPARKLE_SHAPES[2]} stroke={s.color} strokeWidth="2.5" strokeLinecap="round"/>
+            :<path d={SPARKLE_SHAPES[s.shape]} stroke={s.color} strokeWidth="2" fill="none" strokeLinecap="round"/>}
+        </svg>
+      ))}
+      <div style={{position:"relative",background:"white",borderRadius:28,padding:"28px 24px 24px",width:"100%",maxWidth:320,textAlign:"center",boxShadow:"0 24px 64px rgba(0,0,0,.35)",animation:"rw-pop .45s ease forwards"}}>
 
-        {/* Rewards display */}
-        <div style={{display:"flex",gap:16,justifyContent:"center",marginBottom:22}}>
-          {pickedSticker&&(
-            <div style={{display:"flex",flexDirection:"column",alignItems:"center",gap:6}}>
-              <div style={{width:80,height:80,borderRadius:16,background:"#F3F4F6",display:"flex",alignItems:"center",justifyContent:"center",animation:"rw-pop .5s ease forwards"}}>
-                {pickedSticker.image
-                  ?<img src={pickedSticker.image} style={{width:64,height:64,objectFit:"contain"}}/>
-                  :<span style={{fontSize:11,color:"#9CA3AF",fontWeight:700}}>Sticker</span>}
-              </div>
-              <span style={{fontSize:11,fontWeight:700,color:"#374151"}}>{pickedSticker.name||"Sticker"}</span>
+        {milestone?(
+          <>
+            <div style={{fontSize:36,marginBottom:6}}>🎉</div>
+            <div style={{fontSize:17,fontWeight:800,color:"#111",marginBottom:4}}>Milestone Reached!</div>
+            <div style={{fontSize:13,color:"#6B7280",marginBottom:20}}>You completed {milestone} project{milestone!==1?"s":""}</div>
+            <div style={{display:"flex",gap:16,justifyContent:"center",marginBottom:22}}>
+              {pickedSticker&&(
+                <div style={{display:"flex",flexDirection:"column",alignItems:"center",gap:6}}>
+                  <div style={{width:80,height:80,borderRadius:16,background:"#F3F4F6",display:"flex",alignItems:"center",justifyContent:"center",animation:"rw-pop .5s ease forwards"}}>
+                    {pickedSticker.image
+                      ?<img src={pickedSticker.image} style={{width:64,height:64,objectFit:"contain"}}/>
+                      :<span style={{fontSize:11,color:"#9CA3AF",fontWeight:700}}>Sticker</span>}
+                  </div>
+                  <span style={{fontSize:11,fontWeight:700,color:"#374151"}}>{pickedSticker.name||"Sticker"}</span>
+                </div>
+              )}
+              {frameReward&&(
+                <div style={{display:"flex",flexDirection:"column",alignItems:"center",gap:6}}>
+                  <div style={{animation:"rw-pop .5s .15s ease both"}}>
+                    <FramedAvatar src={settings?.profilePhoto||""} size={80} frameId={frameReward.id}/>
+                  </div>
+                  <span style={{fontSize:11,fontWeight:700,color:"#374151"}}>{frameReward.name}</span>
+                </div>
+              )}
             </div>
-          )}
-          {frameReward&&(
-            <div style={{display:"flex",flexDirection:"column",alignItems:"center",gap:6}}>
-              <div style={{animation:"rw-pop .5s .15s ease both"}}>
-                <FramedAvatar src={settings?.profilePhoto||""} size={80} frameId={frameReward.id}/>
-              </div>
-              <span style={{fontSize:11,fontWeight:700,color:"#374151"}}>{frameReward.name}</span>
+            <div style={{display:"flex",flexDirection:"column",gap:8}}>
+              {frameReward&&(
+                <button onClick={()=>collect(true)}
+                  style={{padding:"12px",borderRadius:14,border:"none",background:"#247BA0",color:"white",fontWeight:700,fontSize:14,cursor:"pointer"}}>
+                  Apply Frame Now
+                </button>
+              )}
+              <button onClick={()=>collect(false)}
+                style={{padding:"12px",borderRadius:14,border:"none",background:frameReward?"#F3F4F6":"#247BA0",color:frameReward?"#374151":"white",fontWeight:700,fontSize:14,cursor:"pointer"}}>
+                Collect{frameReward?" (apply later)":""}
+              </button>
             </div>
-          )}
-        </div>
-
-        {/* Actions */}
-        <div style={{display:"flex",flexDirection:"column",gap:8}}>
-          {frameReward&&(
-            <button onClick={()=>collect(true)}
-              style={{padding:"12px",borderRadius:14,border:"none",background:"#247BA0",color:"white",fontWeight:700,fontSize:14,cursor:"pointer"}}>
-              Apply Frame Now
+          </>
+        ):(
+          <>
+            <div style={{fontSize:32,marginBottom:8,color:"#F59E0B",letterSpacing:6}}>✦ ✦ ✦</div>
+            <div style={{fontSize:17,fontWeight:800,color:"#111",marginBottom:6}}>Project Complete!</div>
+            <div style={{fontSize:13,color:"#6B7280",marginBottom:24}}>You've finished {count} project{count!==1?"s":""} — keep going!</div>
+            <button onClick={()=>collect(false)}
+              style={{padding:"12px 32px",borderRadius:14,border:"none",background:"#247BA0",color:"white",fontWeight:700,fontSize:14,cursor:"pointer"}}>
+              ✓ Nice!
             </button>
-          )}
-          <button onClick={()=>collect(false)}
-            style={{padding:"12px",borderRadius:14,border:"none",background:frameReward?"#F3F4F6":"#247BA0",color:frameReward?"#374151":"white",fontWeight:700,fontSize:14,cursor:"pointer"}}>
-            Collect{frameReward?" (apply later)":""}
-          </button>
-        </div>
+          </>
+        )}
       </div>
     </div>
   );
@@ -10707,14 +11035,15 @@ function App(){
   useEffect(()=>{try{localStorage.setItem("sc_joined_parties",JSON.stringify(joinedParties));}catch{};},[joinedParties]);
   const[rewards,setRewards]=useState(()=>{try{const s=localStorage.getItem("sc_rewards");return s?JSON.parse(s):REWARD_DEFAULTS;}catch{return REWARD_DEFAULTS;}});
   useEffect(()=>{try{localStorage.setItem("sc_rewards",JSON.stringify(rewards));}catch{};},[rewards]);
-  const[pendingMilestone,setPendingMilestone]=useState(null);
+  const[pendingCelebration,setPendingCelebration]=useState(null);
+  const[pendingPhotoProjectId,setPendingPhotoProjectId]=useState(null);
   const prevCompletedRef=useRef(null);
   useEffect(()=>{
     const n=projects.filter(p=>p.status==="Completed").length;
     if(prevCompletedRef.current===null){prevCompletedRef.current=n;return;}
     if(n>prevCompletedRef.current){
-      const milestone=[1,5,10,25,50].filter(m=>m<=n&&!rewards.claimedMilestones.includes(m)).sort((a,b)=>b-a)[0];
-      if(milestone) setPendingMilestone(milestone);
+      const milestone=[1,5,10,25,50].filter(m=>m<=n&&!rewards.claimedMilestones.includes(m)).sort((a,b)=>b-a)[0]||null;
+      setPendingCelebration({count:n,milestone});
     }
     prevCompletedRef.current=n;
   },[projects]);
@@ -10743,7 +11072,7 @@ function App(){
         )}
 
         {page==="projects"?(
-          <ProjectsView projects={projects} setProjects={setProjects} setEditingProject={setEditingProject} setPickPatternFor={setPickPatternFor} t={t} rewards={rewards} setRewards={setRewards}/>
+          <ProjectsView projects={projects} setProjects={setProjects} setEditingProject={setEditingProject} setPickPatternFor={setPickPatternFor} t={t} rewards={rewards} setRewards={setRewards} onJustCompleted={id=>setPendingPhotoProjectId(id)}/>
         ):page==="dashboard"?(
           <DashboardPage projects={projects} yarnLib={yarnLib} patterns={patterns} myPartyIds={myPartyIds} setMyPartyIds={setMyPartyIds} joinedParties={joinedParties} setJoinedParties={setJoinedParties} settings={settings} setPage={setPage}/>
         ):page==="parties"?(
@@ -10787,15 +11116,29 @@ function App(){
             }}
           />
         )}
-        {pendingMilestone&&(
-          <RewardModal
-            milestone={pendingMilestone}
-            rewards={rewards}
-            setRewards={setRewards}
-            setPendingMilestone={setPendingMilestone}
-            settings={settings}
-          />
-        )}
+        {pendingPhotoProjectId
+          ?<PhotoReminderModal
+              project={projects.find(p=>p.id===pendingPhotoProjectId)||{title:""}}
+              onPhoto={({original,cutout})=>{
+                const pid=pendingPhotoProjectId;
+                setProjects(prev=>prev.map(p=>p.id===pid
+                  ?{...p,finishedPhoto:original,finishedPhotoCutout:cutout||null,completedAt:p.completedAt||new Date().toISOString()}
+                  :p));
+                setPendingPhotoProjectId(null);
+                setTimeout(()=>setProjects(prev=>prev.map(p=>p.id===pid?{...p,archived:true}:p)),1500);
+              }}
+              onSkip={()=>setPendingPhotoProjectId(null)}
+            />
+          :pendingCelebration
+            ?<RewardModal
+                celebration={pendingCelebration}
+                rewards={rewards}
+                setRewards={setRewards}
+                setPendingCelebration={setPendingCelebration}
+                settings={settings}
+              />
+            :null
+        }
       </div>
     </SettingsCtx.Provider>
     </LangCtx.Provider>
