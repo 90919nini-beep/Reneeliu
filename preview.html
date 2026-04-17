@@ -794,7 +794,7 @@ async function applyBgRemoval(dataUrl){
     wsCtx.putImageData(wsD,0,0);
 
     // ── 8. Compose final sticker ────────────────────────────────────────
-    const OW =Math.max(3,Math.round(Math.min(TW,TH)*0.030)); // outline width
+    const OW =Math.max(4,Math.round(Math.min(TW,TH)*0.048)); // outline width
     const OBLUR=Math.max(2,Math.round(OW*0.75));              // blur for dilation
     const SBL =Math.max(5,Math.round(OW*2.5));                // shadow blur radius
     const SDX =Math.round(OW*1.0), SDY=Math.round(OW*1.8);   // shadow offset (down-right)
@@ -835,8 +835,12 @@ async function applyBgRemoval(dataUrl){
     // Threshold: pixels with blurred alpha > 30 become fully opaque white.
     // This gives a ~OW-wide border of solid white around the subject.
     for(let i=0;i<od.data.length;i+=4){
-      if(od.data[i+3]>30){
+      const a=od.data[i+3];
+      if(a>30){
         od.data[i]=255; od.data[i+1]=255; od.data[i+2]=255; od.data[i+3]=255;
+      } else if(a>8){
+        // thin gray ring at outermost edge — makes white border visible on light backgrounds
+        od.data[i]=160; od.data[i+1]=160; od.data[i+2]=160; od.data[i+3]=200;
       } else {
         od.data[i+3]=0;
       }
@@ -2914,12 +2918,13 @@ function PatternMaker({pattern,onSave,onClose,yarnColors,forcedType,onBack}){
   const{t}=useLang();
   const[type,setType]=useState(forcedType||pattern?.type||"knit");
   const knitRef=useRef(pattern?.grid||makeGrid(20,20));
+  const[knitKey,setKnitKey]=useState(0);
   // Support legacy crochetRows data by converting to stitches[]
   const initStitches=pattern?.crochetStitches||(pattern?.crochetRows?pattern.crochetRows.flatMap((row,y)=>row.map((s,x)=>({key:`r${y}c${x}`,id:s.id||s,color:s.color||"#247BA0",x,y:-y}))):[]);
   const[crochetStitches,setCrochetStitches]=useState(initStitches);
   const[crochetLayout,setCrochetLayout]=useState(pattern?.crochetLayout||"rows");
   const crochetRoundsRef=useRef(pattern?.crochetRoundsData||null);
-  const headerLabel=forcedType==="knit"?"Knit Grid Pattern":forcedType==="crochet"?"Crochet Pattern · Rows":t.patternMaker;
+  const headerLabel=forcedType==="knit"?"Knit Grid Pattern":forcedType==="crochet"?"Rows":t.patternMaker;
 
   // ── Draft auto-save ────────────────────────────────────────────────────────
   const DRAFT_KEY="sc_draft_pattern";
@@ -2940,11 +2945,12 @@ function PatternMaker({pattern,onSave,onClose,yarnColors,forcedType,onBack}){
   const restoreDraft=()=>{
     try{
       const d=JSON.parse(localStorage.getItem(DRAFT_KEY)||"null");
-      if(!d)return;
-      if(d.type)setType(d.type);
-      if(d.crochetStitches)setCrochetStitches(d.crochetStitches);
-      if(d.crochetLayout)setCrochetLayout(d.crochetLayout);
-      if(d.knitGrid)knitRef.current=d.knitGrid;
+      if(d){
+        if(d.type)setType(d.type);
+        if(d.crochetStitches)setCrochetStitches(d.crochetStitches);
+        if(d.crochetLayout)setCrochetLayout(d.crochetLayout);
+        if(d.knitGrid){knitRef.current=d.knitGrid;setKnitKey(k=>k+1);}
+      }
     }catch{}
     localStorage.removeItem(DRAFT_KEY);
     setHasDraft(false);
@@ -2979,7 +2985,7 @@ function PatternMaker({pattern,onSave,onClose,yarnColors,forcedType,onBack}){
       <div style={{padding:"12px 14px 10px",background:"white",borderBottom:"1px solid #E8F4FB",display:"flex",alignItems:"center",justifyContent:"space-between",flexShrink:0}}>
         <div style={{minWidth:0,flex:1}}>
           <div style={{fontSize:10,fontWeight:700,color:"#247BA0",letterSpacing:"0.08em",textTransform:"uppercase"}}>
-            {type==="knit"?"Knit Grid":"Crochet Pattern"}
+            {type==="knit"?"Knit Pattern Maker":"Crochet Pattern Maker"}
           </div>
           <div style={{fontSize:16,fontWeight:800,color:"#1C160E",overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{headerLabel}</div>
         </div>
@@ -3012,7 +3018,7 @@ function PatternMaker({pattern,onSave,onClose,yarnColors,forcedType,onBack}){
       {/* Content */}
       <div style={{flex:1,minHeight:0,overflow:"hidden",display:"flex",flexDirection:"column"}}>
         {type==="knit"
-          ?<KnitGrid initialGrid={knitRef.current} onGridChange={g=>{knitRef.current=g;clearTimeout(draftTimer.current);draftTimer.current=setTimeout(()=>writeDraft.current(),800);}} yarnColors={yarnColors}/>
+          ?<KnitGrid key={knitKey} initialGrid={knitRef.current} onGridChange={g=>{knitRef.current=g;clearTimeout(draftTimer.current);draftTimer.current=setTimeout(()=>writeDraft.current(),800);}} yarnColors={yarnColors}/>
           :<CrochetBuilder stitches={crochetStitches} setStitches={setCrochetStitches} layout={crochetLayout} setLayout={setCrochetLayout} yarnColors={yarnColors} onSave={handleSave}/>
         }
       </div>
@@ -3056,48 +3062,81 @@ function LangSwitcher({lang,setLang}){
 }
 
 /* ─── Yarn Row (in project form) ───────────────────────────────────────────── */
-function YarnRow({yarn,onChange,onRemove,yarnLib}){
-  const{t}=useLang();
-  const[showPicker,setShowPicker]=useState(false);
-  const s=(k,v)=>onChange({...yarn,[k]:v});
-  const iS={width:"100%",padding:"7px 10px",borderRadius:8,border:"1.5px solid #E5E7EB",fontSize:13,color:"#111",background:"#FAFAFA"};
+/* ── Yarn Chip — compact read-only yarn card used in ProjectModal ── */
+function YarnChip({yarn,onChange,onRemove}){
+  const[editBalls,setEditBalls]=useState(false);
   return(
-    <div style={{background:"#FAFAFA",borderRadius:12,padding:12,border:"1.5px solid #E5E7EB",marginBottom:8,position:"relative"}}>
-      <button onClick={onRemove} style={{position:"absolute",top:10,right:10,background:"none",border:"none",cursor:"pointer",color:"#FCA5A5",fontSize:18,lineHeight:1}}>×</button>
-      {yarnLib.length>0&&(
-        <div style={{marginBottom:8}}>
-          <button onClick={()=>setShowPicker(p=>!p)} style={{fontSize:11,color:"#247BA0",background:"#F5FBFE",border:"1px solid #D6EAF4",borderRadius:6,padding:"3px 8px",cursor:"pointer"}}>{t.pickLib}</button>
-          {showPicker&&(
-            <div style={{background:"white",borderRadius:10,border:"1.5px solid #E5E7EB",marginTop:4,maxHeight:130,overflowY:"auto"}}>
-              {yarnLib.map(y=>(
-                <button key={y.id} onClick={()=>{onChange({...yarn,libId:y.id,brand:y.brand,name:y.name,colorway:y.colorway,color:y.color,fibre:y.fibre});setShowPicker(false);}} style={{display:"flex",alignItems:"center",gap:8,width:"100%",padding:"8px 10px",background:"none",border:"none",cursor:"pointer",borderBottom:"1px solid #F3F4F6"}}>
-                  <div style={{width:14,height:14,borderRadius:3,background:y.color,flexShrink:0}}/>
-                  <span style={{fontSize:12,color:"#374151",textAlign:"left"}}>{y.brand} {y.name} — {y.colorway}</span>
-                </button>
-              ))}
+    <div style={{display:"flex",alignItems:"center",gap:10,background:"#FAFAFA",borderRadius:12,padding:"10px 12px",border:"1.5px solid #E5E7EB",marginBottom:7}}>
+      {yarn.photo?(
+        <div style={{width:32,height:32,borderRadius:8,overflow:"hidden",flexShrink:0,position:"relative"}}>
+          <img src={yarn.photo} style={{width:"100%",height:"100%",objectFit:"cover"}}/>
+          <div style={{position:"absolute",bottom:1,right:1,width:8,height:8,borderRadius:999,background:yarn.color,border:"1px solid white"}}/>
+        </div>
+      ):(
+        <div style={{width:32,height:32,borderRadius:8,background:yarn.color,flexShrink:0}}/>
+      )}
+      <div style={{flex:1,minWidth:0}}>
+        <div style={{fontSize:13,fontWeight:700,color:"#111",overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{yarn.brand} {yarn.name}</div>
+        <div style={{fontSize:11,color:"#9CA3AF"}}>{yarn.colorway||yarn.fibre||""}</div>
+      </div>
+      <div style={{display:"flex",alignItems:"center",gap:4,flexShrink:0}}>
+        {editBalls?(
+          <input autoFocus type="number" min="1" defaultValue={yarn.balls||1}
+            onBlur={e=>{onChange({...yarn,balls:Number(e.target.value)||1});setEditBalls(false);}}
+            onKeyDown={e=>{if(e.key==="Enter")e.target.blur();}}
+            style={{width:44,textAlign:"center",fontSize:13,fontWeight:700,border:"1.5px solid #247BA0",borderRadius:6,padding:"2px 4px",color:"#111",background:"white"}}/>
+        ):(
+          <span onClick={()=>setEditBalls(true)} style={{fontSize:13,fontWeight:700,color:"#111",cursor:"pointer",minWidth:20,textAlign:"center"}} title="tap to edit">{yarn.balls||1}</span>
+        )}
+        <span style={{fontSize:10,color:"#9CA3AF"}}>balls</span>
+      </div>
+      <button onClick={onRemove} style={{background:"none",border:"none",cursor:"pointer",color:"#FCA5A5",fontSize:20,lineHeight:1,padding:0,flexShrink:0}}>×</button>
+    </div>
+  );
+}
+
+/* ── Yarn Library Picker Sheet ── */
+function YarnLibPickerSheet({yarnLib,alreadyAdded,onPick,onClose}){
+  return createPortal(
+    <div style={{position:"fixed",inset:0,background:"rgba(0,0,0,.45)",zIndex:60,display:"flex",alignItems:"flex-end",justifyContent:"center"}} onClick={e=>{if(e.target===e.currentTarget)onClose();}}>
+      <div className="modal-in" style={{background:"#fff",borderRadius:"28px 28px 0 0",width:"100%",maxWidth:480,maxHeight:"70vh",display:"flex",flexDirection:"column"}}>
+        <div style={{padding:"18px 20px 12px",display:"flex",justifyContent:"space-between",alignItems:"center",flexShrink:0,borderBottom:"1px solid #F3F4F6"}}>
+          <div style={{fontSize:17,fontWeight:800,color:"#111"}}>Pick Yarn</div>
+          <button onClick={onClose} style={{width:30,height:30,borderRadius:999,background:"#F3F4F6",border:"none",cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center"}}>
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#6B7280" strokeWidth="2.5"><path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12"/></svg>
+          </button>
+        </div>
+        <div style={{overflowY:"auto",flex:1}}>
+          {yarnLib.length===0?(
+            <div style={{textAlign:"center",padding:"44px 24px",color:"#9CA3AF"}}>
+              <div style={{fontSize:36,marginBottom:10}}>🧵</div>
+              <div style={{fontSize:15,fontWeight:600,color:"#4B5563",marginBottom:4}}>No yarns in library</div>
+              <div style={{fontSize:13}}>Add yarns in the Library tab first</div>
             </div>
+          ):(
+            yarnLib.map(y=>(
+              <button key={y.id} onClick={()=>{onPick(y);onClose();}}
+                style={{display:"flex",alignItems:"center",gap:12,width:"100%",padding:"12px 20px",background:"none",border:"none",cursor:"pointer",borderBottom:"1px solid #F9FAFB",textAlign:"left"}}>
+                {y.photo?(
+                  <div style={{width:40,height:40,borderRadius:10,overflow:"hidden",flexShrink:0,position:"relative"}}>
+                    <img src={y.photo} style={{width:"100%",height:"100%",objectFit:"cover"}}/>
+                    <div style={{position:"absolute",bottom:2,right:2,width:9,height:9,borderRadius:999,background:y.color,border:"1.5px solid white"}}/>
+                  </div>
+                ):(
+                  <div style={{width:40,height:40,borderRadius:10,background:y.color,flexShrink:0,boxShadow:`0 2px 8px ${y.color}44`}}/>
+                )}
+                <div style={{flex:1,minWidth:0}}>
+                  <div style={{fontSize:14,fontWeight:700,color:"#111",overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{y.brand} {y.name}</div>
+                  <div style={{fontSize:11,color:"#9CA3AF"}}>{y.colorway}{y.weight?" · "+y.weight:""}</div>
+                </div>
+                {alreadyAdded.has(y.id)&&<span style={{fontSize:12,color:"#247BA0",fontWeight:700,flexShrink:0}}>✓</span>}
+              </button>
+            ))
           )}
         </div>
-      )}
-      <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:7}}>
-        {[["brand",t.brand,"Malabrigo"],["name",t.yarnName,"Sock"]].map(([k,label,ph])=>(
-          <div key={k}><label style={{fontSize:10,color:"#9CA3AF",fontWeight:600,display:"block",marginBottom:2}}>{label}</label>
-          <input style={iS} value={yarn[k]||""} placeholder={ph} onChange={e=>s(k,e.target.value)}/></div>
-        ))}
-        <div style={{gridColumn:"1/-1"}}><label style={{fontSize:10,color:"#9CA3AF",fontWeight:600,display:"block",marginBottom:2}}>{t.colorway}</label>
-          <input style={iS} value={yarn.colorway||""} placeholder="Aguas" onChange={e=>s("colorway",e.target.value)}/></div>
-        <div><label style={{fontSize:10,color:"#9CA3AF",fontWeight:600,display:"block",marginBottom:2}}>{t.fibre}</label>
-          <select style={{...iS,appearance:"none"}} value={yarn.fibre||"Merino Wool"} onChange={e=>s("fibre",e.target.value)}>{FIBRES.map(f=><option key={f}>{f}</option>)}</select></div>
-        <div><label style={{fontSize:10,color:"#9CA3AF",fontWeight:600,display:"block",marginBottom:2}}>{t.balls}</label>
-          <input style={iS} type="number" min="1" value={yarn.balls||1} onChange={e=>s("balls",Number(e.target.value))}/></div>
-        <div style={{gridColumn:"1/-1"}}><label style={{fontSize:10,color:"#9CA3AF",fontWeight:600,display:"block",marginBottom:2}}>{t.yarnColor}</label>
-          <div style={{display:"flex",gap:5,flexWrap:"wrap",alignItems:"center"}}>
-            {SWATCHES.map(c=><button key={c} onClick={()=>s("color",c)} style={{width:20,height:20,borderRadius:5,background:c,border:yarn.color===c?"2.5px solid #247BA0":"1.5px solid transparent",cursor:"pointer"}}/>)}
-            <input type="color" value={yarn.color||"#7C9A8E"} onChange={e=>s("color",e.target.value)} style={{width:20,height:20,padding:1,borderRadius:5,border:"1.5px solid #E5E7EB",cursor:"pointer"}}/>
-          </div>
-        </div>
       </div>
-    </div>
+    </div>,
+    document.body
   );
 }
 
@@ -3366,7 +3405,6 @@ function PatternViewModal({pattern,notes,onClose,onEdit,onDesign,onSaveRowNotes,
     const pm=pattern.progressMarker;
     return(pm!=null&&pm>=0&&pm<rl.length)?pm:0;
   });
-  const[shareDone,setShareDone]=useState(false);
   const[rowNotes,setRowNotes]=useState(()=>pattern?.rowNotes||{});
   const[noteOpen,setNoteOpen]=useState(false);
   const[showSymbols,setShowSymbols]=useState(false);
@@ -3384,11 +3422,6 @@ function PatternViewModal({pattern,notes,onClose,onEdit,onDesign,onSaveRowNotes,
   const isFndActive=currentY===0;
   // Row number: skip foundation. actualRowLevels index + 1.
   const rowNum=isFndActive?null:actualRowLevels.indexOf(currentY)+1;
-
-  const doShare=()=>{
-    const txt=`${pattern.type==="knit"?"Knit Grid":"Crochet Pattern"}${stitches.length?` · ${stitches.length} stitches · ${totalRows} rows`:""}`;
-    navigator.clipboard?.writeText(txt).then(()=>{setShareDone(true);setTimeout(()=>setShareDone(false),1800);}).catch(()=>{});
-  };
 
   useEffect(()=>{
     const fn=e=>{
@@ -3425,7 +3458,6 @@ function PatternViewModal({pattern,notes,onClose,onEdit,onDesign,onSaveRowNotes,
       {/* Header — matches CPM_Preview */}
       <div style={{padding:"9px 12px",background:"#EBF6FC",borderBottom:"1px solid #BFD7EA",display:"flex",alignItems:"center",gap:6,flexShrink:0}}>
         <div style={{fontSize:11,fontWeight:700,color:"#247BA0",letterSpacing:"0.07em",flex:1}}>READ CHART MODE</div>
-        <button type="button" onClick={doShare} style={{fontSize:11,fontWeight:700,padding:"4px 10px",borderRadius:8,border:"1.5px solid #BFD7EA",cursor:"pointer",background:shareDone?"#ECFDF5":"white",color:shareDone?"#059669":"#374151",flexShrink:0,transition:"all .2s"}}>{shareDone?"✓":"Share"}</button>
         <button type="button" onClick={onClose} style={{padding:"6px 14px",borderRadius:11,border:"none",background:"#247BA0",color:"white",fontSize:12,fontWeight:600,cursor:"pointer",flexShrink:0}}>← Back</button>
       </div>
 
@@ -3435,8 +3467,8 @@ function PatternViewModal({pattern,notes,onClose,onEdit,onDesign,onSaveRowNotes,
           <div style={{flex:1,overflow:"hidden",display:"flex"}}>
             <CrochetChartView
               stitches={stitches}
-              highlightY={null}
-              currentRowY={currentY}
+              highlightY={currentY===0?null:currentY}
+              currentRowY={currentY===0?null:currentY}
               onRowClick={y=>{const i=rowLevels.indexOf(y);if(i>=0){setRowIdx(i);if(onSaveRowNotes)setNoteOpen(true);}}}
             />
           </div>
@@ -3571,11 +3603,10 @@ const REWARD_SPARKLES=[
   {x:"50%",y:"88%",size:16,shape:0,delay:0.18, color:"#7AC2E1"},
 ];
 
-function Card({project,onDelete,onEdit,onPickPattern,onDuplicate,onMarkComplete,onUpdateRows,onUpdatePattern,onFinishedPhoto,onArchive,isArchived=false}){
+function Card({project,onDelete,onEdit,onPickPattern,onDuplicate,onMarkComplete,onUpdateRows,onUpdatePattern,onFinishedPhoto,onArchive,onToggleSaved,isArchived=false}){
   const{lang,t}=useLang();
   const{canvasBg="#FDFAF6"}=useSettings();
   const[expanded,setExpanded]=useState(false);
-  const[saved,setSaved]=useState(false);
   const[notesOpen,setNotesOpen]=useState(false);
   const[checked,setChecked]=useState([]);
   const[showMore,setShowMore]=useState(false);
@@ -3634,8 +3665,8 @@ function Card({project,onDelete,onEdit,onPickPattern,onDuplicate,onMarkComplete,
               </div>
             </div>
             <div style={{display:"flex",gap:4,flexShrink:0}}>
-              <button onClick={e=>{e.stopPropagation();setSaved(s=>!s);}} style={{color:saved?"#7AC2E1":"#D1D5DB",background:"none",border:"none",cursor:"pointer",padding:2}}>
-                <svg width="17" height="17" viewBox="0 0 24 24" fill={saved?"currentColor":"none"} stroke="currentColor" strokeWidth="2"><path strokeLinecap="round" strokeLinejoin="round" d="M5 5a2 2 0 012-2h10a2 2 0 012 2v16l-7-3.5L5 21V5z"/></svg>
+              <button onClick={e=>{e.stopPropagation();onToggleSaved?.(!project.saved);}} style={{color:project.saved?"#7AC2E1":"#D1D5DB",background:"none",border:"none",cursor:"pointer",padding:2}}>
+                <svg width="17" height="17" viewBox="0 0 24 24" fill={project.saved?"currentColor":"none"} stroke="currentColor" strokeWidth="2"><path strokeLinecap="round" strokeLinejoin="round" d="M5 5a2 2 0 012-2h10a2 2 0 012 2v16l-7-3.5L5 21V5z"/></svg>
               </button>
             </div>
           </div>
@@ -3870,10 +3901,9 @@ function Card({project,onDelete,onEdit,onPickPattern,onDuplicate,onMarkComplete,
 /* ─── Project Form Modal (Add + Edit) ─────────────────────────────────────── */
 function ProjectModal({onClose,onSave,yarnLib,editMode=false,initialProject=null}){
   const{t}=useLang();
-  const newYarn=()=>({id:uid(),libId:null,brand:"",name:"",colorway:"",color:SWATCHES[0],fibre:"Merino Wool",balls:1});
   const init=editMode&&initialProject?{
     title:initialProject.title||"",
-    yarns:initialProject.yarns?.length?initialProject.yarns:[newYarn()],
+    yarns:initialProject.yarns||[],
     hookSize:initialProject.hookSize||"5.0mm",
     weight:initialProject.weight||"Worsted",
     status:initialProject.status||"Not Started",
@@ -3886,10 +3916,11 @@ function ProjectModal({onClose,onSave,yarnLib,editMode=false,initialProject=null
     checklist:(initialProject.checklist||[]).join("\n"),
     refs:initialProject.refs||[],
     finishedPhoto:initialProject.finishedPhoto||null,
-  }:{title:"",yarns:[newYarn()],hookSize:"5.0mm",weight:"Worsted",status:"Not Started",priority:"Medium",dueDate:"",rowsCompleted:0,totalRows:100,notes:"",tags:"",checklist:"",refs:[],finishedPhoto:null};
+  }:{title:"",yarns:[],hookSize:"5.0mm",weight:"Worsted",status:"Not Started",priority:"Medium",dueDate:"",rowsCompleted:0,totalRows:100,notes:"",tags:"",checklist:"",refs:[],finishedPhoto:null};
 
   const[form,setForm]=useState(init);
   const[error,setError]=useState("");
+  const[showYarnPicker,setShowYarnPicker]=useState(false);
   const[showPattern,setShowPattern]=useState(false);
   const[pattern,setPattern]=useState(editMode?initialProject?.pattern||null:null);
   const sf=(k,v)=>setForm(f=>({...f,[k]:v}));
@@ -3937,9 +3968,20 @@ function ProjectModal({onClose,onSave,yarnLib,editMode=false,initialProject=null
           <div style={{marginBottom:13}}>
             <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:8}}>
               <label style={{fontSize:12,fontWeight:600,color:"#6B7280"}}>{t.yarnSection}</label>
-              <button onClick={()=>sf("yarns",[...form.yarns,newYarn()])} style={{fontSize:12,color:"#247BA0",background:"#F5FBFE",border:"1px solid #D6EAF4",borderRadius:7,padding:"3px 9px",cursor:"pointer",fontWeight:600}}>{t.addYarn}</button>
+              <button onClick={()=>setShowYarnPicker(true)} style={{fontSize:12,color:"#247BA0",background:"#F5FBFE",border:"1px solid #D6EAF4",borderRadius:7,padding:"3px 9px",cursor:"pointer",fontWeight:600}}>{t.addYarn}</button>
             </div>
-            {form.yarns.map((y,i)=><YarnRow key={y.id} yarn={y} onChange={v=>sf("yarns",form.yarns.map((x,j)=>j===i?v:x))} onRemove={()=>sf("yarns",form.yarns.filter((_,j)=>j!==i))} yarnLib={yarnLib}/>)}
+            {form.yarns.map((y,i)=>(
+              <YarnChip key={y.id} yarn={y}
+                onChange={v=>sf("yarns",form.yarns.map((x,j)=>j===i?v:x))}
+                onRemove={()=>sf("yarns",form.yarns.filter((_,j)=>j!==i))}/>
+            ))}
+            {showYarnPicker&&(
+              <YarnLibPickerSheet
+                yarnLib={yarnLib}
+                alreadyAdded={new Set(form.yarns.map(y=>y.libId).filter(Boolean))}
+                onPick={y=>sf("yarns",[...form.yarns,{id:uid(),libId:y.id,brand:y.brand,name:y.name,colorway:y.colorway,color:y.color,fibre:y.fibre,photo:y.photo||null,balls:1}])}
+                onClose={()=>setShowYarnPicker(false)}/>
+            )}
           </div>
 
           <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:12}}>
@@ -4014,15 +4056,121 @@ function FormField({label,req,children}){
 }
 
 /* ─── Add Yarn to Library Modal ────────────────────────────────────────────── */
+/* ── Yarn Photo Crop Modal ── */
+function YarnPhotoCropModal({src,onCrop,onClose}){
+  const CROP=260;
+  const containerRef=useRef(null);
+  const[natural,setNatural]=useState(null);
+  const[scale,setScale]=useState(1);
+  const[offset,setOffset]=useState({x:0,y:0});
+  const pointersRef=useRef(new Map());
+  const dragRef=useRef(null); // {sx,sy} = clientXY minus current offset
+  const lastDistRef=useRef(null);
+
+  const onLoad=(e)=>{
+    const nw=e.target.naturalWidth,nh=e.target.naturalHeight;
+    const s=Math.max(CROP/nw,CROP/nh);
+    setNatural({w:nw,h:nh});
+    setScale(s);
+    setOffset({x:0,y:0});
+  };
+
+  const onPDown=(e)=>{
+    e.currentTarget.setPointerCapture(e.pointerId);
+    pointersRef.current.set(e.pointerId,{x:e.clientX,y:e.clientY});
+    if(pointersRef.current.size===1){
+      dragRef.current={sx:e.clientX-offset.x,sy:e.clientY-offset.y};
+      lastDistRef.current=null;
+    }
+  };
+  const onPMove=(e)=>{
+    pointersRef.current.set(e.pointerId,{x:e.clientX,y:e.clientY});
+    const pts=[...pointersRef.current.values()];
+    if(pts.length===1&&dragRef.current){
+      setOffset({x:e.clientX-dragRef.current.sx,y:e.clientY-dragRef.current.sy});
+    } else if(pts.length===2){
+      const d=Math.hypot(pts[0].x-pts[1].x,pts[0].y-pts[1].y);
+      if(lastDistRef.current!==null) setScale(s=>Math.max(0.2,Math.min(10,s*(d/lastDistRef.current))));
+      lastDistRef.current=d;
+    }
+  };
+  const onPUp=(e)=>{
+    pointersRef.current.delete(e.pointerId);
+    lastDistRef.current=null;
+    if(pointersRef.current.size===0) dragRef.current=null;
+  };
+  const onWheel=(e)=>{
+    e.preventDefault();
+    setScale(s=>Math.max(0.2,Math.min(10,s*(e.deltaY>0?0.9:1.1))));
+  };
+
+  const apply=()=>{
+    if(!natural||!containerRef.current)return;
+    const canvas=document.createElement("canvas");
+    canvas.width=CROP;canvas.height=CROP;
+    const ctx=canvas.getContext("2d");
+    const{clientWidth:cW,clientHeight:cH}=containerRef.current;
+    const imgL=cW/2-natural.w*scale/2+offset.x;
+    const imgT=cH/2-natural.h*scale/2+offset.y;
+    const cL=cW/2-CROP/2,cT=cH/2-CROP/2;
+    const srcX=(cL-imgL)/scale,srcY=(cT-imgT)/scale;
+    const srcW=CROP/scale,srcH=CROP/scale;
+    const img=new Image();
+    img.onload=()=>{ctx.drawImage(img,srcX,srcY,srcW,srcH,0,0,CROP,CROP);onCrop(canvas.toDataURL("image/jpeg",0.85));};
+    img.src=src;
+  };
+
+  return createPortal(
+    <div style={{position:"fixed",inset:0,background:"#111",zIndex:300,display:"flex",flexDirection:"column"}}>
+      <div style={{padding:"14px 20px",display:"flex",justifyContent:"space-between",alignItems:"center",flexShrink:0}}>
+        <button onClick={onClose} style={{color:"rgba(255,255,255,0.65)",background:"none",border:"none",fontSize:15,fontWeight:600,cursor:"pointer",padding:0}}>Cancel</button>
+        <span style={{color:"white",fontSize:15,fontWeight:700}}>Move &amp; Crop</span>
+        <button onClick={apply} style={{color:"#7AC2E1",background:"none",border:"none",fontSize:15,fontWeight:700,cursor:"pointer",padding:0}}>Apply</button>
+      </div>
+
+      <div ref={containerRef}
+        style={{flex:1,position:"relative",overflow:"hidden",touchAction:"none",cursor:"grab",userSelect:"none"}}
+        onPointerDown={onPDown} onPointerMove={onPMove} onPointerUp={onPUp} onPointerCancel={onPUp}
+        onWheel={onWheel}>
+        <img src={src} onLoad={onLoad} style={{position:"absolute",opacity:0,pointerEvents:"none",width:1,height:1,top:0,left:0}}/>
+        {natural&&(
+          <img src={src} style={{
+            position:"absolute",left:"50%",top:"50%",
+            width:natural.w*scale,height:natural.h*scale,
+            transform:`translate(calc(-50% + ${offset.x}px),calc(-50% + ${offset.y}px))`,
+            pointerEvents:"none",userSelect:"none",draggable:false
+          }}/>
+        )}
+        {/* Crop square overlay */}
+        <div style={{position:"absolute",left:"50%",top:"50%",width:CROP,height:CROP,transform:"translate(-50%,-50%)",boxShadow:"0 0 0 9999px rgba(0,0,0,0.55)",pointerEvents:"none"}}>
+          <div style={{position:"absolute",inset:0,border:"1.5px solid rgba(255,255,255,0.55)",borderRadius:6}}/>
+          {/* Corner accents */}
+          <div style={{position:"absolute",top:-1,left:-1,width:22,height:22,borderTop:"2.5px solid white",borderLeft:"2.5px solid white",borderRadius:"6px 0 0 0"}}/>
+          <div style={{position:"absolute",top:-1,right:-1,width:22,height:22,borderTop:"2.5px solid white",borderRight:"2.5px solid white",borderRadius:"0 6px 0 0"}}/>
+          <div style={{position:"absolute",bottom:-1,left:-1,width:22,height:22,borderBottom:"2.5px solid white",borderLeft:"2.5px solid white",borderRadius:"0 0 0 6px"}}/>
+          <div style={{position:"absolute",bottom:-1,right:-1,width:22,height:22,borderBottom:"2.5px solid white",borderRight:"2.5px solid white",borderRadius:"0 0 6px 0"}}/>
+        </div>
+      </div>
+
+      <div style={{padding:"10px 20px 36px",textAlign:"center",color:"rgba(255,255,255,0.35)",fontSize:12,flexShrink:0}}>
+        Drag to reposition · Pinch or scroll to zoom
+      </div>
+    </div>,
+    document.body
+  );
+}
+
 function AddYarnModal({onClose,onAdd,initialYarn,onEdit}){
   const editing=!!initialYarn;
   const{t}=useLang();
   const[form,setForm]=useState(editing?{
     ...initialYarn,
+    photo:initialYarn.photo||null,
     composition:initialYarn.composition&&initialYarn.composition.length>0
       ?initialYarn.composition
       :[{fibre:initialYarn.fibre||"Merino Wool",pct:100}],
-  }:{brand:"",name:"",colorway:"",color:SWATCHES[0],composition:[{fibre:"Merino Wool",pct:100}],weight:"Worsted",ballsOwned:1,physWeight:"",physWeightUnit:"oz",yarnLength:"",yarnLengthUnit:"yd"});
+  }:{brand:"",name:"",colorway:"",color:SWATCHES[0],photo:null,composition:[{fibre:"Merino Wool",pct:100}],weight:"Worsted",ballsOwned:1,physWeight:"",physWeightUnit:"oz",yarnLength:"",yarnLengthUnit:"yd"});
+  const[cropSrc,setCropSrc]=useState(null);
   const s=(k,v)=>setForm(f=>({...f,[k]:v}));
   const iS={width:"100%",padding:"9px 12px",borderRadius:10,border:"1.5px solid #E5E7EB",fontSize:14,color:"#111",background:"#FAFAFA"};
 
@@ -4041,6 +4189,26 @@ function AddYarnModal({onClose,onAdd,initialYarn,onEdit}){
           </button>
         </div>
         <div style={{overflowY:"auto",padding:"16px 20px 8px",flex:1}}>
+          {/* Photo upload */}
+          <div style={{display:"flex",alignItems:"center",gap:12,marginBottom:14}}>
+            {form.photo?(
+              <div style={{position:"relative",flexShrink:0}}>
+                <img src={form.photo} style={{width:64,height:64,borderRadius:12,objectFit:"cover",border:"2px solid #E5E7EB"}}/>
+                <button onClick={()=>s("photo",null)} style={{position:"absolute",top:-6,right:-6,width:20,height:20,borderRadius:999,background:"#EF4444",border:"2px solid white",color:"white",fontSize:11,cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center",lineHeight:1}}>✕</button>
+                <button onClick={()=>imgPick(v=>setCropSrc(v))} style={{position:"absolute",bottom:-6,right:-6,width:20,height:20,borderRadius:999,background:"#247BA0",border:"2px solid white",color:"white",fontSize:14,cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center",lineHeight:1}}>✎</button>
+              </div>
+            ):(
+              <button onClick={()=>imgPick(v=>setCropSrc(v))}
+                style={{width:64,height:64,borderRadius:12,border:"2px dashed #E5E7EB",background:"#FAFAFA",cursor:"pointer",display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",gap:3,color:"#9CA3AF",flexShrink:0}}>
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><path strokeLinecap="round" strokeLinejoin="round" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
+                <span style={{fontSize:9,fontWeight:600}}>Add photo</span>
+              </button>
+            )}
+            <div style={{fontSize:12,color:"#9CA3AF",lineHeight:1.5}}>
+              {form.photo?"Photo added — tap ✕ to remove":"Optional: add a photo of your yarn"}
+            </div>
+          </div>
+          {cropSrc&&<YarnPhotoCropModal src={cropSrc} onCrop={v=>{s("photo",v);setCropSrc(null);}} onClose={()=>setCropSrc(null)}/>}
           <FormField label={t.libBrand}><input style={iS} value={form.brand} onChange={e=>s("brand",e.target.value)} placeholder="Malabrigo"/></FormField>
           <FormField label={t.libName}><input style={iS} value={form.name} onChange={e=>s("name",e.target.value)} placeholder="Sock"/></FormField>
           <FormField label={t.libColorway}><input style={iS} value={form.colorway} onChange={e=>s("colorway",e.target.value)} placeholder="Aguas"/></FormField>
@@ -4168,7 +4336,14 @@ function YarnLibPage({yarnLib,setYarnLib,projects}){
               <div style={{height:3,background:`linear-gradient(90deg,${yarn.color},${yarn.color}88)`}}/>
               <div style={{padding:"14px 16px"}}>
                 <div style={{display:"flex",alignItems:"center",gap:10}}>
-                  <div style={{width:40,height:40,borderRadius:12,background:yarn.color,flexShrink:0,boxShadow:`0 3px 10px ${yarn.color}44`}}/>
+                  {yarn.photo?(
+                    <div style={{width:40,height:40,borderRadius:12,overflow:"hidden",flexShrink:0,position:"relative",border:"2px solid #E5E7EB"}}>
+                      <img src={yarn.photo} style={{width:"100%",height:"100%",objectFit:"cover"}}/>
+                      <div style={{position:"absolute",bottom:2,right:2,width:10,height:10,borderRadius:999,background:yarn.color,border:"1.5px solid white"}}/>
+                    </div>
+                  ):(
+                    <div style={{width:40,height:40,borderRadius:12,background:yarn.color,flexShrink:0,boxShadow:`0 3px 10px ${yarn.color}44`}}/>
+                  )}
                   <div style={{flex:1,minWidth:0}}>
                     <div style={{fontSize:14,fontWeight:700,color:"#111",overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{yarn.brand} {yarn.name}</div>
                     <div style={{fontSize:11,color:"#9CA3AF"}}>{yarn.colorway}{yarn.weight?" · "+yarn.weight:""}</div>
@@ -4396,7 +4571,7 @@ function imgPick(cb){
 function PatternFormModal({onClose,onSave,initial,yarnLib=[]}){
   const editing=!!initial;
   const{t}=useLang();
-  const blank={name:"",category:"Shawl",craft:"Crochet",difficulty:"Beginner",source:"",notes:"",tags:"",image:null,designData:null,importText:"",importImage:null,importPdf:null};
+  const blank={name:"",category:"Shawl",craft:"Crochet",difficulty:"Beginner",source:"",notes:"",tags:"",image:null,photos:[],designData:null,importText:"",importImage:null,importPdf:null};
   const[form,setForm]=useState(editing?{...blank,...initial,tags:Array.isArray(initial.tags)?initial.tags.join(", "):initial.tags||""}:blank);
   const[openMaker,setOpenMaker]=useState(null); // null | "rows" | "rounds"
   // derive layout from existing designData, or default to "rows"
@@ -4407,7 +4582,12 @@ function PatternFormModal({onClose,onSave,initial,yarnLib=[]}){
   const iS={width:"100%",padding:"9px 12px",borderRadius:10,border:"1.5px solid #E5E7EB",fontSize:14,color:"#111",background:"#FAFAFA"};
   const save=()=>{
     if(!form.name.trim())return;
-    onSave({...form,id:editing?initial.id:uid(),tags:typeof form.tags==="string"?form.tags.split(",").map(x=>x.trim()).filter(Boolean):form.tags});
+    const photos=form.photos||[];
+    onSave({...form,id:editing?initial.id:uid(),
+      tags:typeof form.tags==="string"?form.tags.split(",").map(x=>x.trim()).filter(Boolean):form.tags,
+      photos,
+      image:photos[0]||form.image||null,  // keep image in sync for thumbnails
+    });
     onClose();
   };
   const yarnColors=yarnLib.filter(y=>y.color).map(y=>({color:y.color,name:[y.brand,y.name,y.colorway].filter(Boolean).join(" ")||"Yarn"}));
@@ -4462,20 +4642,27 @@ function PatternFormModal({onClose,onSave,initial,yarnLib=[]}){
             ))}
           </div>
 
-          {/* Image upload */}
+          {/* Photos — up to 3, no crop */}
           <div style={{marginBottom:14}}>
-            <label style={{display:"block",fontSize:12,fontWeight:600,color:"#6B7280",marginBottom:6}}>Pattern Photo</label>
-            {form.image?(
-              <div style={{position:"relative",borderRadius:14,overflow:"hidden",height:140}}>
-                <img src={form.image} alt="" style={{width:"100%",height:"100%",objectFit:"cover"}}/>
-                <button onClick={()=>s("image",null)} style={{position:"absolute",top:8,right:8,width:28,height:28,borderRadius:999,background:"rgba(0,0,0,.5)",border:"none",cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center"}}>
-                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.5"><path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12"/></svg>
-                </button>
+            <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:6}}>
+              <label style={{fontSize:12,fontWeight:600,color:"#6B7280"}}>📸 Photos <span style={{fontSize:10,color:"#9CA3AF",fontWeight:400}}>({(form.photos||[]).length}/3)</span></label>
+            </div>
+            {(form.photos||[]).length>0&&(
+              <div style={{display:"grid",gridTemplateColumns:"repeat(3,1fr)",gap:7,marginBottom:8}}>
+                {(form.photos||[]).map((src,i)=>(
+                  <div key={i} style={{position:"relative",borderRadius:10,overflow:"hidden",background:"#F3F4F6",border:"1.5px solid #E5E7EB"}}>
+                    <img src={src} style={{width:"100%",height:"auto",display:"block"}}/>
+                    <button onClick={()=>s("photos",(form.photos||[]).filter((_,j)=>j!==i))}
+                      style={{position:"absolute",top:4,right:4,width:20,height:20,borderRadius:999,background:"rgba(0,0,0,.55)",border:"none",cursor:"pointer",color:"white",fontSize:11,display:"flex",alignItems:"center",justifyContent:"center",lineHeight:1}}>✕</button>
+                  </div>
+                ))}
               </div>
-            ):(
-              <button onClick={()=>imgPick(v=>s("image",v))} style={{width:"100%",height:90,borderRadius:14,border:"2px dashed #E5E7EB",background:"#FAFAFA",cursor:"pointer",display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",gap:4,color:"#9CA3AF"}}>
-                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><path strokeLinecap="round" strokeLinejoin="round" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
-                <span style={{fontSize:12,fontWeight:600}}>Upload photo</span>
+            )}
+            {(form.photos||[]).length<3&&(
+              <button onClick={()=>imgPick(v=>{if((form.photos||[]).length<3)s("photos",[...(form.photos||[]),v]);})}
+                style={{width:"100%",height:80,borderRadius:12,border:"2px dashed #E5E7EB",background:"#FAFAFA",cursor:"pointer",display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",gap:4,color:"#9CA3AF"}}>
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><path strokeLinecap="round" strokeLinejoin="round" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
+                <span style={{fontSize:12,fontWeight:600}}>Add photo ({3-(form.photos||[]).length} left)</span>
               </button>
             )}
           </div>
@@ -5102,11 +5289,24 @@ function PatternDetailModal({pat,onClose,onEdit,onDelete,onUpdate,yarnLib=[]}){
 
         <div style={{flex:1,overflowY:"auto"}}>
 
-          {/* ── Photo (full-width, tap to fullscreen) ── */}
-          {pat.image&&(
-            <div style={{position:"relative",maxHeight:240,overflow:"hidden",background:"#F3F4F6"}}>
-              <img src={pat.image} alt="" onClick={()=>setImgFull(true)} style={{width:"100%",objectFit:"cover",display:"block",cursor:"zoom-in"}}/>
-              <button onClick={()=>imgPick(v=>onUpdate({...pat,image:v}))} style={{position:"absolute",bottom:10,right:10,padding:"5px 11px",borderRadius:20,background:"rgba(0,0,0,.55)",border:"none",cursor:"pointer",color:"white",fontSize:11,fontWeight:700,backdropFilter:"blur(4px)"}}>📷 Replace</button>
+          {/* ── Photos gallery (up to 3, no crop) ── */}
+          {((pat.photos||[]).length>0||pat.image)&&(
+            <div style={{padding:"12px 16px",borderBottom:"1px solid #F3F4F6"}}>
+              <div style={{display:"flex",gap:8,overflowX:"auto",paddingBottom:4}}>
+                {((pat.photos||[]).length>0?pat.photos:[pat.image]).map((src,i)=>(
+                  <div key={i} style={{flexShrink:0,borderRadius:12,overflow:"hidden",background:"#F3F4F6",maxWidth:220,border:"1px solid #E5E7EB"}}>
+                    <img src={src} onClick={()=>setImgFull(true)} style={{width:"100%",height:"auto",display:"block",cursor:"zoom-in"}}/>
+                  </div>
+                ))}
+              </div>
+              {(pat.photos||[]).length<3&&(
+                <button onClick={()=>imgPick(v=>{
+                  const photos=[...(pat.photos||[]),v].slice(0,3);
+                  onUpdate({...pat,photos,image:photos[0]});
+                })} style={{marginTop:8,fontSize:11,fontWeight:600,color:"#9CA3AF",background:"none",border:"1.5px dashed #E5E7EB",borderRadius:10,padding:"5px 12px",cursor:"pointer"}}>
+                  + Add photo ({3-(pat.photos||[]).length} left)
+                </button>
+              )}
             </div>
           )}
 
@@ -5172,20 +5372,20 @@ function PatternDetailModal({pat,onClose,onEdit,onDelete,onUpdate,yarnLib=[]}){
           )}
 
           {/* ── No image and no design: placeholder ── */}
-          {!pat.image&&!hasDesign&&(
+          {!(pat.photos||[]).length&&!pat.image&&!hasDesign&&(
             <div style={{padding:"28px 16px 0",display:"flex",flexDirection:"column",alignItems:"center",gap:10}}>
               <span style={{fontSize:56}}>{CAT_EMOJI[pat.category]||"📋"}</span>
               <div style={{display:"flex",gap:8}}>
-                <button onClick={()=>imgPick(v=>onUpdate({...pat,image:v}))} style={{padding:"7px 14px",borderRadius:12,background:"#F3F4F6",border:"none",cursor:"pointer",color:"#374151",fontSize:12,fontWeight:600}}>📷 Add Photo</button>
+                <button onClick={()=>imgPick(v=>onUpdate({...pat,photos:[v],image:v}))} style={{padding:"7px 14px",borderRadius:12,background:"#F3F4F6",border:"none",cursor:"pointer",color:"#374151",fontSize:12,fontWeight:600}}>📷 Add Photo</button>
                 <button onClick={()=>setOpenMaker(true)} style={{padding:"7px 14px",borderRadius:12,background:accentColor,border:"none",cursor:"pointer",color:"white",fontSize:12,fontWeight:600}}>🎨 Design Pattern</button>
               </div>
             </div>
           )}
 
-          {/* ── Add photo button when design exists but no image ── */}
-          {!pat.image&&hasDesign&&(
+          {/* ── Add photo button when design exists but no photos ── */}
+          {!(pat.photos||[]).length&&!pat.image&&hasDesign&&(
             <div style={{padding:"8px 16px 0",textAlign:"center"}}>
-              <button onClick={()=>imgPick(v=>onUpdate({...pat,image:v}))} style={{fontSize:12,color:"#9CA3AF",background:"none",border:"1.5px dashed #E5E7EB",borderRadius:10,padding:"6px 14px",cursor:"pointer"}}>📷 Add reference photo</button>
+              <button onClick={()=>imgPick(v=>onUpdate({...pat,photos:[v],image:v}))} style={{fontSize:12,color:"#9CA3AF",background:"none",border:"1.5px dashed #E5E7EB",borderRadius:10,padding:"6px 14px",cursor:"pointer"}}>📷 Add reference photo</button>
             </div>
           )}
 
@@ -5775,7 +5975,7 @@ function ReadOnlyKnitGrid({grid}){
 function CrochetChartView({stitches=[],highlightY=null,currentRowY=null,onRowClick=null,showControls=true}){
   const canvasRef=useRef(null);
   const containerRef=useRef(null);
-  const{readHighlightColor="#BFD7EA"}=useSettings();
+  const{readHighlightColor="#BFD7EA",canvasBg="#FDFAF6"}=useSettings();
 
   const[zoom,setZoom]=useState(1);
   const[pan,setPan]=useState({x:0,y:0});
@@ -5882,7 +6082,7 @@ function CrochetChartView({stitches=[],highlightY=null,currentRowY=null,onRowCli
     const ctx=canvas.getContext("2d");
     ctx.scale(dpr,dpr);
     // Full-viewport background
-    ctx.fillStyle="#FAFAFA";ctx.fillRect(0,0,cW,cH);
+    ctx.fillStyle=canvasBg;ctx.fillRect(0,0,cW,cH);
     // Apply pan+zoom transform — all content drawn in natural (W×H) coords below
     ctx.save();
     ctx.translate(pan.x,pan.y);ctx.scale(zoom,zoom);
@@ -5895,12 +6095,12 @@ function CrochetChartView({stitches=[],highlightY=null,currentRowY=null,onRowCli
     const isStudy=highlightY instanceof Set;
     const hSet=highlightY===null?null:(isStudy?highlightY:new Set([highlightY]));
     const isLit=s=>!hSet||hSet.has(Math.round(s.y));
-    if(hSet){
+    if(hSet&&isStudy){
       hSet.forEach(hy=>{
         const by=oy_base+rpx(hy)-CELL/2-4;
-        ctx.fillStyle=isStudy?"rgba(5,150,105,0.09)":"rgba(124,58,237,0.09)";
+        ctx.fillStyle="rgba(5,150,105,0.15)";
         ctx.fillRect(0,by,W-PAD_R,CELL+8);
-        ctx.strokeStyle=isStudy?"rgba(5,150,105,0.32)":"rgba(124,58,237,0.28)";
+        ctx.strokeStyle="rgba(5,150,105,0.45)";
         ctx.lineWidth=1.5;ctx.setLineDash([]);
         ctx.strokeRect(0,by,W-PAD_R,CELL+8);
       });
@@ -5921,32 +6121,28 @@ function CrochetChartView({stitches=[],highlightY=null,currentRowY=null,onRowCli
         ctx.stroke();ctx.setLineDash([]);
       });
     });
-    // Stitches with highlight glow pipeline
+    // Stitches — active row gets a radial-gradient bloom behind each stitch.
+    // Radial gradients work with drawImage on all browsers including iOS Safari,
+    // unlike ctx.shadowBlur which is silently ignored with drawImage on iOS Safari.
     const hlR=parseInt(readHighlightColor.slice(1,3),16);
     const hlG=parseInt(readHighlightColor.slice(3,5),16);
     const hlB=parseInt(readHighlightColor.slice(5,7),16);
-    const GLOW_PAD=28;
     stitches.forEach(s=>{
       const inCurrentRow=currentRowY!==null&&Math.round(s.y)===Math.round(currentRowY)&&s.id!=="mr";
       const activeRow=currentRowY===null||inCurrentRow;
       const scx=ox+s.x*CELL,scy=oy_base+rpx(s.y);
       ctx.globalAlpha=isLit(s)?(activeRow?1:0.50):0.28;
       if(inCurrentRow){
-        const sz=CELL+GLOW_PAD*2;
-        const off=document.createElement("canvas");off.width=sz;off.height=sz;
-        drawSymOnCanvas(off.getContext("2d"),s.id,GLOW_PAD,GLOW_PAD,CELL,s.color,s.fanAngle||0);
-        const sil=document.createElement("canvas");sil.width=sz;sil.height=sz;
-        const sctx=sil.getContext("2d");
-        sctx.filter=`blur(8px)`;sctx.drawImage(off,0,0);sctx.filter="none";
-        sctx.globalCompositeOperation="source-in";
-        sctx.fillStyle=`rgb(${hlR},${hlG},${hlB})`;sctx.fillRect(0,0,sz,sz);
-        sctx.globalCompositeOperation="source-over";
-        ctx.drawImage(sil,scx-GLOW_PAD,scy-GLOW_PAD);
-        ctx.drawImage(sil,scx-GLOW_PAD,scy-GLOW_PAD);
-        drawSymOnCanvas(ctx,s.id,scx,scy,CELL,s.color,s.fanAngle||0);
-      }else{
-        drawSymOnCanvas(ctx,s.id,scx,scy,CELL,s.color,s.fanAngle||0);
+        const bloomY=scy-CELL*0.3;
+        const bloomR=CELL*0.9;
+        const grad=ctx.createRadialGradient(scx,bloomY,0,scx,bloomY,bloomR);
+        grad.addColorStop(0,`rgba(${hlR},${hlG},${hlB},0.6)`);
+        grad.addColorStop(0.5,`rgba(${hlR},${hlG},${hlB},0.28)`);
+        grad.addColorStop(1,`rgba(${hlR},${hlG},${hlB},0)`);
+        ctx.fillStyle=grad;
+        ctx.beginPath();ctx.arc(scx,bloomY,bloomR,0,Math.PI*2);ctx.fill();
       }
+      drawSymOnCanvas(ctx,s.id,scx,scy,CELL,s.color,s.fanAngle||0);
       ctx.globalAlpha=1;
     });
     // Row labels — foundation chain (y===0) labelled FC, actual rows R1, R2…
@@ -6018,7 +6214,7 @@ function CrochetChartView({stitches=[],highlightY=null,currentRowY=null,onRowCli
 
   if(!stitches.length)return <div style={{padding:"16px",textAlign:"center",color:"#CCC",fontSize:12}}>No stitches in this pattern.</div>;
   return(
-    <div ref={containerRef} style={{flex:1,position:"relative",overflow:"hidden",background:"#FAFAFA",
+    <div ref={containerRef} style={{flex:1,position:"relative",overflow:"hidden",background:canvasBg,
       cursor:showControls?(dragging?"grabbing":"grab"):"default",touchAction:showControls?"none":"auto"}}
       onPointerDown={showControls?onPointerDown:undefined} onPointerMove={showControls?onPointerMove:undefined} onPointerUp={showControls?onPointerUp:undefined} onPointerCancel={showControls?onPointerUp:undefined}
     >
@@ -7077,6 +7273,18 @@ function SettingsPage({settings, setSettings, lang, setLang, onBack, rewards=REW
             </div>
           </div>
           <input ref={photoInputRef} type="file" accept="image/*" style={{display:"none"}} onChange={handlePhotoChange}/>
+          {/* Party profile image mode selector */}
+          <div style={{display:"flex",gap:8,justifyContent:"center",marginBottom:14}}>
+            <div style={{fontSize:11,color:"#9CA3AF",alignSelf:"center",marginRight:2}}>Party card:</div>
+            {[["photo","Photo"],["avatar","Avatar"]].map(([mode,label])=>(
+              <button key={mode} onClick={()=>set("profileImageMode",mode)}
+                style={{padding:"4px 16px",borderRadius:20,border:"none",cursor:"pointer",fontWeight:600,fontSize:12,
+                  background:(settings.profileImageMode||"photo")===mode?"#247BA0":"#F3F4F6",
+                  color:(settings.profileImageMode||"photo")===mode?"white":"#6B7280"}}>
+                {(settings.profileImageMode||"photo")===mode?"✓ ":""}{label}
+              </button>
+            ))}
+          </div>
           {editingProfile?(
             <>
               <SettingRow label={t.settingsName}>
@@ -7361,6 +7569,7 @@ const DEFAULT_SETTINGS = {
   readHighlightColor: "#BFD7EA",
   canvasBg: "#FDFAF6",
   avatarConfig: {hair:"hair_1",eyes:"eyes_1",nose:"nose_1",mouth:"mouth_1",glasses:null},
+  profileImageMode: "photo",
 };
 
 /* ─── Milestone Reward System ───────────────────────────────────────────────── */
@@ -9585,8 +9794,8 @@ function CircularPatternMaker({initialPattern=null,onSave=null,onClose=null,yarn
       {/* Page header */}
       <div style={{padding:"12px 14px 10px",background:"white",borderBottom:"1px solid #E8F4FB",display:"flex",alignItems:"center",justifyContent:"space-between",flexShrink:0}}>
         <div>
-          <div style={{fontSize:10,fontWeight:700,color:"#247BA0",letterSpacing:"0.08em",textTransform:"uppercase"}}>Circular Crochet</div>
-          <div style={{fontSize:16,fontWeight:800,color:"#1C160E"}}>Pattern Maker</div>
+          <div style={{fontSize:10,fontWeight:700,color:"#247BA0",letterSpacing:"0.08em",textTransform:"uppercase"}}>Crochet Pattern Maker</div>
+          <div style={{fontSize:16,fontWeight:800,color:"#1C160E"}}>Rounds</div>
         </div>
         <div style={{display:"flex",gap:6,alignItems:"center"}}>
           {saveFlash&&(
@@ -9653,6 +9862,7 @@ function ProjectsView({projects, setProjects, setEditingProject, setPickPatternF
       if (p.status === "Completed") setTimeout(() => setProjects(prev => prev.map(x => x.id===p.id ? {...x, archived:true} : x)), 3000);
     },
     onArchive: isArchived ? () => unarchiveProject(p.id) : () => archiveProject(p.id),
+    onToggleSaved: val => setProjects(prev => prev.map(x => x.id===p.id ? {...x, saved:val} : x)),
   });
 
   return (
@@ -9822,11 +10032,12 @@ function CreatePartyModal({onClose,onCreated,settings}){
     if(!sb){setError("Supabase not configured. Add your project URL and key.");return;}
     setLoading(true);setError("");
     try{
+      const profileImg=await getProfileImage(settings);
       const{data,error:err}=await sb.from("parties").insert({
         host_name:settings?.profileName||"Anonymous",
         host_country:settings?.profileCountry||null,
         host_bio:settings?.profileBio||null,
-        host_photo:settings?.profilePhoto||null,
+        host_photo:profileImg,
         host_city:locationData?.city||null,
         title:form.title.trim(),
         description:form.description.trim()||null,
@@ -9972,9 +10183,10 @@ function JoinPartyModal({onClose,onJoined,settings,initialParty=null}){
     if(!sb){setError("Supabase not configured.");return;}
     setLoading(true);setError("");
     try{
+      const profileImg=await getProfileImage(settings);
       const{data,error:err}=await sb.from("party_signups").insert({
         party_id:party.id,attendee_name:name.trim(),attendee_country:country||null,
-        attendee_bio:settings?.profileBio||null,attendee_photo:settings?.profilePhoto||null,
+        attendee_bio:settings?.profileBio||null,attendee_photo:profileImg,
       }).select().single();
       if(err){console.error("party_signups insert error:",JSON.stringify(err));throw err;}
       onJoined({partyId:party.id,signupId:data.id});
@@ -10083,11 +10295,18 @@ function ManagePartyModal({partyId,onClose,onDeleted,settings}){
           sb.from("parties").select("*").eq("id",partyId).single(),
           sb.from("party_signups").select("*").eq("party_id",partyId).order("created_at"),
         ]);
-        setParty(p);setAttendees(a||[]);
+        setAttendees(a||[]);
         if(p){
           setEditForm({title:p.title||"",description:p.description||"",date:p.date||"",time:p.time||"",location:p.location||"",place_name:p.place_name||"",craft_type:p.craft_type||"both",max_attendees:p.max_attendees||"",is_public:p.is_public||false});
           if(p.latitude&&p.longitude)setEditLocationData({latitude:p.latitude,longitude:p.longitude,place_name:p.place_name||"",formatted_address:p.formatted_address||"",city:p.host_city||""});
+          // auto-sync host_photo to current profile image mode
+          const freshImg=await getProfileImage(settings);
+          if(freshImg!==p.host_photo){
+            await sb.from("parties").update({host_photo:freshImg}).eq("id",partyId);
+            p.host_photo=freshImg;
+          }
         }
+        setParty(p);
         if(p?.announcement)setAnnouncements(parseAnnouncements(p.announcement));
       }catch(_){}
       setLoading(false);
@@ -10100,6 +10319,7 @@ function ManagePartyModal({partyId,onClose,onDeleted,settings}){
     if(!editForm.title.trim()){setError(t.partyErrTitle);return;}
     setSaving(true);setError("");setSaveMsg("");
     try{
+      const profileImg=await getProfileImage(settings);
       const{error:err}=await sb.from("parties").update({
         title:editForm.title.trim(),description:editForm.description.trim()||null,
         date:editForm.date||null,time:editForm.time||null,
@@ -10111,7 +10331,7 @@ function ManagePartyModal({partyId,onClose,onDeleted,settings}){
         place_name:editForm.place_name?.trim()||editLocationData?.place_name||null,
         formatted_address:editLocationData?.formatted_address||null,
         host_city:editLocationData?.city||null,
-        host_photo:settings?.profilePhoto||null,
+        host_photo:profileImg,
       }).eq("id",partyId);
       if(err)throw err;
       setParty(p=>({...p,...editForm,max_attendees:editForm.max_attendees?parseInt(editForm.max_attendees):null,latitude:editLocationData?.latitude||p.latitude,longitude:editLocationData?.longitude||p.longitude,place_name:editLocationData?.place_name||p.place_name,formatted_address:editLocationData?.formatted_address||p.formatted_address}));
@@ -10189,9 +10409,7 @@ function ManagePartyModal({partyId,onClose,onDeleted,settings}){
                         <div key={a.id} onClick={()=>setError("")||setTab("attendees")||setManageAttendeeCard(a)}
                           style={{display:"flex",alignItems:"center",gap:10,padding:"10px 12px",background:"#FAFAFA",borderRadius:12,border:"1px solid #F3F4F6",cursor:"pointer"}}>
                           <div style={{width:36,height:36,borderRadius:999,overflow:"hidden",flexShrink:0,background:"#E5E7EB",display:"flex",alignItems:"center",justifyContent:"center"}}>
-                            {a.attendee_photo
-                              ?<img src={a.attendee_photo} style={{width:"100%",height:"100%",objectFit:"cover"}}/>
-                              :<div style={{width:"100%",height:"100%",background:"linear-gradient(135deg,#247BA0,#7AC2E1)",display:"flex",alignItems:"center",justifyContent:"center",color:"white",fontWeight:700,fontSize:14}}>{a.attendee_name?.[0]?.toUpperCase()||"?"}</div>}
+                            <PartyPhoto photo={a.attendee_photo} size={36} fallback={<div style={{width:"100%",height:"100%",background:"linear-gradient(135deg,#247BA0,#7AC2E1)",display:"flex",alignItems:"center",justifyContent:"center",color:"white",fontWeight:700,fontSize:14}}>{a.attendee_name?.[0]?.toUpperCase()||"?"}</div>}/>
                           </div>
                           <div style={{flex:1}}>
                             <div style={{fontSize:13,fontWeight:700,color:"#111"}}>{a.attendee_name}</div>
@@ -10311,9 +10529,7 @@ function ManagePartyModal({partyId,onClose,onDeleted,settings}){
           <div style={{position:"absolute",inset:0,background:"rgba(0,0,0,.40)",zIndex:1200,display:"flex",alignItems:"center",justifyContent:"center",padding:24}} onClick={()=>setManageAttendeeCard(null)}>
             <div style={{background:"#fff",borderRadius:24,padding:"28px 24px 20px",width:"100%",maxWidth:300,textAlign:"center",boxShadow:"0 8px 40px rgba(0,0,0,.18)"}} onClick={e=>e.stopPropagation()}>
               <div style={{width:80,height:80,borderRadius:999,margin:"0 auto 14px",overflow:"hidden",display:"flex",alignItems:"center",justifyContent:"center"}}>
-                {manageAttendeeCard.attendee_photo
-                  ?<img src={manageAttendeeCard.attendee_photo} style={{width:"100%",height:"100%",objectFit:"cover"}}/>
-                  :<div style={{width:"100%",height:"100%",background:"linear-gradient(135deg,#247BA0,#7AC2E1)",display:"flex",alignItems:"center",justifyContent:"center",color:"white",fontWeight:800,fontSize:28}}>{manageAttendeeCard.attendee_name?.[0]?.toUpperCase()||"?"}</div>}
+                <PartyPhoto photo={manageAttendeeCard.attendee_photo} size={80} fallback={<div style={{width:"100%",height:"100%",background:"linear-gradient(135deg,#247BA0,#7AC2E1)",display:"flex",alignItems:"center",justifyContent:"center",color:"white",fontWeight:800,fontSize:28}}>{manageAttendeeCard.attendee_name?.[0]?.toUpperCase()||"?"}</div>}/>
               </div>
               <div style={{fontSize:18,fontWeight:800,color:"#111"}}>{manageAttendeeCard.attendee_name}</div>
               {manageAttendeeCard.attendee_country&&<div style={{fontSize:12,color:"#9CA3AF",marginTop:3}}>{manageAttendeeCard.attendee_country}</div>}
@@ -10470,9 +10686,7 @@ function PartyDetailModal({party,attendeeCount,isJoined,onClose,onJoin,onLeave})
           <div style={{position:"absolute",inset:0,background:"rgba(0,0,0,.40)",zIndex:1200,display:"flex",alignItems:"center",justifyContent:"center",padding:24}} onClick={()=>setShowHostCard(false)}>
             <div style={{background:"#fff",borderRadius:24,padding:"28px 24px 20px",width:"100%",maxWidth:300,textAlign:"center",boxShadow:"0 8px 40px rgba(0,0,0,.18)"}} onClick={e=>e.stopPropagation()}>
               <div style={{width:80,height:80,borderRadius:999,margin:"0 auto 14px",overflow:"hidden",background:accent+"18",border:`3px solid ${accent}22`,display:"flex",alignItems:"center",justifyContent:"center",fontSize:32}}>
-                {party.host_photo
-                  ? <img src={party.host_photo} style={{width:"100%",height:"100%",objectFit:"cover"}}/>
-                  : icon}
+                <PartyPhoto photo={party.host_photo} size={80} fallback={icon}/>
               </div>
               <div style={{fontSize:18,fontWeight:800,color:"#111"}}>{party.host_name}</div>
               {party.host_country&&<div style={{fontSize:12,color:"#9CA3AF",marginTop:3}}>{party.host_country}</div>}
@@ -10522,9 +10736,7 @@ function PartyDetailModal({party,attendeeCount,isJoined,onClose,onJoin,onLeave})
                   <div key={a.id} onClick={()=>setAttendeeCard(a)}
                     style={{display:"flex",alignItems:"center",gap:10,padding:"10px 12px",background:"#F9FAFB",borderRadius:12,border:"1px solid #F3F4F6",cursor:"pointer"}}>
                     <div style={{width:36,height:36,borderRadius:999,overflow:"hidden",flexShrink:0,background:"#E5E7EB",display:"flex",alignItems:"center",justifyContent:"center"}}>
-                      {a.attendee_photo
-                        ?<img src={a.attendee_photo} style={{width:"100%",height:"100%",objectFit:"cover"}}/>
-                        :<div style={{width:"100%",height:"100%",background:"linear-gradient(135deg,#247BA0,#7AC2E1)",display:"flex",alignItems:"center",justifyContent:"center",color:"white",fontWeight:700,fontSize:15}}>{a.attendee_name?.[0]?.toUpperCase()||"?"}</div>}
+                      <PartyPhoto photo={a.attendee_photo} size={36} fallback={<div style={{width:"100%",height:"100%",background:"linear-gradient(135deg,#247BA0,#7AC2E1)",display:"flex",alignItems:"center",justifyContent:"center",color:"white",fontWeight:700,fontSize:15}}>{a.attendee_name?.[0]?.toUpperCase()||"?"}</div>}/>
                     </div>
                     <div style={{flex:1,minWidth:0}}>
                       <div style={{fontSize:13,fontWeight:700,color:"#111"}}>{a.attendee_name}</div>
@@ -10556,9 +10768,7 @@ function PartyDetailModal({party,attendeeCount,isJoined,onClose,onJoin,onLeave})
           <div style={{position:"absolute",inset:0,background:"rgba(0,0,0,.40)",zIndex:1200,display:"flex",alignItems:"center",justifyContent:"center",padding:24}} onClick={()=>setAttendeeCard(null)}>
             <div style={{background:"#fff",borderRadius:24,padding:"28px 24px 20px",width:"100%",maxWidth:300,textAlign:"center",boxShadow:"0 8px 40px rgba(0,0,0,.18)"}} onClick={e=>e.stopPropagation()}>
               <div style={{width:80,height:80,borderRadius:999,margin:"0 auto 14px",overflow:"hidden",display:"flex",alignItems:"center",justifyContent:"center"}}>
-                {attendeeCard.attendee_photo
-                  ?<img src={attendeeCard.attendee_photo} style={{width:"100%",height:"100%",objectFit:"cover"}}/>
-                  :<div style={{width:"100%",height:"100%",background:"linear-gradient(135deg,#247BA0,#7AC2E1)",display:"flex",alignItems:"center",justifyContent:"center",color:"white",fontWeight:800,fontSize:28}}>{attendeeCard.attendee_name?.[0]?.toUpperCase()||"?"}</div>}
+                <PartyPhoto photo={attendeeCard.attendee_photo} size={80} fallback={<div style={{width:"100%",height:"100%",background:"linear-gradient(135deg,#247BA0,#7AC2E1)",display:"flex",alignItems:"center",justifyContent:"center",color:"white",fontWeight:800,fontSize:28}}>{attendeeCard.attendee_name?.[0]?.toUpperCase()||"?"}</div>}/>
               </div>
               <div style={{fontSize:18,fontWeight:800,color:"#111"}}>{attendeeCard.attendee_name}</div>
               {attendeeCard.attendee_country&&<div style={{fontSize:12,color:"#9CA3AF",marginTop:3}}>{attendeeCard.attendee_country}</div>}
@@ -10892,6 +11102,26 @@ function AvatarDisplay({config={},size=80}){
   );
 }
 
+// Store avatar config as "avatar:{...json}" — rendered client-side, no canvas needed
+async function getProfileImage(settings){
+  if(settings?.profileImageMode==="avatar"){
+    return "avatar:"+JSON.stringify(settings.avatarConfig||{});
+  }
+  return settings?.profilePhoto||null;
+}
+
+// Renders a party photo field — handles regular photos AND "avatar:{...}" strings
+function PartyPhoto({photo,size=40,fallback=null}){
+  if(!photo) return fallback;
+  if(photo.startsWith("avatar:")){
+    try{
+      const config=JSON.parse(photo.slice(7));
+      return <AvatarDisplay config={config} size={size}/>;
+    }catch{return fallback;}
+  }
+  return <img src={photo} style={{width:"100%",height:"100%",objectFit:"cover"}}/>;
+}
+
 /* ─── FramedAvatar ── renders profile photo with optional earned frame ─────── */
 function FramedAvatar({src,size=76,frameId,style={}}){
   const f=AVATAR_FRAMES.find(x=>x.id===frameId);
@@ -11017,7 +11247,8 @@ function RewardModal({celebration,rewards,setRewards,setPendingCelebration,setti
 function App(){
   const[projects,setProjects]=useState(()=>{try{const s=localStorage.getItem("sc_projects");return s?JSON.parse(s):DEFAULTS;}catch{return DEFAULTS;}});
   useEffect(()=>{try{localStorage.setItem("sc_projects",JSON.stringify(projects));}catch{};},[projects]);
-  const[yarnLib,setYarnLib]=useState(DEFAULT_YARNS);
+  const[yarnLib,setYarnLib]=useState(()=>{try{const s=localStorage.getItem("sc_yarn_lib");return s?JSON.parse(s):DEFAULT_YARNS;}catch{return DEFAULT_YARNS;}});
+  useEffect(()=>{try{localStorage.setItem("sc_yarn_lib",JSON.stringify(yarnLib));}catch{};},[yarnLib]);
   const[tools,setTools]=useState(DEFAULT_TOOLS);
   const[patterns,setPatterns]=useState(()=>{try{const s=localStorage.getItem("sc_pattern_lib");return s?JSON.parse(s):DEFAULT_PATTERNS;}catch{return DEFAULT_PATTERNS;}});
   useEffect(()=>{try{localStorage.setItem("sc_pattern_lib",JSON.stringify(patterns));}catch{};},[patterns]);
