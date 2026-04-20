@@ -21,6 +21,8 @@
     .fade-up{animation:fadeUp .2s ease;}
     @keyframes fadeIn{from{opacity:0;transform:scale(.97)}to{opacity:1;transform:scale(1)}}
     @keyframes spin{to{transform:rotate(360deg)}}
+    @keyframes starSpin{0%{transform:rotate(0deg)}100%{transform:rotate(360deg)}}
+    @keyframes starSpinR{0%{transform:rotate(0deg)}100%{transform:rotate(-360deg)}}
     @keyframes stickerFall{
       /* Fall → land → per-sticker bounce (--bounce) → soft settle.
          ease-out drives a swift fall that slows near the end;
@@ -223,7 +225,7 @@ const STATUS={
   "In Progress":{bg:"#EEF4FF",color:"#3B6FD4",dot:"#3B6FD4"},
   "Not Started":{bg:"#F3F4F6",color:"#6B7280",dot:"#6B7280"},
   "Completed":{bg:"#ECFDF5",color:"#059669",dot:"#059669"},
-  "On Hold":{bg:"#FFFBEB",color:"#D97706",dot:"#D97706"},
+  "On Hold":{bg:"#FFFBEB",color:"#E3C277",dot:"#E3C277"},
 };
 const STATUS_LABEL={
   en:{"In Progress":"In Progress","Not Started":"Not Started","Completed":"Completed","On Hold":"On Hold"},
@@ -270,7 +272,7 @@ const T={
     toolBrand:"Brand",toolQty:"Quantity",toolCondition:"Condition",toolNotes:"Notes",
     noTools:"No tools yet",addToolHint:"Add hooks and needles to your library",
     addToolTitle:"Add Tool",addToolBtn:"Add Tool",
-    navProjects:"Projects",navYarnLib:"Yarn",navTools:"Tools",navLibrary:"Library",navDashboard:"Dashboard",navSettings:"Settings",navChart:"Chart",navParties:"Parties",
+    navProjects:"Projects",navYarnLib:"Yarn",navTools:"Tools",navLibrary:"Library",navDashboard:"Dashboard",navSettings:"Settings",navChart:"Chart",navParties:"Social",create:"Create",createPattern:"Create Pattern",importPattern:"Import Pattern",helpers:"Helpers",gaugeCalc:"Gauge Calculator",colorPalette:"Color Palette",stitches:"Stitches",rows:"Rows",per4in:'per 4"',gaugeWidth:"Width (in)",gaugeHeight:"Height (in)",castOn:"Cast on",workRows:"Work",
     markComplete:"Mark as Complete",duplicate:"Duplicate",cancel:"Cancel",shareCopied:"Copied to clipboard!",
     designPattern:"Design Pattern",required:"Required",
     dashTitle:"Dashboard",dashTotal:"Total Projects",dashInProgress:"In Progress",dashCompleted:"Completed",dashYarns:"Yarns in Stash",dashOnHold:"On Hold",dashRecent:"Recent Projects",dashCustomize:"Customize Layout",dashLayoutDone:"Done",dashLayoutReset:"Reset",dashSecStickers:"Finished Projects",dashSecStats:"Stats Overview",dashSecProgress:"Overall Progress",dashSecRecent:"Recent Projects",dashSecLibrary:"Library Summary",dashSecParties:"Craft Parties",dashHidden:"Hidden",
@@ -303,6 +305,7 @@ const T={
     settingsAbout:"About / Help",settingsAboutDesc:"Version 1.0 · Your personal crochet & knitting tracker.",
     settingsAboutHelp:"For help or feedback, tap the share button on any project to export.",
     settingsKnitGrid:"Knit Grid Preferences",settingsDefaultKnitStitches:"Default Knit Stitches",
+    paletteGen:"Palette Generator",generate:"Generate",monoMode:"Mono",softMode:"Soft",contrastMode:"Contrast",accentMode:"Accent",
   },
   fr:{
     appLabel:"Mes Projets",appTitle:"mitime",inProgress:"en cours",projects:"projets",
@@ -333,7 +336,7 @@ const T={
     toolBrand:"Marque",toolQty:"Quantité",toolCondition:"État",toolNotes:"Notes",
     noTools:"Aucun outil",addToolHint:"Ajoutez vos aiguilles et crochets",
     addToolTitle:"Ajouter un outil",addToolBtn:"Ajouter",
-    navProjects:"Projets",navYarnLib:"Fils",navTools:"Outils",navLibrary:"Bibliothèque",navDashboard:"Tableau",navSettings:"Paramètres",navChart:"Carte",navParties:"Ateliers",
+    navProjects:"Projets",navYarnLib:"Fils",navTools:"Outils",navLibrary:"Bibliothèque",navDashboard:"Tableau",navSettings:"Paramètres",navChart:"Carte",navParties:"Social",create:"Créer",createPattern:"Créer un modèle",importPattern:"Importer un modèle",helpers:"Outils",gaugeCalc:"Calculateur de jauge",colorPalette:"Palette de couleurs",stitches:"Mailles",rows:"Rangs",per4in:"par 10 cm",gaugeWidth:"Largeur (po)",gaugeHeight:"Hauteur (po)",castOn:"Monter",workRows:"Tricoter",
     markComplete:"Marquer terminé",duplicate:"Dupliquer",cancel:"Annuler",shareCopied:"Copié !",
     designPattern:"Créer patron",required:"Requis",
     dashTitle:"Tableau de bord",dashTotal:"Total projets",dashInProgress:"En cours",dashCompleted:"Terminés",dashYarns:"Fils en stock",dashOnHold:"En pause",dashRecent:"Projets récents",dashCustomize:"Personnaliser",dashLayoutDone:"Terminé",dashLayoutReset:"Réinitialiser",dashSecStickers:"Projets terminés",dashSecStats:"Statistiques",dashSecProgress:"Progression globale",dashSecRecent:"Projets récents",dashSecLibrary:"Résumé bibliothèque",dashSecParties:"Ateliers Craft",dashHidden:"Masqué",
@@ -366,6 +369,7 @@ const T={
     settingsAbout:"À propos / Aide",settingsAboutDesc:"Version 1.0 · Votre suivi crochet et tricot.",
     settingsAboutHelp:"Pour de l'aide, appuyez sur partager pour exporter un projet.",
     settingsKnitGrid:"Préférences tricot",settingsDefaultKnitStitches:"Points de tricot par défaut",
+    paletteGen:"Générateur de palette",generate:"Générer",monoMode:"Mono",softMode:"Doux",contrastMode:"Contraste",accentMode:"Accent",
   },
   ja:{
     appLabel:"マイプロジェクト",appTitle:"mitime",inProgress:"進行中",projects:"プロジェクト",
@@ -396,7 +400,7 @@ const T={
     toolBrand:"ブランド",toolQty:"数量",toolCondition:"状態",toolNotes:"メモ",
     noTools:"道具がありません",addToolHint:"かぎ針や棒針を追加しましょう",
     addToolTitle:"道具を追加",addToolBtn:"追加する",
-    navProjects:"プロジェクト",navYarnLib:"毛糸",navTools:"道具",navLibrary:"ライブラリ",navDashboard:"概要",navSettings:"設定",navChart:"チャート",navParties:"パーティー",
+    navProjects:"プロジェクト",navYarnLib:"毛糸",navTools:"道具",navLibrary:"ライブラリ",navDashboard:"概要",navSettings:"設定",navChart:"チャート",navParties:"ソーシャル",create:"作成",createPattern:"模様を作成",importPattern:"模様をインポート",helpers:"ツール",gaugeCalc:"ゲージ計算機",colorPalette:"カラーパレット",stitches:"目数",rows:"段数",per4in:"4インチあたり",gaugeWidth:"幅 (インチ)",gaugeHeight:"高さ (インチ)",castOn:"作り目",workRows:"編む",
     markComplete:"完了にする",duplicate:"複製",cancel:"キャンセル",shareCopied:"コピーしました",
     designPattern:"パターン作成",required:"必須",
     dashTitle:"ダッシュボード",dashTotal:"総プロジェクト",dashInProgress:"進行中",dashCompleted:"完了",dashYarns:"毛糸在庫",dashOnHold:"保留中",dashRecent:"最近のプロジェクト",dashCustomize:"レイアウト編集",dashLayoutDone:"完了",dashLayoutReset:"リセット",dashSecStickers:"完成プロジェクト",dashSecStats:"統計",dashSecProgress:"全体の進捗",dashSecRecent:"最近のプロジェクト",dashSecLibrary:"ライブラリ",dashSecParties:"パーティー",dashHidden:"非表示",
@@ -429,6 +433,7 @@ const T={
     settingsAbout:"バージョン情報 / ヘルプ",settingsAboutDesc:"Version 1.0 · かぎ針・棒針プロジェクト管理アプリ。",
     settingsAboutHelp:"ヘルプやフィードバックは、プロジェクトの共有ボタンをご利用ください。",
     settingsKnitGrid:"棒針グリッド設定",settingsDefaultKnitStitches:"デフォルトの棒針目",
+    paletteGen:"パレット生成",generate:"生成",monoMode:"モノ",softMode:"ソフト",contrastMode:"コントラスト",accentMode:"アクセント",
   },
   zh:{
     appLabel:"我的專案",appTitle:"mitime",inProgress:"進行中",projects:"個專案",
@@ -459,7 +464,7 @@ const T={
     toolBrand:"品牌",toolQty:"數量",toolCondition:"狀態",toolNotes:"備註",
     noTools:"尚無工具",addToolHint:"新增鉤針和棒針至您的工具庫",
     addToolTitle:"新增工具",addToolBtn:"新增",
-    navProjects:"專案",navYarnLib:"毛線",navTools:"工具",navLibrary:"素材庫",navDashboard:"總覽",navSettings:"設定",navChart:"圖表",navParties:"聚會",
+    navProjects:"專案",navYarnLib:"毛線",navTools:"工具",navLibrary:"素材庫",navDashboard:"總覽",navSettings:"設定",navChart:"圖表",navParties:"社群",create:"創作",createPattern:"建立花樣",importPattern:"匯入花樣",helpers:"輔助工具",gaugeCalc:"密度計算機",colorPalette:"色彩配色",stitches:"針數",rows:"行數",per4in:"每4吋",gaugeWidth:"寬度（吋）",gaugeHeight:"高度（吋）",castOn:"起針數",workRows:"編織",
     markComplete:"標為完成",duplicate:"複製",cancel:"取消",shareCopied:"已複製！",
     designPattern:"設計花樣",required:"必填",
     dashTitle:"儀表板",dashTotal:"總專案",dashInProgress:"進行中",dashCompleted:"已完成",dashYarns:"毛線存量",dashOnHold:"暫停中",dashRecent:"最近專案",dashCustomize:"自訂版面",dashLayoutDone:"完成",dashLayoutReset:"重設",dashSecStickers:"完成專案",dashSecStats:"統計概覽",dashSecProgress:"整體進度",dashSecRecent:"最近專案",dashSecLibrary:"資料庫摘要",dashSecParties:"編織聚會",dashHidden:"已隱藏",
@@ -492,6 +497,7 @@ const T={
     settingsAbout:"關於 / 說明",settingsAboutDesc:"Version 1.0 · 您的個人鉤針與棒針追蹤工具。",
     settingsAboutHelp:"如需幫助或回饋，請點擊任何專案的分享按鈕匯出。",
     settingsKnitGrid:"棒針方格偏好",settingsDefaultKnitStitches:"預設棒針針法",
+    paletteGen:"配色生成器",generate:"生成",monoMode:"單色",softMode:"柔和",contrastMode:"對比",accentMode:"重點色",
   },
   ko:{
     appLabel:"내 프로젝트",appTitle:"mitime",inProgress:"진행 중",projects:"개 프로젝트",
@@ -522,7 +528,7 @@ const T={
     toolBrand:"브랜드",toolQty:"수량",toolCondition:"상태",toolNotes:"메모",
     noTools:"도구 없음",addToolHint:"코바늘과 대바늘을 추가하세요",
     addToolTitle:"도구 추가",addToolBtn:"추가",
-    navProjects:"프로젝트",navYarnLib:"실",navTools:"도구",navLibrary:"라이브러리",navDashboard:"대시보드",navSettings:"설정",navChart:"차트",navParties:"파티",
+    navProjects:"프로젝트",navYarnLib:"실",navTools:"도구",navLibrary:"라이브러리",navDashboard:"대시보드",navSettings:"설정",navChart:"차트",navParties:"소셜",create:"만들기",createPattern:"패턴 만들기",importPattern:"패턴 가져오기",helpers:"도우미",gaugeCalc:"게이지 계산기",colorPalette:"색상 팔레트",stitches:"코수",rows:"단수",per4in:"4인치당",gaugeWidth:"너비 (인치)",gaugeHeight:"높이 (인치)",castOn:"코잡기",workRows:"작업",
     markComplete:"완료로 표시",duplicate:"복제",cancel:"취소",shareCopied:"복사되었습니다!",
     designPattern:"패턴 디자인",required:"필수",
     dashTitle:"대시보드",dashTotal:"총 프로젝트",dashInProgress:"진행 중",dashCompleted:"완료",dashYarns:"실 재고",dashOnHold:"보류 중",dashRecent:"최근 프로젝트",dashCustomize:"레이아웃 편집",dashLayoutDone:"완료",dashLayoutReset:"초기화",dashSecStickers:"완성 프로젝트",dashSecStats:"통계 개요",dashSecProgress:"전체 진행도",dashSecRecent:"최근 프로젝트",dashSecLibrary:"라이브러리",dashSecParties:"뜨개질 파티",dashHidden:"숨김",
@@ -555,6 +561,7 @@ const T={
     settingsAbout:"정보 / 도움말",settingsAboutDesc:"Version 1.0 · 나만의 코바늘 & 대바늘 트래커.",
     settingsAboutHelp:"도움이 필요하시면 프로젝트 공유 버튼을 눌러 내보내세요.",
     settingsKnitGrid:"대바늘 그리드 설정",settingsDefaultKnitStitches:"기본 대바늘 코",
+    paletteGen:"팔레트 생성기",generate:"생성",monoMode:"모노",softMode:"소프트",contrastMode:"대비",accentMode:"악센트",
   },
 };
 
@@ -623,6 +630,97 @@ function quantizeKMeans(pixels,k,maxIter=20){
     if(!moved)break;
   }
   return centers;
+}
+
+/* ─── Palette Generator Utilities ────────────────────────────────────────── */
+function hslToHex(h,s,l){
+  const a=s*Math.min(l,1-l);
+  const f=n=>{const k=(n+h/30)%12;const c=l-a*Math.max(Math.min(k-3,9-k,1),-1);return Math.round(255*c).toString(16).padStart(2,"0");};
+  return`#${f(0)}${f(8)}${f(4)}`;
+}
+function hexToHsl(hex){
+  const[r,g,b]=hexToRgb(hex).map(v=>v/255);
+  const max=Math.max(r,g,b),min=Math.min(r,g,b),l=(max+min)/2;
+  if(max===min)return{h:0,s:0,l};
+  const d=max-min,s2=l>0.5?d/(2-max-min):d/(max+min);
+  let h2;
+  if(max===r)h2=((g-b)/d+(g<b?6:0))/6;
+  else if(max===g)h2=((b-r)/d+2)/6;
+  else h2=((r-g)/d+4)/6;
+  return{h:h2*360,s:s2,l};
+}
+const YARN_COLOR_NAMES=[
+  {name:"Candy Red",h:0,s:0.48,l:0.50},{name:"Brick Rose",h:5,s:0.42,l:0.55},
+  {name:"Terracotta",h:18,s:0.50,l:0.52},{name:"Coral Mist",h:12,s:0.50,l:0.70},
+  {name:"Peach Blossom",h:20,s:0.55,l:0.78},{name:"Apricot",h:28,s:0.58,l:0.72},
+  {name:"Butter Yellow",h:48,s:0.55,l:0.78},{name:"Warm Sand",h:35,s:0.35,l:0.72},
+  {name:"Oat Cream",h:38,s:0.28,l:0.88},{name:"Honey Gold",h:42,s:0.58,l:0.60},
+  {name:"Marigold",h:40,s:0.55,l:0.55},{name:"Amber",h:35,s:0.52,l:0.50},
+  {name:"Pistachio",h:100,s:0.38,l:0.72},{name:"Sage Green",h:130,s:0.28,l:0.62},
+  {name:"Fern",h:120,s:0.35,l:0.50},{name:"Meadow Green",h:140,s:0.38,l:0.55},
+  {name:"Olive Mist",h:80,s:0.30,l:0.55},{name:"Eucalyptus",h:155,s:0.30,l:0.58},
+  {name:"Seafoam",h:162,s:0.38,l:0.70},{name:"Mint Cream",h:155,s:0.35,l:0.82},
+  {name:"Aqua Haze",h:178,s:0.38,l:0.70},{name:"Duck Egg",h:185,s:0.32,l:0.75},
+  {name:"Sky Mist",h:200,s:0.40,l:0.72},{name:"Baby Blue",h:208,s:0.45,l:0.78},
+  {name:"Cornflower",h:220,s:0.45,l:0.65},{name:"Periwinkle",h:230,s:0.45,l:0.70},
+  {name:"Denim",h:215,s:0.40,l:0.45},{name:"Slate Blue",h:225,s:0.35,l:0.55},
+  {name:"Lavender Haze",h:265,s:0.38,l:0.76},{name:"Wisteria",h:270,s:0.38,l:0.65},
+  {name:"Lilac",h:280,s:0.38,l:0.75},{name:"Plum Mist",h:290,s:0.32,l:0.60},
+  {name:"Mulberry",h:295,s:0.35,l:0.48},{name:"Iris",h:255,s:0.40,l:0.65},
+  {name:"Berry Wine",h:330,s:0.40,l:0.42},{name:"Dusty Rose",h:345,s:0.35,l:0.68},
+  {name:"Blush Pink",h:350,s:0.45,l:0.80},{name:"Petal Pink",h:355,s:0.38,l:0.82},
+  {name:"Dusty Mauve",h:330,s:0.28,l:0.60},{name:"Rosewood",h:340,s:0.35,l:0.52},
+  {name:"Mushroom",h:25,s:0.18,l:0.58},{name:"Stone Gray",h:220,s:0.08,l:0.65},
+  {name:"Linen",h:38,s:0.22,l:0.82},{name:"Chalk",h:200,s:0.05,l:0.90},
+  {name:"Driftwood",h:30,s:0.20,l:0.68},{name:"Pebble",h:220,s:0.10,l:0.55},
+  {name:"Cloud",h:210,s:0.08,l:0.88},{name:"Fog",h:215,s:0.12,l:0.78},
+  {name:"Spring Rain",h:195,s:0.35,l:0.70},{name:"Frosted Violet",h:270,s:0.30,l:0.82},
+];
+function nearestColorName(hex){
+  const{h,s,l}=hexToHsl(hex);
+  let best=YARN_COLOR_NAMES[0],bestD=Infinity;
+  for(const c of YARN_COLOR_NAMES){
+    let dh=Math.abs(h-c.h);if(dh>180)dh=360-dh;
+    const d=(dh/180)*2+Math.abs(s-c.s)*1.5+Math.abs(l-c.l)*1.2;
+    if(d<bestD){bestD=d;best=c;}
+  }
+  return best.name;
+}
+function generatePalette(mode,locked,existing){
+  const clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
+  const rnd=(a,b)=>a+Math.random()*(b-a);
+  let baseH=Math.random()*360;
+  for(let i=0;i<4;i++){if(locked[i]&&existing[i]){baseH=hexToHsl(existing[i]).h;break;}}
+  const bS=rnd(0.30,0.48),bL=rnd(0.45,0.65);
+  let targets;
+  if(mode==="mono"){
+    targets=[{h:baseH,s:bS*0.9,l:0.38},{h:baseH,s:bS,l:0.52},{h:baseH,s:bS*0.85,l:0.64},{h:baseH,s:bS*0.6,l:0.76}];
+  }else if(mode==="soft"){
+    const sp=rnd(22,40);
+    targets=[
+      {h:baseH,s:bS,l:bL},
+      {h:(baseH+sp+360)%360,s:bS*0.9,l:clamp(bL+0.08,0.40,0.75)},
+      {h:(baseH-sp+360)%360,s:bS*0.85,l:clamp(bL-0.06,0.38,0.72)},
+      {h:(baseH+sp*1.8+360)%360,s:bS*0.75,l:clamp(bL+0.12,0.42,0.78)},
+    ];
+  }else if(mode==="contrast"){
+    const cH=(baseH+180)%360;
+    targets=[
+      {h:baseH,s:bS,l:bL},
+      {h:baseH,s:bS*0.65,l:clamp(bL+0.18,0.58,0.80)},
+      {h:cH,s:bS*0.9,l:clamp(bL,0.42,0.66)},
+      {h:cH,s:bS*0.6,l:clamp(bL+0.16,0.56,0.78)},
+    ];
+  }else{
+    const cH=(baseH+170+Math.random()*20)%360;
+    targets=[
+      {h:baseH,s:0.12,l:0.84},
+      {h:baseH,s:bS,l:bL},
+      {h:cH,s:bS*0.95,l:clamp(bL+0.04,0.44,0.68)},
+      {h:(baseH+30+360)%360,s:bS*0.5,l:clamp(bL+0.12,0.55,0.78)},
+    ];
+  }
+  return targets.map((c,i)=>locked[i]&&existing[i]?existing[i]:hslToHex(c.h,clamp(c.s,0.25,0.55),clamp(c.l,0.36,0.82)));
 }
 
 /* ─── Background Removal + Sticker Finalisation ──────────────────────────────
@@ -1201,7 +1299,7 @@ function ImageToPatternModal({initCols,initRows,initialState,yarnColors,onApply,
                 <button style={segBtn(viewMode==="mosaic")} onClick={()=>setViewMode("mosaic")}>Mosaic</button>
                 <button style={segBtn(viewMode==="original")} onClick={()=>setViewMode("original")}>Cropped</button>
                 <button style={{...btnBase,padding:"5px 10px",background:showGridLines?"#DDE3F8":"#F3F4F6",color:showGridLines?"#778EE3":"#374151"}} onClick={()=>setShowGridLines(v=>!v)}>Grid</button>
-                <button style={{...btnBase,padding:"5px 10px",background:"#FEF3C7",color:"#D97706"}} onClick={()=>setStep("crop")}>✂ Re-crop</button>
+                <button style={{...btnBase,padding:"5px 10px",background:"#FEF3C7",color:"#E3C277"}} onClick={()=>setStep("crop")}>✂ Re-crop</button>
                 <button style={{...btnBase,padding:"5px 10px",background:"#F3F4F6",color:"#374151"}} onClick={()=>{fileRef.current.click();}}>↑ New</button>
                 <input ref={fileRef} type="file" accept="image/*" onChange={handleFile} style={{display:"none"}}/>
               </div>
@@ -1523,7 +1621,7 @@ function KnitGrid({initialGrid,onGridChange,yarnColors}){
             </button>
         }
         <div style={{width:1,height:18,background:"#E5E7EB",margin:"0 2px"}}/>
-        <button onClick={handleUndo} disabled={!canUndo} title="Undo (Ctrl+Z)" style={{padding:"3px 9px",borderRadius:7,border:"none",background:canUndo?"#FEF3C7":"#F3F4F6",color:canUndo?"#D97706":"#C4B4A8",fontSize:11,cursor:canUndo?"pointer":"default",fontWeight:600}}>↩ Undo</button>
+        <button onClick={handleUndo} disabled={!canUndo} title="Undo (Ctrl+Z)" style={{padding:"3px 9px",borderRadius:7,border:"none",background:canUndo?"#FEF3C7":"#F3F4F6",color:canUndo?"#E3C277":"#C4B4A8",fontSize:11,cursor:canUndo?"pointer":"default",fontWeight:600}}>↩ Undo</button>
         <button onClick={handleRedo} disabled={!canRedo} title="Redo (Ctrl+Shift+Z)" style={{padding:"3px 9px",borderRadius:7,border:"none",background:canRedo?"#EFF6FF":"#F3F4F6",color:canRedo?"#3B82F6":"#C4B4A8",fontSize:11,cursor:canRedo?"pointer":"default",fontWeight:600}}>↪ Redo</button>
       </div>
       {showImgTool&&<ImageToPatternModal initCols={cols} initRows={rows} initialState={imgState} yarnColors={yarnColors} onApply={handleImgApply} onClose={()=>setShowImgTool(false)}/>}
@@ -3887,7 +3985,7 @@ function Card({project,onDelete,onEdit,onPickPattern,onDuplicate,onMarkComplete,
           </button>
           {onArchive&&(
             <button onClick={()=>{onArchive();setShowMore(false);}} style={{width:"100%",padding:"14px 18px",background:"none",border:"none",borderBottom:"1px solid #F3F4F6",cursor:"pointer",textAlign:"left",display:"flex",alignItems:"center",gap:12,fontSize:14,fontWeight:600,color:"#7C5CBF"}}>
-              <span style={{width:30,height:30,borderRadius:10,background:"#F5F0FF",display:"flex",alignItems:"center",justifyContent:"center",fontSize:16,flexShrink:0}}>{isArchived?"↩":<Ico n="basil:box-outline" sz={16}/>}</span>{isArchived?"Unarchive":"Archive"}
+              <span style={{width:30,height:30,borderRadius:10,background:"#F5F0FF",display:"flex",alignItems:"center",justifyContent:"center",fontSize:16,flexShrink:0}}>{isArchived?"↩":<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24"><path fill="currentColor" fillRule="evenodd" d="M21.488 10.25a22 22 0 0 0-.08-.543l-.064-.401a2.91 2.91 0 0 0-2.872-2.45h-8.117A2.55 2.55 0 0 0 7.903 5H5.612a2.93 2.93 0 0 0-2.909 2.58l-.272 2.27a24.5 24.5 0 0 0 .224 7.318a2.88 2.88 0 0 0 2.626 2.354l1.514.108c3.466.248 6.945.248 10.41 0l1.638-.117a2.72 2.72 0 0 0 1.986-1.087a5.9 5.9 0 0 0 1.409-2.111l1.25-3.213a2.093 2.093 0 0 0-1.952-2.852zM5.612 6.5a1.43 1.43 0 0 0-1.42 1.26l-.272 2.268a23 23 0 0 0 .21 6.87c.113.62.63 1.083 1.258 1.128l.086.006l2.332-6.025a2.75 2.75 0 0 1 2.564-1.757h9.603q-.021-.153-.046-.306l-.064-.402a1.41 1.41 0 0 0-1.39-1.186H9.758a.81.81 0 0 1-.809-.81c0-.577-.469-1.046-1.047-1.046z" clipRule="evenodd"/></svg>}</span>{isArchived?"Unarchive":"Archive"}
             </button>
           )}
           <button onClick={()=>{onDelete();setShowMore(false);}} style={{width:"100%",padding:"14px 18px",background:"none",border:"none",borderBottom:"1px solid #F3F4F6",cursor:"pointer",textAlign:"left",display:"flex",alignItems:"center",gap:12,fontSize:14,fontWeight:600,color:"#EF4444"}}>
@@ -4240,7 +4338,7 @@ function AddYarnModal({onClose,onAdd,initialYarn,onEdit}){
           <div style={{marginBottom:13}}>
             <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:6}}>
               <label style={{fontSize:12,fontWeight:600,color:"#6B7280"}}>{t.libFibre} Composition</label>
-              <span style={{fontSize:11,fontWeight:700,color:totalPct===100?"#059669":totalPct>100?"#EF4444":"#D97706"}}>{totalPct}% / 100%</span>
+              <span style={{fontSize:11,fontWeight:700,color:totalPct===100?"#059669":totalPct>100?"#EF4444":"#E3C277"}}>{totalPct}% / 100%</span>
             </div>
             <div style={{display:"flex",flexDirection:"column",gap:6}}>
               {form.composition.map((row,i)=>(
@@ -4455,7 +4553,7 @@ function ToolsLibPage({tools,setTools}){
   const[showAdd,setShowAdd]=useState(false);
   const[editingTool,setEditingTool]=useState(null);
   const[filterType,setFilterType]=useState("All");
-  const COND_COLOR={New:"#059669",Good:"#3B6FD4",Fair:"#D97706",Worn:"#EF4444"};
+  const COND_COLOR={New:"#059669",Good:"#3B6FD4",Fair:"#E3C277",Worn:"#EF4444"};
   const TOOL_ICON={"Crochet Hook":"basil:scissors-outline","Knitting Needle":"basil:needle-outline","Circular Needle":"basil:loop-outline","Double Pointed Needle":"basil:arrows-out-outline","Tunisian Hook":"basil:scissors-outline","Other":"basil:tool-outline"};
   const selStyle={padding:"6px 10px",borderRadius:9,border:"1.5px solid #E5E7EB",background:"white",fontSize:12,fontWeight:600,color:"#374151",cursor:"pointer",appearance:"none"};
   const filtered=tools.filter(tool=>filterType==="All"||tool.type===filterType);
@@ -4534,12 +4632,12 @@ function LibraryPage({yarnLib,setYarnLib,projects,tools,setTools,patterns,setPat
   const[libTab,setLibTab]=useState("yarn");
   return(
     <div style={{flex:1,display:"flex",flexDirection:"column",overflow:"hidden"}}>
-      <div style={{padding:"20px 16px 12px",maxWidth:360,margin:"0 auto",width:"100%",flexShrink:0}}>
+      <div style={{padding:"40px 16px 12px",maxWidth:360,margin:"0 auto",width:"100%",flexShrink:0}}>
         <div style={{fontSize:12,fontWeight:700,color:"#778EE3",letterSpacing:"0.08em",textTransform:"uppercase",marginBottom:6}}>{t.navLibrary}</div>
         <div style={{background:"#F3F4F6",borderRadius:14,padding:3,display:"flex",gap:2}}>
-          {[{id:"yarn",ico:"basil:knot-outline",lbl:t.navYarnLib},{id:"tools",ico:"basil:scissors-outline",lbl:t.navTools},{id:"patterns",ico:"basil:clipboard-outline",lbl:t.patternLib}].map(tab=>(
+          {[{id:"yarn",ico:"basil:knot-outline",lbl:t.navYarnLib},{id:"tools",ico:"basil:scissors-outline",lbl:t.navTools},{id:"patterns",ico:null,lbl:t.patternLib}].map(tab=>(
             <button key={tab.id} onClick={()=>setLibTab(tab.id)} style={{flex:1,padding:"8px 0",borderRadius:11,border:"none",cursor:"pointer",fontSize:12,fontWeight:700,background:libTab===tab.id?"white":"transparent",color:libTab===tab.id?"#778EE3":"#6B7280",boxShadow:libTab===tab.id?"0 2px 8px rgba(0,0,0,.1)":"none",transition:"all .2s",display:"flex",alignItems:"center",justifyContent:"center",gap:4}}>
-              <Ico n={tab.ico} sz={13}/>{tab.lbl}
+              {tab.ico&&<Ico n={tab.ico} sz={13}/>}{tab.lbl}
             </button>
           ))}
         </div>
@@ -4557,7 +4655,7 @@ function LibraryPage({yarnLib,setYarnLib,projects,tools,setTools,patterns,setPat
 }
 
 /* ─── Pattern Library ───────────────────────────────────────────────────────── */
-const DIFF_COLOR={Beginner:"#059669",Intermediate:"#D97706",Advanced:"#EF4444"};
+const DIFF_COLOR={Beginner:"#059669",Intermediate:"#E3C277",Advanced:"#EF4444"};
 const CRAFT_COLOR={Crochet:"#778EE3",Knitting:"#3B6FD4",Tunisian:"#0891B2",Other:"#6B7280"};
 const CAT_ICON={Shawl:"basil:tag-outline",Hat:"basil:tag-outline",Sweater:"basil:tag-outline",Blanket:"basil:grid-outline",Amigurumi:"basil:star-outline",Socks:"basil:tag-outline",Mittens:"basil:tag-outline",Bag:"basil:shopping-bag-outline",Scarf:"basil:tag-outline",Other:"basil:clipboard-outline"};
 
@@ -4570,7 +4668,7 @@ function imgPick(cb){
 }
 
 /* ── Pattern Form (Add + Edit) ── */
-function PatternFormModal({onClose,onSave,initial,yarnLib=[]}){
+function PatternFormModal({onClose,onSave,initial,yarnLib=[],initialMethod}){
   const editing=!!initial;
   const{t}=useLang();
   const blank={name:"",category:"Shawl",craft:"Crochet",difficulty:"Beginner",source:"",notes:"",tags:"",image:null,photos:[],designData:null,importText:"",importImage:null,importPdf:null};
@@ -4578,7 +4676,7 @@ function PatternFormModal({onClose,onSave,initial,yarnLib=[]}){
   const[openMaker,setOpenMaker]=useState(null); // null | "rows" | "rounds"
   // derive layout from existing designData, or default to "rows"
   const[layout,setLayout]=useState((editing&&initial?.designData?.type==="rounds")?"rounds":"rows");
-  const[creationMethod,setCreationMethod]=useState(editing&&initial?.designData?.type==="imported"?"import":"design");
+  const[creationMethod,setCreationMethod]=useState(initialMethod||(editing&&initial?.designData?.type==="imported"?"import":"design"));
   const[generatedCount,setGeneratedCount]=useState(0);
   const s=(k,v)=>setForm(f=>({...f,[k]:v}));
   const iS={width:"100%",padding:"9px 12px",borderRadius:10,border:"1.5px solid #E5E7EB",fontSize:14,color:"#111",background:"#FAFAFA"};
@@ -6797,7 +6895,7 @@ function DashboardPage({projects,yarnLib,patterns,myPartyIds,setMyPartyIds,joine
                   <div style={{height:"100%",borderRadius:999,width:`${avgProgress}%`,background:"linear-gradient(90deg,#778EE3,#3850A6)",transition:"width .6s"}}/>
                 </div>
                 <div style={{display:"flex",gap:10,marginTop:12}}>
-                  {[["In Progress",inProg,"#3B6FD4"],["Completed",completed,"#059669"],["On Hold",onHold,"#D97706"]].map(([label,val,color])=>(
+                  {[["In Progress",inProg,"#3B6FD4"],["Completed",completed,"#059669"],["On Hold",onHold,"#E3C277"]].map(([label,val,color])=>(
                     <div key={label} style={{flex:1,textAlign:"center"}}>
                       <div style={{fontSize:16,fontWeight:800,color}}>{val}</div>
                       <div style={{fontSize:10,color:"#6B7280"}}>{label}</div>
@@ -7238,7 +7336,9 @@ function SettingsPage({settings, setSettings, lang, setLang, onBack, rewards=REW
       <div style={{maxWidth:360, margin:"0 auto"}}>
         {/* Header */}
         <div style={{display:"flex", alignItems:"center", gap:12, marginBottom:20, paddingTop:8}}>
-          <button onClick={onBack} style={{background:"none",border:"none",cursor:"pointer",fontSize:20,color:"#778EE3",padding:"4px 8px 4px 0"}}>←</button>
+          <button onClick={onBack} style={{width:32,height:32,borderRadius:999,background:"white",border:"none",cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0}}>
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"><path fill="currentColor" fillRule="evenodd" d="M14.03 7.47a.75.75 0 0 1 0 1.06L10.56 12l3.47 3.47a.75.75 0 1 1-1.06 1.06l-4-4a.75.75 0 0 1 0-1.06l4-4a.75.75 0 0 1 1.06 0" clipRule="evenodd"/></svg>
+          </button>
           <div style={{fontSize:20, fontWeight:800, color:"#111"}}>{t.settingsTitle}</div>
         </div>
 
@@ -7453,76 +7553,276 @@ function SettingsPage({settings, setSettings, lang, setLang, onBack, rewards=REW
   );
 }
 
+/* ─── Gauge Calculator ──────────────────────────────────────────────────────── */
+function GaugeCalculator({onClose}){
+  const{t}=useLang();
+  const[sp4,setSp4]=useState("");
+  const[rp4,setRp4]=useState("");
+  const[w,setW]=useState("");
+  const[h,setH]=useState("");
+  const sts=sp4&&w?Math.round((parseFloat(w)/4)*parseFloat(sp4)):null;
+  const rws=rp4&&h?Math.round((parseFloat(h)/4)*parseFloat(rp4)):null;
+  const inp={width:"100%",padding:"9px 10px",borderRadius:10,border:"1.5px solid #E5E7EB",fontSize:14,color:"#111",background:"#FAFAFA",boxSizing:"border-box"};
+  return(
+    <div style={{position:"fixed",inset:0,background:"rgba(0,0,0,.45)",zIndex:200,display:"flex",alignItems:"flex-end"}} onClick={onClose}>
+      <div style={{width:"100%",background:"white",borderRadius:"20px 20px 0 0",padding:"20px 20px 40px",maxWidth:420,margin:"0 auto"}} onClick={e=>e.stopPropagation()}>
+        <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:18}}>
+          <div style={{fontSize:17,fontWeight:800,color:"#111"}}>{t.gaugeCalc}</div>
+          <button onClick={onClose} style={{width:30,height:30,borderRadius:999,background:"#F3F4F6",border:"none",cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center"}}>
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24"><path fill="#6B7280" d="M18.3 5.71a1 1 0 0 0-1.41 0L12 10.59 7.11 5.7A1 1 0 0 0 5.7 7.11L10.59 12 5.7 16.89a1 1 0 1 0 1.41 1.41L12 13.41l4.89 4.89a1 1 0 0 0 1.41-1.41L13.41 12l4.89-4.89a1 1 0 0 0 0-1.4"/></svg>
+          </button>
+        </div>
+        <div style={{fontSize:11,fontWeight:700,color:"#778EE3",letterSpacing:"0.07em",textTransform:"uppercase",marginBottom:10}}>Gauge Swatch</div>
+        <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:10,marginBottom:16}}>
+          <div>
+            <div style={{fontSize:11,color:"#6B7280",marginBottom:4}}>{t.stitches} {t.per4in}</div>
+            <input type="number" min="0" value={sp4} onChange={e=>setSp4(e.target.value)} placeholder="e.g. 18" style={inp}/>
+          </div>
+          <div>
+            <div style={{fontSize:11,color:"#6B7280",marginBottom:4}}>{t.rows} {t.per4in}</div>
+            <input type="number" min="0" value={rp4} onChange={e=>setRp4(e.target.value)} placeholder="e.g. 24" style={inp}/>
+          </div>
+        </div>
+        <div style={{fontSize:11,fontWeight:700,color:"#778EE3",letterSpacing:"0.07em",textTransform:"uppercase",marginBottom:10}}>Target Size</div>
+        <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:10,marginBottom:20}}>
+          <div>
+            <div style={{fontSize:11,color:"#6B7280",marginBottom:4}}>{t.gaugeWidth}</div>
+            <input type="number" min="0" value={w} onChange={e=>setW(e.target.value)} placeholder="e.g. 12" style={inp}/>
+          </div>
+          <div>
+            <div style={{fontSize:11,color:"#6B7280",marginBottom:4}}>{t.gaugeHeight}</div>
+            <input type="number" min="0" value={h} onChange={e=>setH(e.target.value)} placeholder="e.g. 16" style={inp}/>
+          </div>
+        </div>
+        {(sts!==null||rws!==null)&&(
+          <div style={{background:"#EBEEFB",borderRadius:14,padding:"14px 16px",display:"grid",gridTemplateColumns:"1fr 1fr",gap:12}}>
+            <div style={{textAlign:"center"}}>
+              <div style={{fontSize:11,color:"#6B7280",marginBottom:2}}>{t.castOn}</div>
+              <div style={{fontSize:32,fontWeight:900,color:"#778EE3",lineHeight:1}}>{sts??"-"}</div>
+              <div style={{fontSize:10,color:"#6B7280"}}>{t.stitches}</div>
+            </div>
+            <div style={{textAlign:"center"}}>
+              <div style={{fontSize:11,color:"#6B7280",marginBottom:2}}>{t.workRows}</div>
+              <div style={{fontSize:32,fontWeight:900,color:"#778EE3",lineHeight:1}}>{rws??"-"}</div>
+              <div style={{fontSize:10,color:"#6B7280"}}>{t.rows}</div>
+            </div>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
+/* ─── Palette Generator Modal ───────────────────────────────────────────────── */
+function PaletteGeneratorModal({onClose}){
+  const{t}=useLang();
+  const[mode,setMode]=useState("soft");
+  const[palette,setPalette]=useState(()=>generatePalette("soft",[false,false,false,false],[]));
+  const[locked,setLocked]=useState([false,false,false,false]);
+  const[copied,setCopied]=useState(null);
+  const handleMode=m=>{
+    setMode(m);
+    setPalette(cur=>generatePalette(m,locked,cur));
+  };
+  const handleGenerate=()=>{
+    setPalette(cur=>generatePalette(mode,locked,cur));
+  };
+  const toggleLock=i=>{
+    setLocked(prev=>{const nl=[...prev];nl[i]=!nl[i];return nl;});
+  };
+  const copyHex=i=>{
+    navigator.clipboard.writeText(palette[i]).catch(()=>{});
+    setCopied(i);setTimeout(()=>setCopied(null),320);
+  };
+  const MODES=[
+    {id:"mono",label:t.monoMode||"Mono"},
+    {id:"soft",label:t.softMode||"Soft"},
+    {id:"contrast",label:t.contrastMode||"Contrast"},
+    {id:"accent",label:t.accentMode||"Accent"},
+  ];
+  return(
+    <div style={{position:"fixed",inset:0,background:"rgba(0,0,0,.45)",zIndex:200,display:"flex",alignItems:"flex-end"}} onClick={onClose}>
+      <div style={{width:"100%",background:"white",borderRadius:"20px 20px 0 0",padding:"20px 20px 36px",maxWidth:420,margin:"0 auto"}} onClick={e=>e.stopPropagation()}>
+        <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:16}}>
+          <div style={{fontSize:17,fontWeight:800,color:"#111"}}>{t.paletteGen||"Palette Generator"}</div>
+          <button onClick={onClose} style={{width:30,height:30,borderRadius:999,background:"#F3F4F6",border:"none",cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center"}}>
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24"><path fill="#6B7280" d="M18.3 5.71a1 1 0 0 0-1.41 0L12 10.59 7.11 5.7A1 1 0 0 0 5.7 7.11L10.59 12 5.7 16.89a1 1 0 1 0 1.41 1.41L12 13.41l4.89 4.89a1 1 0 0 0 1.41-1.41L13.41 12l4.89-4.89a1 1 0 0 0 0-1.4"/></svg>
+          </button>
+        </div>
+        <div style={{display:"flex",gap:6,marginBottom:16}}>
+          {MODES.map(m=>(
+            <button key={m.id} onClick={()=>handleMode(m.id)} style={{flex:1,padding:"7px 0",borderRadius:20,border:"none",cursor:"pointer",fontSize:11,fontWeight:700,background:mode===m.id?"#778EE3":"#F3F4F6",color:mode===m.id?"white":"#6B7280",transition:"all .15s"}}>
+              {m.label}
+            </button>
+          ))}
+        </div>
+        <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:8,marginBottom:16}}>
+          {palette.map((hex,i)=>(
+            <div key={i} style={{position:"relative",borderRadius:14,overflow:"hidden",height:90,background:hex,cursor:"pointer",outline:copied===i?"3px solid white":"3px solid transparent",transition:"outline .15s",boxSizing:"border-box"}} onClick={()=>copyHex(i)}>
+              {locked[i]&&<div style={{position:"absolute",inset:0,background:"rgba(255,255,255,.14)",pointerEvents:"none"}}/>}
+              <button onClick={e=>{e.stopPropagation();toggleLock(i);}} style={{position:"absolute",top:6,right:6,width:26,height:26,borderRadius:999,background:"rgba(255,255,255,.32)",border:"none",cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center"}}>
+                {locked[i]
+                  ?<svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24"><path fill="white" d="M18 8h-1V6c0-2.76-2.24-5-5-5S7 3.24 7 6v2H6c-1.1 0-2 .9-2 2v10c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V10c0-1.1-.9-2-2-2zm-6 9c-1.1 0-2-.9-2-2s.9-2 2-2 2 .9 2 2-.9 2-2 2zm3.1-9H8.9V6c0-1.71 1.39-3.1 3.1-3.1 1.71 0 3.1 1.39 3.1 3.1v2z"/></svg>
+                  :<svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24"><path fill="white" d="M18 8h-1V6c0-2.76-2.24-5-5-5S7 3.24 7 6h2c0-1.66 1.34-3 3-3s3 1.34 3 3v2H6c-1.1 0-2 .9-2 2v10c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V10c0-1.1-.9-2-2-2zm0 12H6V10h12v10zm-6-3c1.1 0 2-.9 2-2s-.9-2-2-2-2 .9-2 2 .9 2 2 2z"/></svg>
+                }
+              </button>
+              <div style={{position:"absolute",bottom:7,left:9}}>
+                <div style={{fontSize:10,fontWeight:700,color:"rgba(255,255,255,.92)",letterSpacing:"0.04em",textShadow:"0 1px 3px rgba(0,0,0,.3)"}}>{hex.toUpperCase()}</div>
+                <div style={{fontSize:9,color:"rgba(255,255,255,.75)",fontStyle:"italic",textShadow:"0 1px 2px rgba(0,0,0,.22)",marginTop:1}}>{nearestColorName(hex)}</div>
+              </div>
+            </div>
+          ))}
+        </div>
+        <button onClick={handleGenerate} style={{width:"100%",padding:"14px 0",borderRadius:14,border:"none",cursor:"pointer",background:"linear-gradient(135deg,#778EE3,#6183FF)",color:"white",fontSize:14,fontWeight:800,letterSpacing:"0.02em"}}>
+          ↺ {t.generate||"Generate"}
+        </button>
+      </div>
+    </div>
+  );
+}
+
+/* ─── Create Page ───────────────────────────────────────────────────────────── */
+function CreatePage({yarnLib,patterns,setPatterns,setPage}){
+  const{t}=useLang();
+  const[showPatternForm,setShowPatternForm]=useState(null);
+  const[showColorPalette,setShowColorPalette]=useState(false);
+  const[showGauge,setShowGauge]=useState(false);
+
+  return(
+    <div style={{flex:1,display:"flex",flexDirection:"column",overflow:"hidden"}}>
+
+      {/* ── Sticky header — same shell as Library/Social ── */}
+      <div style={{position:"relative",overflow:"hidden",background:"linear-gradient(145deg,#f3f0ff 0%,#e8eeff 60%,#f0f8ff 100%)",flexShrink:0}}>
+        <div style={{position:"absolute",top:-40,right:-30,width:160,height:160,borderRadius:"50%",background:"rgba(97,131,255,0.13)",pointerEvents:"none"}}/>
+        <div style={{position:"absolute",bottom:-20,left:-10,width:90,height:90,borderRadius:"50%",background:"rgba(119,142,227,0.10)",pointerEvents:"none"}}/>
+        <div style={{position:"absolute",bottom:0,left:0,right:0,height:36,background:"linear-gradient(to bottom,transparent,#F2F2F7)",pointerEvents:"none"}}/>
+        {/* hand-drawn sparkle stars — same style as congrats note */}
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" style={{position:"absolute",top:65,right:24,animation:"starSpin 11s linear infinite",pointerEvents:"none"}}><path d={SPARKLE_SHAPES[2]} stroke="#778EE3" strokeWidth="2.5" strokeLinecap="round"/></svg>
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" style={{position:"absolute",top:58,right:76,animation:"starSpinR 15s linear infinite",pointerEvents:"none"}}><path d={SPARKLE_SHAPES[2]} stroke="#6183FF" strokeWidth="2.5" strokeLinecap="round"/></svg>
+        <svg width="10" height="10" viewBox="0 0 24 24" fill="none" style={{position:"absolute",top:22,right:116,animation:"starSpin 9s linear infinite",pointerEvents:"none"}}><path d={SPARKLE_SHAPES[2]} stroke="#A89FE8" strokeWidth="2.5" strokeLinecap="round"/></svg>
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" style={{position:"absolute",top:82,right:44,animation:"starSpinR 13s linear infinite",pointerEvents:"none"}}><path d={SPARKLE_SHAPES[2]} stroke="#E3C277" strokeWidth="2.5" strokeLinecap="round"/></svg>
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" style={{position:"absolute",top:18,left:60,animation:"starSpin 17s linear infinite",pointerEvents:"none"}}><path d={SPARKLE_SHAPES[2]} stroke="#E3C277" strokeWidth="2.5" strokeLinecap="round"/></svg>
+        <svg width="11" height="11" viewBox="0 0 24 24" fill="none" style={{position:"absolute",top:60,left:30,animation:"starSpinR 12s linear infinite",pointerEvents:"none"}}><path d={SPARKLE_SHAPES[2]} stroke="#778EE3" strokeWidth="2.5" strokeLinecap="round"/></svg>
+        <div style={{position:"relative",padding:"40px 16px 52px",maxWidth:360,margin:"0 auto",width:"100%"}}>
+          <div style={{fontSize:12,fontWeight:700,color:"#778EE3",letterSpacing:"0.08em",textTransform:"uppercase",marginBottom:6}}>CREATE</div>
+          <div style={{fontSize:22,fontWeight:900,color:"#1a1a2e",lineHeight:1.25}}>what do you feel<br/>like making today?</div>
+        </div>
+      </div>
+
+      {/* ── Scrollable content ── */}
+      <div style={{flex:1,overflowY:"auto",padding:"12px 16px 90px"}}>
+      <div style={{maxWidth:360,margin:"0 auto"}}>
+
+        {/* ── Hero CTA — Create Pattern ── */}
+        <button onClick={()=>setShowPatternForm("design")} style={{width:"100%",background:"linear-gradient(135deg,#778EE3,#6183FF)",borderRadius:20,padding:"22px 20px",border:"none",cursor:"pointer",display:"flex",alignItems:"center",gap:16,marginBottom:12,boxShadow:"0 6px 24px rgba(97,131,255,.30)",textAlign:"left"}}>
+          <div style={{width:52,height:52,borderRadius:16,background:"rgba(255,255,255,.22)",display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0}}>
+            <svg xmlns="http://www.w3.org/2000/svg" width="26" height="26" viewBox="0 0 24 24"><path fill="white" fillRule="evenodd" d="M16.293 2.293a1 1 0 0 1 1.414 0l4 4a1 1 0 0 1 0 1.414l-12 12A1 1 0 0 1 9 20H5a1 1 0 0 1-1-1v-4a1 1 0 0 1 .293-.707zM6 15.414V18h2.586l11-11L17 4.414z" clipRule="evenodd"/></svg>
+          </div>
+          <div style={{flex:1}}>
+            <div style={{fontSize:17,fontWeight:900,color:"white",lineHeight:1.2}}>{t.createPattern}</div>
+            <div style={{fontSize:12,color:"rgba(255,255,255,.75)",marginTop:3}}>Design rows, rounds & stitches</div>
+          </div>
+          <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" style={{flexShrink:0,opacity:0.7}}><path fill="white" d="M9.97 7.47a.75.75 0 0 0 0 1.06L13.44 12l-3.47 3.47a.75.75 0 1 0 1.06 1.06l4-4a.75.75 0 0 0 0-1.06l-4-4a.75.75 0 0 0-1.06 0"/></svg>
+        </button>
+
+        {/* ── Secondary — Import Pattern ── */}
+        <button onClick={()=>setShowPatternForm("import")} style={{width:"100%",background:"white",borderRadius:16,padding:"16px 18px",border:"1.5px solid #DDE3F8",cursor:"pointer",display:"flex",alignItems:"center",gap:14,marginBottom:28,textAlign:"left",boxShadow:"0 2px 8px rgba(119,142,227,.08)"}}>
+          <div style={{width:40,height:40,borderRadius:12,background:"#EBEEFB",display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0}}>
+            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24"><path fill="#778EE3" fillRule="evenodd" d="M12 2a1 1 0 0 1 1 1v10.586l2.293-2.293a1 1 0 1 1 1.414 1.414l-4 4a1 1 0 0 1-1.414 0l-4-4a1 1 0 1 1 1.414-1.414L11 13.586V3a1 1 0 0 1 1-1M4 18a1 1 0 0 1 1 1v1h14v-1a1 1 0 1 1 2 0v2a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1v-2a1 1 0 0 1 1-1" clipRule="evenodd"/></svg>
+          </div>
+          <div style={{flex:1}}>
+            <div style={{fontSize:15,fontWeight:800,color:"#111"}}>{t.importPattern}</div>
+            <div style={{fontSize:11,color:"#6B7280",marginTop:2}}>Paste text, upload image or PDF</div>
+          </div>
+          <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" style={{flexShrink:0,color:"#BBC7F1"}}><path fill="currentColor" d="M9.97 7.47a.75.75 0 0 0 0 1.06L13.44 12l-3.47 3.47a.75.75 0 1 0 1.06 1.06l4-4a.75.75 0 0 0 0-1.06l-4-4a.75.75 0 0 0-1.06 0"/></svg>
+        </button>
+
+        {/* ── Helpers ── */}
+        <div style={{display:"flex",alignItems:"center",gap:8,marginBottom:12}}>
+          <div style={{fontSize:10,fontWeight:700,color:"#6B7280",letterSpacing:"0.08em",textTransform:"uppercase",whiteSpace:"nowrap"}}>{t.helpers}</div>
+          <div style={{flex:1,height:1,background:"#E5E7EB"}}/>
+        </div>
+        <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:8}}>
+          <button onClick={()=>setShowGauge(true)} style={{background:"#F9FAFB",borderRadius:12,padding:"12px 10px",border:"1px solid #F0F0F0",cursor:"pointer",display:"flex",alignItems:"center",gap:10,textAlign:"left"}}>
+            <div style={{width:30,height:30,borderRadius:9,background:"#EBEEFB",display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0}}>
+              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24"><path fill="#778EE3" d="M19 3H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V5a2 2 0 0 0-2-2m0 16H5V5h14zm-7-2a1 1 0 0 0 1-1v-3h2a1 1 0 1 0 0-2h-2V9a1 1 0 1 0-2 0v2H9a1 1 0 1 0 0 2h2v3a1 1 0 0 0 1 1"/></svg>
+            </div>
+            <div style={{fontSize:11,fontWeight:700,color:"#374151",lineHeight:1.3}}>{t.gaugeCalc}</div>
+          </button>
+          <button onClick={()=>setShowColorPalette(true)} style={{background:"#F9FAFB",borderRadius:12,padding:"12px 10px",border:"1px solid #F0F0F0",cursor:"pointer",display:"flex",alignItems:"center",gap:10,textAlign:"left"}}>
+            <div style={{width:30,height:30,borderRadius:9,background:"#EBEEFB",display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0}}>
+              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24"><path fill="#778EE3" d="M12 2a10 10 0 1 0 10 10A10 10 0 0 0 12 2m0 18a8 8 0 1 1 8-8 8 8 0 0 1-8 8M7 11h2v2H7zm4 0h2v2h-2zm4 0h2v2h-2z"/></svg>
+            </div>
+            <div style={{fontSize:11,fontWeight:700,color:"#374151",lineHeight:1.3}}>{t.colorPalette}</div>
+          </button>
+        </div>
+      </div>
+      </div>
+
+      {showPatternForm&&(
+        <PatternFormModal
+          initialMethod={showPatternForm==="import"?"import":"design"}
+          yarnLib={yarnLib}
+          onClose={()=>setShowPatternForm(null)}
+          onSave={p=>{setPatterns(prev=>[p,...prev]);setShowPatternForm(null);}}
+        />
+      )}
+      {showColorPalette&&(
+        <PaletteGeneratorModal onClose={()=>setShowColorPalette(false)}/>
+      )}
+      {showGauge&&<GaugeCalculator onClose={()=>setShowGauge(false)}/>}
+    </div>
+  );
+}
+
 /* ─── Bottom Nav ────────────────────────────────────────────────────────────── */
 function BottomNav({page,setPage,t,onAdd}){
-  const C="#6183FF", INACTIVE="rgba(123,132,212,0.38)";
-  const sw=2.4;
-  const base={strokeLinecap:"round",strokeLinejoin:"round",fill:"none"};
+  const C="#6183FF", INACTIVE="#9CA3AF";
 
-  // Use the hand-drawn PNG images as nav icons
-  const icons={
-    projects:(active)=>(
-      <img src="project.png" width="38" height="38" style={{opacity:active?1:0.35,objectFit:"contain"}}/>
-    ),
-    dashboard:(active)=>(
-      <img src="Dashboard.png" width="38" height="38" style={{opacity:active?1:0.35,objectFit:"contain"}}/>
-    ),
-    library:(active)=>(
-      <img src="library.png" width="38" height="38" style={{opacity:active?1:0.35,objectFit:"contain"}}/>
-    ),
-    parties:(active)=>(
-      <img src="Party.png" width="38" height="38" style={{opacity:active?1:0.35,objectFit:"contain"}}/>
-    ),
-    chart:(active)=>(
-      <svg width="34" height="34" viewBox="0 0 34 34" fill="none" style={{opacity:active?1:0.32}}>
-        <circle cx="17" cy="17" r="3.5" stroke={active?"#778EE3":"#3850A6"} strokeWidth={active?2.2:1.6}/>
-        <circle cx="17" cy="17" r="8"   stroke={active?"#778EE3":"#3850A6"} strokeWidth={active?1.8:1.2} strokeDasharray="3 2.2"/>
-        <circle cx="17" cy="17" r="13"  stroke={active?"#778EE3":"#3850A6"} strokeWidth={active?1.6:1}   strokeDasharray="3 2.4"/>
-        <circle cx="17" cy="5.5"  r={active?2:1.5} fill={active?"#9B2226":"#3850A6"}/>
-        <circle cx="28" cy="12"   r={active?2:1.5} fill={active?"#166534":"#3850A6"}/>
-        <circle cx="27" cy="24"   r={active?2:1.5} fill={active?"#1D4ED8":"#3850A6"}/>
-        <circle cx="17" cy="29.5" r={active?2:1.5} fill={active?"#9B2226":"#3850A6"}/>
-        <circle cx="7"  cy="24"   r={active?2:1.5} fill={active?"#166534":"#3850A6"}/>
-        <circle cx="6"  cy="12"   r={active?2:1.5} fill={active?"#1D4ED8":"#3850A6"}/>
-      </svg>
-    ),
+  const NAV_ICONS={
+    projects:"basil:folder-outline",
+    create:"basil:add-circle-outline",
+    library:"basil:book-outline",
+    parties:"basil:share-outline",
   };
 
   const tabs=[
     {id:"projects",label:t.navProjects},
-    {id:"dashboard",label:t.navDashboard},
+    {id:"create",label:t.create},
     {id:"parties",label:t.navParties},
     {id:"library",label:t.navLibrary},
   ];
 
-  // Split tabs around the center FAB — 2 left, 2 right
+  const NavBtn=({tab})=>{
+    const active=page===tab.id;
+    const handleClick=()=>setPage(tab.id);
+    return(
+      <button type="button" onClick={handleClick}
+        style={{flex:1,display:"flex",flexDirection:"column",alignItems:"center",gap:2,padding:"8px 0",background:"none",border:"none",cursor:"pointer",color:active?C:INACTIVE,transition:"color .2s"}}>
+        {tab.id==="create"
+          ?<svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" style={{pointerEvents:"none"}}><path fill="currentColor" fillRule="evenodd" d="M10.486 4.114c.675-1.162 2.353-1.162 3.028 0l2.065 3.56c.19.328.52.551.895.608l3.43.518c1.494.226 2.018 2.114.854 3.078l-2.499 2.07a1.25 1.25 0 0 0-.43 1.197l.7 3.676c.274 1.44-1.238 2.558-2.535 1.876L12.582 18.9a1.25 1.25 0 0 0-1.164 0l-3.412 1.797c-1.297.683-2.809-.436-2.535-1.876l.7-3.676a1.25 1.25 0 0 0-.43-1.197l-2.5-2.07c-1.163-.964-.64-2.852.856-3.078l3.43-.518a1.25 1.25 0 0 0 .894-.609zm1.73.753a.25.25 0 0 0-.432 0l-2.066 3.56a2.75 2.75 0 0 1-1.967 1.338l-3.43.518a.25.25 0 0 0-.122.44l2.499 2.07a2.75 2.75 0 0 1 .947 2.632l-.7 3.676a.25.25 0 0 0 .362.268l3.412-1.796a2.75 2.75 0 0 1 2.562 0l3.412 1.796a.25.25 0 0 0 .362-.268l-.7-3.676a2.75 2.75 0 0 1 .947-2.632l2.5-2.07a.25.25 0 0 0-.123-.44l-3.43-.518a2.75 2.75 0 0 1-1.967-1.339z" clipRule="evenodd"/></svg>
+          :<span className="iconify" data-icon={NAV_ICONS[tab.id]} style={{fontSize:28,pointerEvents:"none"}}/>
+        }
+        <span style={{fontSize:9,fontStyle:"italic",fontWeight:active?700:400,letterSpacing:"0.01em"}}>{tab.label}</span>
+      </button>
+    );
+  };
+
   const left=tabs.slice(0,2);
   const right=tabs.slice(2);
 
   return(
     <div style={{position:"fixed",bottom:0,left:0,right:0,height:64,background:"rgba(255,255,255,.94)",backdropFilter:"blur(14px)",borderTop:"1px solid #EEF0FD",display:"flex",alignItems:"center",zIndex:40}}>
-      {/* Left tabs */}
-      {left.map(tab=>(
-        <button key={tab.id} type="button" onClick={()=>setPage(tab.id)} style={{flex:1,display:"flex",flexDirection:"column",alignItems:"center",gap:2,padding:"8px 0",background:"none",border:"none",cursor:"pointer",transition:"opacity .15s"}}>
-          {icons[tab.id]?.(page===tab.id)}
-          <span style={{fontSize:9,fontStyle:"italic",fontWeight:page===tab.id?700:400,color:page===tab.id?C:INACTIVE,letterSpacing:"0.01em"}}>{tab.label}</span>
-        </button>
-      ))}
+      {left.map(tab=><NavBtn key={tab.id} tab={tab}/>)}
 
       {/* Center FAB — absolutely positioned to float above bar */}
       <div style={{flex:1,position:"relative",alignSelf:"stretch"}}>
-        <button type="button" onClick={onAdd} style={{width:73,height:73,borderRadius:"50%",background:"none",border:"none",cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center",position:"absolute",bottom:12,left:"50%",transform:"translateX(-50%)",padding:0}}>
-          <img src="add.png" width="73" height="73" style={{objectFit:"contain"}}/>
+        <button type="button" onClick={onAdd} style={{width:84,height:84,borderRadius:"50%",background:"none",border:"none",cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center",position:"absolute",bottom:12,left:"50%",transform:"translateX(-50%)",padding:0}}>
+          <img src="add.png" width="84" height="84" style={{objectFit:"contain"}}/>
         </button>
       </div>
 
-      {/* Right tabs */}
-      {right.map(tab=>(
-        <button key={tab.id} type="button" onClick={()=>setPage(tab.id)} style={{flex:1,display:"flex",flexDirection:"column",alignItems:"center",gap:2,padding:"8px 0",background:"none",border:"none",cursor:"pointer",transition:"opacity .15s"}}>
-          {icons[tab.id]?.(page===tab.id)}
-          <span style={{fontSize:9,fontStyle:"italic",fontWeight:page===tab.id?700:400,color:page===tab.id?C:INACTIVE,letterSpacing:"0.01em"}}>{tab.label}</span>
-        </button>
-      ))}
+      {right.map(tab=><NavBtn key={tab.id} tab={tab}/>)}
     </div>
   );
 }
@@ -9917,7 +10217,7 @@ function ProjectsView({projects, setProjects, setEditingProject, setPickPatternF
             <button type="button" onClick={() => setShowArchive(v => !v)}
               style={{width:"100%", display:"flex", alignItems:"center", justifyContent:"space-between", padding:"12px 16px", borderRadius:16, border:"1.5px dashed #D1D5DB", background:showArchive?"#F5F0FF":"#FAFAFA", cursor:"pointer", transition:"all .15s"}}>
               <div style={{display:"flex", alignItems:"center", gap:10}}>
-                <span style={{fontSize:18}}>📦</span>
+                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" style={{color:"#7C5CBF",flexShrink:0}}><path fill="currentColor" fillRule="evenodd" d="M21.488 10.25a22 22 0 0 0-.08-.543l-.064-.401a2.91 2.91 0 0 0-2.872-2.45h-8.117A2.55 2.55 0 0 0 7.903 5H5.612a2.93 2.93 0 0 0-2.909 2.58l-.272 2.27a24.5 24.5 0 0 0 .224 7.318a2.88 2.88 0 0 0 2.626 2.354l1.514.108c3.466.248 6.945.248 10.41 0l1.638-.117a2.72 2.72 0 0 0 1.986-1.087a5.9 5.9 0 0 0 1.409-2.111l1.25-3.213a2.093 2.093 0 0 0-1.952-2.852zM5.612 6.5a1.43 1.43 0 0 0-1.42 1.26l-.272 2.268a23 23 0 0 0 .21 6.87c.113.62.63 1.083 1.258 1.128l.086.006l2.332-6.025a2.75 2.75 0 0 1 2.564-1.757h9.603q-.021-.153-.046-.306l-.064-.402a1.41 1.41 0 0 0-1.39-1.186H9.758a.81.81 0 0 1-.809-.81c0-.577-.469-1.046-1.047-1.046z" clipRule="evenodd"/></svg>
                 <span style={{fontSize:13, fontWeight:700, color:"#7C5CBF"}}>Archive</span>
                 <span style={{fontSize:11, fontWeight:700, color:"white", background:"#7C5CBF", borderRadius:20, padding:"1px 8px"}}>{archived.length}</span>
               </div>
@@ -10609,16 +10909,19 @@ function PartyCard({party,isOwn,isJoined,attendeeCount,onManage,onJoinDirect,onD
           )}
           {displayLocation&&(
             <div style={{display:"flex",alignItems:"center",gap:3,fontSize:11,color:"#6B7280",flex:1,minWidth:0}}>
-              <span style={{flexShrink:0}}>📍</span><span style={{overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{displayLocation}</span>
+              <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" style={{flexShrink:0}}><g fill="currentColor" fillRule="evenodd" clipRule="evenodd"><path d="M7.25 10a4.75 4.75 0 1 1 9.5 0a4.75 4.75 0 0 1-9.5 0M12 6.75a3.25 3.25 0 1 0 0 6.5a3.25 3.25 0 0 0 0-6.5"/><path d="M3.524 8.857a8.29 8.29 0 0 1 8.26-7.607h.432a8.29 8.29 0 0 1 8.26 7.607a8.94 8.94 0 0 1-1.99 6.396l-4.793 5.861a2.187 2.187 0 0 1-3.386 0l-4.793-5.861a8.94 8.94 0 0 1-1.99-6.396m8.26-6.107A6.79 6.79 0 0 0 5.02 8.98a7.44 7.44 0 0 0 1.656 5.323l4.793 5.862a.687.687 0 0 0 1.064 0l4.793-5.862A7.44 7.44 0 0 0 18.98 8.98a6.79 6.79 0 0 0-6.765-6.23z"/></g></svg>
+              <span style={{overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{displayLocation}</span>
             </div>
           )}
           {dateTime&&(
             <div style={{display:"flex",alignItems:"center",gap:3,fontSize:11,color:"#6B7280",flexShrink:0}}>
-              <span>🕒</span><span>{dateTime}</span>
+              <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24"><path fill="currentColor" d="M12.75 7a.75.75 0 0 0-1.5 0v5a.75.75 0 0 0 .352.636l3 1.875a.75.75 0 1 0 .796-1.272l-2.648-1.655z"/><path fill="currentColor" fillRule="evenodd" d="M12 3.25a8.75 8.75 0 1 0 0 17.5a8.75 8.75 0 0 0 0-17.5M4.75 12a7.25 7.25 0 1 1 14.5 0a7.25 7.25 0 0 1-14.5 0" clipRule="evenodd"/></svg>
+              <span>{dateTime}</span>
             </div>
           )}
           <div style={{display:"flex",alignItems:"center",gap:3,fontSize:11,color:full?"#EF4444":"#6B7280",flexShrink:0}}>
-            <span>👥</span><span>{attendeeCount}{party.max_attendees?` / ${party.max_attendees}`:""}</span>
+            <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24"><path fill="currentColor" d="M12.75 7a.75.75 0 0 0-1.5 0v5a.75.75 0 0 0 .352.636l3 1.875a.75.75 0 1 0 .796-1.272l-2.648-1.655z"/><path fill="currentColor" fillRule="evenodd" d="M12 3.25a8.75 8.75 0 1 0 0 17.5a8.75 8.75 0 0 0 0-17.5M4.75 12a7.25 7.25 0 1 1 14.5 0a7.25 7.25 0 0 1-14.5 0" clipRule="evenodd"/></svg>
+            <span>{attendeeCount}{party.max_attendees?` / ${party.max_attendees}`:""}</span>
           </div>
         </div>
         {/* Capacity bar */}
@@ -10993,8 +11296,8 @@ function PartiesPage({myPartyIds,setMyPartyIds,joinedParties,setJoinedParties,se
   const[tab,setTab]=useState("explore");
   return(
     <div style={{flex:1,display:"flex",flexDirection:"column",overflow:"hidden"}}>
-      <div style={{padding:"20px 16px 12px",maxWidth:360,margin:"0 auto",width:"100%",flexShrink:0}}>
-        <div style={{fontSize:12,fontWeight:700,color:"#778EE3",letterSpacing:"0.08em",textTransform:"uppercase",marginBottom:6}}>Craft Parties</div>
+      <div style={{padding:"40px 16px 12px",maxWidth:360,margin:"0 auto",width:"100%",flexShrink:0}}>
+        <div style={{fontSize:12,fontWeight:700,color:"#778EE3",letterSpacing:"0.08em",textTransform:"uppercase",marginBottom:6}}>Social</div>
         <div style={{background:"#F3F4F6",borderRadius:14,padding:3,display:"flex",gap:2}}>
           {[{id:"explore",ico:"basil:map-outline",lbl:"Explore"},{id:"host",ico:"basil:user-group-outline",lbl:"My Parties"}].map(tb=>(
             <button key={tb.id} onClick={()=>setTab(tb.id)} style={{flex:1,padding:"8px 0",borderRadius:11,border:"none",cursor:"pointer",fontSize:12,fontWeight:700,background:tab===tb.id?"white":"transparent",color:tab===tb.id?"#778EE3":"#6B7280",boxShadow:tab===tb.id?"0 2px 8px rgba(0,0,0,.1)":"none",transition:"all .2s",display:"flex",alignItems:"center",justifyContent:"center",gap:4}}>
@@ -11286,8 +11589,23 @@ function App(){
     <SettingsCtx.Provider value={settings}>
       <div style={{minHeight:"100vh",background:"#F2F2F7",display:"flex",flexDirection:"column"}}>
         {page!=="settings"&&(
-          <button onClick={()=>setPage("settings")} style={{position:"fixed",top:16,right:16,zIndex:50,background:"white",border:"none",borderRadius:12,width:36,height:36,display:"flex",alignItems:"center",justifyContent:"center",boxShadow:"0 2px 8px rgba(0,0,0,.12)",cursor:"pointer"}}>
-            <img src="setting.png" width="22" height="22" style={{objectFit:"contain"}}/>
+          <button onClick={()=>setPage("settings")} style={{position:"fixed",top:16,right:60,zIndex:50,background:"white",border:"none",borderRadius:12,width:36,height:36,display:"flex",alignItems:"center",justifyContent:"center",boxShadow:"0 2px 8px rgba(0,0,0,.12)",cursor:"pointer"}}>
+            <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" style={{color:"#778EE3"}}><g fill="currentColor" fillRule="evenodd" clipRule="evenodd"><path d="M12 3.08L9.787 5.368a1.25 1.25 0 0 1-.899.381H5.75v3.138c0 .34-.138.664-.381.9L3.079 12l2.29 2.213c.243.235.381.56.381.899v3.138h3.138c.34 0 .664.138.9.381L12 20.921l2.213-2.29a1.25 1.25 0 0 1 .899-.381h3.138v-3.138c0-.34.138-.664.381-.9L20.921 12l-2.29-2.213a1.25 1.25 0 0 1-.381-.899V5.75h-3.138a1.25 1.25 0 0 1-.9-.381zm-.899-1.23a1.25 1.25 0 0 1 1.798 0l2.319 2.4H18.5c.69 0 1.25.56 1.25 1.25v3.282l2.4 2.32a1.25 1.25 0 0 1 0 1.797l-2.4 2.319V18.5c0 .69-.56 1.25-1.25 1.25h-3.282l-2.32 2.4a1.25 1.25 0 0 1-1.797 0l-2.319-2.4H5.5c-.69 0-1.25-.56-1.25-1.25v-3.282l-2.4-2.32a1.25 1.25 0 0 1 0-1.797l2.4-2.319V5.5c0-.69.56-1.25 1.25-1.25h3.282z"/><path d="M7.25 12a4.75 4.75 0 1 1 9.5 0a4.75 4.75 0 0 1-9.5 0M12 8.75a3.25 3.25 0 1 0 0 6.5a3.25 3.25 0 0 0 0-6.5"/></g></svg>
+          </button>
+        )}
+        {page!=="dashboard"&&(
+          <button onClick={()=>setPage("dashboard")} style={{position:"fixed",top:16,right:16,zIndex:50,background:"white",border:"none",borderRadius:999,width:36,height:36,display:"flex",alignItems:"center",justifyContent:"center",boxShadow:"0 2px 8px rgba(0,0,0,.12)",cursor:"pointer",overflow:"hidden"}}>
+            {settings.profilePhoto
+              ?<img src={settings.profilePhoto} style={{width:36,height:36,objectFit:"cover"}}/>
+              :settings.profileName
+                ?<span style={{fontSize:15,fontWeight:700,color:"#778EE3"}}>{settings.profileName.charAt(0).toUpperCase()}</span>
+                :<span className="iconify" data-icon="basil:user-outline" style={{fontSize:22,color:"#778EE3"}}/>
+            }
+          </button>
+        )}
+        {page==="dashboard"&&(
+          <button onClick={()=>setPage("projects")} style={{position:"fixed",top:16,right:16,zIndex:50,background:"white",border:"none",borderRadius:999,width:36,height:36,display:"flex",alignItems:"center",justifyContent:"center",boxShadow:"0 2px 8px rgba(0,0,0,.12)",cursor:"pointer"}}>
+            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24"><path fill="#6B7280" d="M18.3 5.71a1 1 0 0 0-1.41 0L12 10.59 7.11 5.7A1 1 0 0 0 5.7 7.11L10.59 12 5.7 16.89a1 1 0 1 0 1.41 1.41L12 13.41l4.89 4.89a1 1 0 0 0 1.41-1.41L13.41 12l4.89-4.89a1 1 0 0 0 0-1.4"/></svg>
           </button>
         )}
         {(page==="projects"||page==="dashboard")&&(
@@ -11308,6 +11626,8 @@ function App(){
           <ProjectsView projects={projects} setProjects={setProjects} setEditingProject={setEditingProject} setPickPatternFor={setPickPatternFor} t={t} rewards={rewards} setRewards={setRewards} onJustCompleted={id=>setPendingPhotoProjectId(id)}/>
         ):page==="dashboard"?(
           <DashboardPage projects={projects} yarnLib={yarnLib} patterns={patterns} myPartyIds={myPartyIds} setMyPartyIds={setMyPartyIds} joinedParties={joinedParties} setJoinedParties={setJoinedParties} settings={settings} setPage={setPage}/>
+        ):page==="create"?(
+          <CreatePage yarnLib={yarnLib} patterns={patterns} setPatterns={setPatterns} setPage={setPage}/>
         ):page==="parties"?(
           <PartiesPage myPartyIds={myPartyIds} setMyPartyIds={setMyPartyIds} joinedParties={joinedParties} setJoinedParties={setJoinedParties} settings={settings}/>
         ):page==="settings"?(
