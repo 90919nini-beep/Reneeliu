@@ -247,11 +247,11 @@ const T={
     hook:"Hook",weight:"Weight",balls:"Balls",rows:"Rows",notes:"Notes",noNotes:"No notes added.",tags:"Tags",
     edit:"Edit",share:"Share",more:"More",patternBtn:"Pattern",
     addProject:"New Project",editProject:"Edit Project",addSubtitle:"Add a crochet or knitting project",
-    editSubtitle:"Update your project details",addBtn:"Add Project",saveChanges:"Save Changes",
+    editSubtitle:"Update your project details",addBtn:"Add Project",saveChanges:"Save Changes",startProject:"Start Project",pickPattern:"Pick Pattern",
     projectName:"Project Name",patternName:"Pattern Name",
     yarnSection:"Yarns",addYarn:"+ Add Yarn",brand:"Brand",yarnName:"Yarn Name",
     colorway:"Colorway",fibre:"Fibre",yarnColor:"Color",hookSize:"Hook / Needle Size",yarnWeight:"Yarn Weight",
-    dueDate:"Due Date",rowsDone:"Rows Completed",totalRows:"Total Rows",status:"Status",priority:"Priority",
+    startDate:"Start Date",dueDate:"Due Date",rowsDone:"Rows Completed",totalRows:"Total Rows",status:"Status",priority:"Priority",
     tagsHint:"Tags (comma separated)",checklistHint:"Checklist (one item per line)",
     notesLabel:"Notes",notesPlaceholder:"Any notes about the project...",
     errName:"Project name is required.",
@@ -306,17 +306,34 @@ const T={
     settingsAboutHelp:"For help or feedback, tap the share button on any project to export.",
     settingsKnitGrid:"Knit Grid Preferences",settingsDefaultKnitStitches:"Default Knit Stitches",
     paletteGen:"Palette Generator",generate:"Generate",monoMode:"Mono",softMode:"Soft",contrastMode:"Contrast",accentMode:"Accent",
+    createPageLabel:"CREATE",createPageSubtitle:"what do you feel\nlike making today?",createPatternDesc:"Design rows, rounds & stitches",importPatternDesc:"Paste text, upload image or PDF",
+    gaugeSwatch:"Gauge swatch",gaugeTargetSize:"Target size",
+    gaugeStsPer4in:"stitches per 4 in",gaugeStsPer10cm:"stitches per 10 cm",
+    gaugeRowsPer4in:"rows per 4 in",gaugeRowsPer10cm:"rows per 10 cm",
+    gaugeWidthIn:"width in inches",gaugeWidthCm:"width in cm",
+    gaugeHeightIn:"height in inches",gaugeHeightCm:"height in cm",
+    partyTabExplore:"Explore",partyJoinCode:"Join with code",partyAllCities:"All cities",
+    partyParties:"parties",partyNearby:"nearby",
+    partyNoNearby:"No parties nearby",partyNoPartiesCity:"No parties in",
+    partySetCountry:"Set your country in Settings to see local parties",
+    partyNoCountry:"No public parties in this area yet",
+    partyGatherings:"Your craft gatherings",partyFirstMeetup:"Host your first craft meetup",
+    partyHosting:"Hosting",partyNoBio:"No bio yet",partyClose:"Close",
+    partyJoinBtn:"Join this Party",partyLeave:"Leave Party",partyLeaveConfirm:"Leave this party?",
+    cats:{Shawl:"Shawl",Hat:"Hat",Sweater:"Sweater",Blanket:"Blanket",Amigurumi:"Amigurumi",Socks:"Socks",Mittens:"Mittens",Bag:"Bag",Scarf:"Scarf",Other:"Other"},
+    crafts:{Crochet:"Crochet",Knitting:"Knitting",Tunisian:"Tunisian",Other:"Other"},
+    diffs:{Beginner:"Beginner",Intermediate:"Intermediate",Advanced:"Advanced"},
   },
   fr:{
     appLabel:"Mes Projets",appTitle:"mitime",inProgress:"en cours",projects:"projets",
     hook:"Aiguille",weight:"Épaisseur",balls:"Pelotes",rows:"Rangs",notes:"Notes",noNotes:"Aucune note.",tags:"Étiquettes",
     edit:"Modifier",share:"Partager",more:"Plus",patternBtn:"Patron",
     addProject:"Nouveau Projet",editProject:"Modifier le projet",addSubtitle:"Ajouter un projet",
-    editSubtitle:"Mettre à jour votre projet",addBtn:"Ajouter",saveChanges:"Enregistrer",
+    editSubtitle:"Mettre à jour votre projet",addBtn:"Ajouter",saveChanges:"Enregistrer",startProject:"Démarrer le projet",pickPattern:"Choisir un patron",
     projectName:"Nom du projet",patternName:"Nom du patron",
     yarnSection:"Laines",addYarn:"+ Ajouter laine",brand:"Marque",yarnName:"Nom",
     colorway:"Coloris",fibre:"Fibre",yarnColor:"Couleur",hookSize:"Taille aiguille",yarnWeight:"Épaisseur",
-    dueDate:"Date limite",rowsDone:"Rangs terminés",totalRows:"Total rangs",status:"Statut",priority:"Priorité",
+    startDate:"Date de début",dueDate:"Date limite",rowsDone:"Rangs terminés",totalRows:"Total rangs",status:"Statut",priority:"Priorité",
     tagsHint:"Étiquettes (virgule)",checklistHint:"Liste (une par ligne)",
     notesLabel:"Notes",notesPlaceholder:"Notes sur le projet...",errName:"Le nom est requis.",
     daysLeft:"j restants",dueToday:"Dû aujourd'hui",overdue:"j de retard",
@@ -370,17 +387,34 @@ const T={
     settingsAboutHelp:"Pour de l'aide, appuyez sur partager pour exporter un projet.",
     settingsKnitGrid:"Préférences tricot",settingsDefaultKnitStitches:"Points de tricot par défaut",
     paletteGen:"Générateur de palette",generate:"Générer",monoMode:"Mono",softMode:"Doux",contrastMode:"Contraste",accentMode:"Accent",
+    createPageLabel:"CRÉER",createPageSubtitle:"qu'est-ce que vous voulez\nfaire aujourd'hui ?",createPatternDesc:"Créez rangs, tours et points",importPatternDesc:"Coller texte, image ou PDF",
+    gaugeSwatch:"Échantillon",gaugeTargetSize:"Taille souhaitée",
+    gaugeStsPer4in:"mailles par 4 po",gaugeStsPer10cm:"mailles par 10 cm",
+    gaugeRowsPer4in:"rangs par 4 po",gaugeRowsPer10cm:"rangs par 10 cm",
+    gaugeWidthIn:"largeur (pouces)",gaugeWidthCm:"largeur (cm)",
+    gaugeHeightIn:"hauteur (pouces)",gaugeHeightCm:"hauteur (cm)",
+    partyTabExplore:"Explorer",partyJoinCode:"Rejoindre avec un code",partyAllCities:"Toutes les villes",
+    partyParties:"ateliers",partyNearby:"à proximité",
+    partyNoNearby:"Aucun atelier à proximité",partyNoPartiesCity:"Aucun atelier à",
+    partySetCountry:"Définissez votre pays dans Paramètres pour voir les ateliers locaux",
+    partyNoCountry:"Aucun atelier public dans cette région",
+    partyGatherings:"Vos rencontres créatives",partyFirstMeetup:"Organisez votre premier atelier",
+    partyHosting:"Organisés",partyNoBio:"Pas de bio",partyClose:"Fermer",
+    partyJoinBtn:"Rejoindre cet atelier",partyLeave:"Quitter l'atelier",partyLeaveConfirm:"Quitter cet atelier ?",
+    cats:{Shawl:"Châle",Hat:"Bonnet",Sweater:"Pull",Blanket:"Couverture",Amigurumi:"Amigurumi",Socks:"Chaussettes",Mittens:"Moufles",Bag:"Sac",Scarf:"Écharpe",Other:"Autre"},
+    crafts:{Crochet:"Crochet",Knitting:"Tricot",Tunisian:"Tunisien",Other:"Autre"},
+    diffs:{Beginner:"Débutant",Intermediate:"Intermédiaire",Advanced:"Avancé"},
   },
   ja:{
     appLabel:"マイプロジェクト",appTitle:"mitime",inProgress:"進行中",projects:"プロジェクト",
     hook:"針",weight:"太さ",balls:"玉数",rows:"段",notes:"メモ",noNotes:"メモなし",tags:"タグ",
     edit:"編集",share:"共有",more:"もっと",patternBtn:"パターン",
     addProject:"新しいプロジェクト",editProject:"プロジェクトを編集",addSubtitle:"プロジェクトを追加",
-    editSubtitle:"プロジェクトを更新",addBtn:"追加する",saveChanges:"保存する",
+    editSubtitle:"プロジェクトを更新",addBtn:"追加する",saveChanges:"保存する",startProject:"プロジェクト開始",pickPattern:"パターン選択",
     projectName:"プロジェクト名",patternName:"パターン名",
     yarnSection:"毛糸",addYarn:"＋毛糸を追加",brand:"ブランド",yarnName:"毛糸名",
     colorway:"カラーウェイ",fibre:"繊維",yarnColor:"色",hookSize:"針のサイズ",yarnWeight:"太さ",
-    dueDate:"期限日",rowsDone:"完了した段",totalRows:"合計段数",status:"ステータス",priority:"優先度",
+    startDate:"開始日",dueDate:"期限日",rowsDone:"完了した段",totalRows:"合計段数",status:"ステータス",priority:"優先度",
     tagsHint:"タグ（カンマ区切り）",checklistHint:"チェックリスト（1行1項目）",
     notesLabel:"メモ",notesPlaceholder:"メモ...",errName:"プロジェクト名が必要です。",
     daysLeft:"日残り",dueToday:"今日が期限",overdue:"日超過",
@@ -434,17 +468,34 @@ const T={
     settingsAboutHelp:"ヘルプやフィードバックは、プロジェクトの共有ボタンをご利用ください。",
     settingsKnitGrid:"棒針グリッド設定",settingsDefaultKnitStitches:"デフォルトの棒針目",
     paletteGen:"パレット生成",generate:"生成",monoMode:"モノ",softMode:"ソフト",contrastMode:"コントラスト",accentMode:"アクセント",
+    createPageLabel:"つくる",createPageSubtitle:"今日は何を\n作りたいですか？",createPatternDesc:"段・ラウンド・目を設計",importPatternDesc:"テキスト・画像・PDFを読み込む",
+    gaugeSwatch:"ゲージ見本",gaugeTargetSize:"目標サイズ",
+    gaugeStsPer4in:"4インチあたり目数",gaugeStsPer10cm:"10cmあたり目数",
+    gaugeRowsPer4in:"4インチあたり段数",gaugeRowsPer10cm:"10cmあたり段数",
+    gaugeWidthIn:"幅（インチ）",gaugeWidthCm:"幅（cm）",
+    gaugeHeightIn:"高さ（インチ）",gaugeHeightCm:"高さ（cm）",
+    partyTabExplore:"探す",partyJoinCode:"コードで参加",partyAllCities:"すべての都市",
+    partyParties:"パーティー",partyNearby:"近く",
+    partyNoNearby:"近くにパーティーはありません",partyNoPartiesCity:"パーティーなし：",
+    partySetCountry:"設定で国を設定すると近くのパーティーが表示されます",
+    partyNoCountry:"この地域に公開パーティーはありません",
+    partyGatherings:"クラフトの集まり",partyFirstMeetup:"最初のミートアップを開こう",
+    partyHosting:"主催中",partyNoBio:"自己紹介なし",partyClose:"閉じる",
+    partyJoinBtn:"パーティーに参加",partyLeave:"パーティーを離れる",partyLeaveConfirm:"このパーティーを離れますか？",
+    cats:{Shawl:"ショール",Hat:"帽子",Sweater:"セーター",Blanket:"ブランケット",Amigurumi:"あみぐるみ",Socks:"靴下",Mittens:"ミトン",Bag:"バッグ",Scarf:"マフラー",Other:"その他"},
+    crafts:{Crochet:"かぎ針",Knitting:"棒針",Tunisian:"チュニジアン",Other:"その他"},
+    diffs:{Beginner:"初級",Intermediate:"中級",Advanced:"上級"},
   },
   zh:{
     appLabel:"我的專案",appTitle:"mitime",inProgress:"進行中",projects:"個專案",
     hook:"針",weight:"線重",balls:"球數",rows:"行數",notes:"備註",noNotes:"尚無備註",tags:"標籤",
     edit:"編輯",share:"分享",more:"更多",patternBtn:"花樣",
     addProject:"新增專案",editProject:"編輯專案",addSubtitle:"新增鉤針或棒針專案",
-    editSubtitle:"更新專案資料",addBtn:"新增專案",saveChanges:"儲存變更",
+    editSubtitle:"更新專案資料",addBtn:"新增專案",saveChanges:"儲存變更",startProject:"開始專案",pickPattern:"選擇圖案",
     projectName:"專案名稱",patternName:"花樣名稱",
     yarnSection:"毛線",addYarn:"＋新增毛線",brand:"品牌",yarnName:"線名",
     colorway:"色彩",fibre:"纖維",yarnColor:"顏色",hookSize:"針號",yarnWeight:"線的重量",
-    dueDate:"截止日期",rowsDone:"已完成行數",totalRows:"總行數",status:"狀態",priority:"優先度",
+    startDate:"開始日期",dueDate:"截止日期",rowsDone:"已完成行數",totalRows:"總行數",status:"狀態",priority:"優先度",
     tagsHint:"標籤（逗號分隔）",checklistHint:"待辦清單（每行一項）",
     notesLabel:"備註",notesPlaceholder:"備註...",errName:"請輸入專案名稱。",
     daysLeft:"天剩餘",dueToday:"今天到期",overdue:"天逾期",
@@ -498,17 +549,34 @@ const T={
     settingsAboutHelp:"如需幫助或回饋，請點擊任何專案的分享按鈕匯出。",
     settingsKnitGrid:"棒針方格偏好",settingsDefaultKnitStitches:"預設棒針針法",
     paletteGen:"配色生成器",generate:"生成",monoMode:"單色",softMode:"柔和",contrastMode:"對比",accentMode:"重點色",
+    createPageLabel:"創作",createPageSubtitle:"今天想做什麼？",createPatternDesc:"設計行、圈與針法",importPatternDesc:"貼入文字、上傳圖片或 PDF",
+    gaugeSwatch:"編織密度",gaugeTargetSize:"目標尺寸",
+    gaugeStsPer4in:"每4吋針數",gaugeStsPer10cm:"每10cm針數",
+    gaugeRowsPer4in:"每4吋行數",gaugeRowsPer10cm:"每10cm行數",
+    gaugeWidthIn:"寬度（吋）",gaugeWidthCm:"寬度（cm）",
+    gaugeHeightIn:"高度（吋）",gaugeHeightCm:"高度（cm）",
+    partyTabExplore:"探索",partyJoinCode:"以代碼加入",partyAllCities:"所有城市",
+    partyParties:"個聚會",partyNearby:"附近",
+    partyNoNearby:"附近沒有聚會",partyNoPartiesCity:"此地沒有聚會：",
+    partySetCountry:"請在設定中設定國家以查看本地聚會",
+    partyNoCountry:"此地區尚無公開聚會",
+    partyGatherings:"您的手作聚會",partyFirstMeetup:"舉辦您的第一次聚會",
+    partyHosting:"主辦中",partyNoBio:"尚無簡介",partyClose:"關閉",
+    partyJoinBtn:"加入此聚會",partyLeave:"離開聚會",partyLeaveConfirm:"確定要離開此聚會嗎？",
+    cats:{Shawl:"披肩",Hat:"帽子",Sweater:"毛衣",Blanket:"毯子",Amigurumi:"玩偶",Socks:"襪子",Mittens:"連指手套",Bag:"包包",Scarf:"圍巾",Other:"其他"},
+    crafts:{Crochet:"鉤針",Knitting:"棒針",Tunisian:"突尼斯鉤針",Other:"其他"},
+    diffs:{Beginner:"初學",Intermediate:"中級",Advanced:"進階"},
   },
   ko:{
     appLabel:"내 프로젝트",appTitle:"mitime",inProgress:"진행 중",projects:"개 프로젝트",
     hook:"바늘",weight:"굵기",balls:"볼 수",rows:"단",notes:"메모",noNotes:"메모 없음",tags:"태그",
     edit:"편집",share:"공유",more:"더 보기",patternBtn:"패턴",
     addProject:"새 프로젝트",editProject:"프로젝트 편집",addSubtitle:"코바늘 또는 대바늘 프로젝트 추가",
-    editSubtitle:"프로젝트 정보 수정",addBtn:"프로젝트 추가",saveChanges:"변경 저장",
+    editSubtitle:"프로젝트 정보 수정",addBtn:"프로젝트 추가",saveChanges:"변경 저장",startProject:"프로젝트 시작",pickPattern:"패턴 선택",
     projectName:"프로젝트 이름",patternName:"패턴 이름",
     yarnSection:"실",addYarn:"＋ 실 추가",brand:"브랜드",yarnName:"실 이름",
     colorway:"컬러웨이",fibre:"섬유",yarnColor:"색상",hookSize:"바늘 크기",yarnWeight:"실 굵기",
-    dueDate:"마감일",rowsDone:"완료한 단",totalRows:"총 단 수",status:"상태",priority:"우선순위",
+    startDate:"시작일",dueDate:"마감일",rowsDone:"완료한 단",totalRows:"총 단 수",status:"상태",priority:"우선순위",
     tagsHint:"태그 (쉼표 구분)",checklistHint:"체크리스트 (한 줄에 하나씩)",
     notesLabel:"메모",notesPlaceholder:"프로젝트 메모...",errName:"프로젝트 이름을 입력하세요.",
     daysLeft:"일 남음",dueToday:"오늘 마감",overdue:"일 초과",
@@ -562,11 +630,75 @@ const T={
     settingsAboutHelp:"도움이 필요하시면 프로젝트 공유 버튼을 눌러 내보내세요.",
     settingsKnitGrid:"대바늘 그리드 설정",settingsDefaultKnitStitches:"기본 대바늘 코",
     paletteGen:"팔레트 생성기",generate:"생성",monoMode:"모노",softMode:"소프트",contrastMode:"대비",accentMode:"악센트",
+    createPageLabel:"만들기",createPageSubtitle:"오늘은 무엇을\n만들고 싶으세요?",createPatternDesc:"행, 단, 코를 디자인하세요",importPatternDesc:"텍스트 붙여넣기, 이미지 또는 PDF",
+    gaugeSwatch:"게이지 견본",gaugeTargetSize:"목표 크기",
+    gaugeStsPer4in:"4인치당 코수",gaugeStsPer10cm:"10cm당 코수",
+    gaugeRowsPer4in:"4인치당 단수",gaugeRowsPer10cm:"10cm당 단수",
+    gaugeWidthIn:"너비 (인치)",gaugeWidthCm:"너비 (cm)",
+    gaugeHeightIn:"높이 (인치)",gaugeHeightCm:"높이 (cm)",
+    partyTabExplore:"탐색",partyJoinCode:"코드로 참여",partyAllCities:"모든 도시",
+    partyParties:"개 파티",partyNearby:"근처",
+    partyNoNearby:"근처에 파티 없음",partyNoPartiesCity:"파티 없음:",
+    partySetCountry:"설정에서 국가를 설정하면 지역 파티를 볼 수 있습니다",
+    partyNoCountry:"이 지역에 공개 파티가 없습니다",
+    partyGatherings:"나의 뜨개 모임",partyFirstMeetup:"첫 번째 모임을 열어보세요",
+    partyHosting:"주최 중",partyNoBio:"소개 없음",partyClose:"닫기",
+    partyJoinBtn:"파티 참여하기",partyLeave:"파티 나가기",partyLeaveConfirm:"이 파티를 나가시겠습니까?",
+    cats:{Shawl:"숄",Hat:"모자",Sweater:"스웨터",Blanket:"담요",Amigurumi:"아미구루미",Socks:"양말",Mittens:"벙어리장갑",Bag:"가방",Scarf:"스카프",Other:"기타"},
+    crafts:{Crochet:"코바늘",Knitting:"대바늘",Tunisian:"튀니지안",Other:"기타"},
+    diffs:{Beginner:"초급",Intermediate:"중급",Advanced:"고급"},
   },
 };
 
 const LangCtx=createContext({lang:"en",t:T.en});
 const useLang=()=>useContext(LangCtx);
+let _scrollLockCount=0,_savedScrollY=0;
+function useBodyScrollLock(){
+  useEffect(()=>{
+    if(_scrollLockCount===0){
+      _savedScrollY=window.scrollY;
+      document.body.style.overflow='hidden';
+      document.body.style.position='fixed';
+      document.body.style.top=`-${_savedScrollY}px`;
+      document.body.style.width='100%';
+    }
+    _scrollLockCount++;
+    return()=>{
+      _scrollLockCount--;
+      if(_scrollLockCount===0){
+        document.body.style.overflow='';
+        document.body.style.position='';
+        document.body.style.top='';
+        document.body.style.width='';
+        window.scrollTo(0,_savedScrollY);
+      }
+    };
+  },[]);
+}
+function ScrollLock({children}){useBodyScrollLock();return children;}
+function useBodyScrollLockWhen(active){
+  useEffect(()=>{
+    if(!active)return;
+    if(_scrollLockCount===0){
+      _savedScrollY=window.scrollY;
+      document.body.style.overflow='hidden';
+      document.body.style.position='fixed';
+      document.body.style.top=`-${_savedScrollY}px`;
+      document.body.style.width='100%';
+    }
+    _scrollLockCount++;
+    return()=>{
+      _scrollLockCount--;
+      if(_scrollLockCount===0){
+        document.body.style.overflow='';
+        document.body.style.position='';
+        document.body.style.top='';
+        document.body.style.width='';
+        window.scrollTo(0,_savedScrollY);
+      }
+    };
+  },[active]);
+}
 const SettingsCtx=createContext({readHighlightColor:"#BBC7F1",canvasBg:"#FDFAF6",chartGridVisible:true,chartHighlightRow:true});
 const useSettings=()=>useContext(SettingsCtx);
 const uid=()=>Math.random().toString(36).slice(2,9);
@@ -1118,6 +1250,7 @@ function CropTool({imgEl,gridCols,gridRows,onCrop,onCancel}){
 
 /* ─── Image to Pattern Modal ───────────────────────────────────────────────── */
 function ImageToPatternModal({initCols,initRows,initialState,yarnColors,onApply,onClose}){
+  useBodyScrollLock();
   const[imgEl,setImgEl]=useState(initialState?.imgEl||null);
   const[croppedEl,setCroppedEl]=useState(initialState?.croppedEl||null);
   const[step,setStep]=useState(initialState?.croppedEl?"adjust":"upload"); // "upload"|"crop"|"adjust"
@@ -1425,7 +1558,10 @@ function KnitGrid({initialGrid,onGridChange,yarnColors}){
   const redoStack=useRef([]); // [{grid, imgState}]
   const imgStateRef=useRef(null); // synchronous shadow of imgState for snapshots
   const[kgZoom,setKgZoom]=useState(1);
+  const[kgPan,setKgPan]=useState({x:0,y:0});
   const kgPinchRef=useRef(null);
+  const kgPinchStateRef=useRef(null);
+  const kgPanRef=useRef(null);
   const{t}=useLang();
   const{canvasBg="#FDFAF6"}=useSettings();
 
@@ -1626,7 +1762,7 @@ function KnitGrid({initialGrid,onGridChange,yarnColors}){
       </div>
       {showImgTool&&<ImageToPatternModal initCols={cols} initRows={rows} initialState={imgState} yarnColors={yarnColors} onApply={handleImgApply} onClose={()=>setShowImgTool(false)}/>}
       <div ref={containerRef} style={{flex:1,minHeight:0,borderRadius:10,border:"1px solid #E5E7EB",background:canvasBg,display:"flex",justifyContent:"center",alignItems:"center",overflow:"hidden",touchAction:"none"}}>
-        <canvas ref={canvasRef} style={{display:"block",cursor:"crosshair",transform:`scale(${kgZoom})`,transformOrigin:"center"}}
+        <canvas ref={canvasRef} style={{display:"block",cursor:"crosshair",transform:`translate(${kgPan.x}px,${kgPan.y}px) scale(${kgZoom})`,transformOrigin:"center center"}}
           onMouseDown={e=>{painting.current=true;pushUndo();paintBlock(e);}}
           onMouseMove={e=>{
             const cell=getCell(e);setHoverCell(cell.x>=0&&cell.y>=0?cell:null);
@@ -1634,9 +1770,40 @@ function KnitGrid({initialGrid,onGridChange,yarnColors}){
           }}
           onMouseUp={()=>{painting.current=false;sync();}}
           onMouseLeave={()=>{painting.current=false;setHoverCell(null);sync();}}
-          onTouchStart={e=>{if(e.touches.length===2){e.preventDefault();painting.current=false;kgPinchRef.current=Math.hypot(e.touches[0].clientX-e.touches[1].clientX,e.touches[0].clientY-e.touches[1].clientY);}}}
-          onTouchMove={e=>{if(e.touches.length===2&&kgPinchRef.current!==null){e.preventDefault();const d=Math.hypot(e.touches[0].clientX-e.touches[1].clientX,e.touches[0].clientY-e.touches[1].clientY);setKgZoom(z=>Math.max(0.3,Math.min(4,z*d/kgPinchRef.current)));kgPinchRef.current=d;}}}
-          onTouchEnd={e=>{if(e.touches.length<2){if(kgPinchRef.current!==null){e.preventDefault();painting.current=false;}kgPinchRef.current=null;}}}/>
+          onTouchStart={e=>{
+            if(e.touches.length>=2){
+              e.preventDefault();painting.current=false;
+              const t0=e.touches[0],t1=e.touches[1];
+              const dist=Math.hypot(t0.clientX-t1.clientX,t0.clientY-t1.clientY);
+              kgPinchRef.current=dist;
+              const cont=containerRef.current;
+              if(cont){const r=cont.getBoundingClientRect();const mx=(t0.clientX+t1.clientX)/2-(r.left+r.width/2);const my=(t0.clientY+t1.clientY)/2-(r.top+r.height/2);kgPinchStateRef.current={dist,zoom:kgZoom,pan:{...kgPan},mx,my};}
+              kgPanRef.current=null;
+            } else if(e.touches.length===1){
+              e.preventDefault();
+              kgPanRef.current={sx:e.touches[0].clientX,sy:e.touches[0].clientY,px:kgPan.x,py:kgPan.y};
+              kgPinchRef.current=null;kgPinchStateRef.current=null;
+            }
+          }}
+          onTouchMove={e=>{
+            if(e.touches.length===2&&kgPinchStateRef.current){
+              e.preventDefault();
+              const t0=e.touches[0],t1=e.touches[1];
+              const d=Math.hypot(t0.clientX-t1.clientX,t0.clientY-t1.clientY);
+              const{dist:sd,zoom:sz,pan:sp,mx,my}=kgPinchStateRef.current;
+              const nz=Math.max(0.3,Math.min(4,sz*d/sd));
+              setKgZoom(nz);
+              setKgPan({x:mx*(1-nz/sz)+sp.x*nz/sz,y:my*(1-nz/sz)+sp.y*nz/sz});
+            } else if(e.touches.length===1&&kgPanRef.current){
+              e.preventDefault();
+              const t=e.touches[0];
+              setKgPan({x:kgPanRef.current.px+(t.clientX-kgPanRef.current.sx),y:kgPanRef.current.py+(t.clientY-kgPanRef.current.sy)});
+            }
+          }}
+          onTouchEnd={e=>{
+            if(e.touches.length<2){kgPinchRef.current=null;kgPinchStateRef.current=null;}
+            if(e.touches.length===0)kgPanRef.current=null;
+          }}/>
       </div>
       <div style={{display:"flex",gap:8,marginTop:10,alignItems:"center",flexShrink:0}}>
         <span style={{fontSize:11,color:"#6B7280",fontWeight:600}}>Cols</span>
@@ -2328,6 +2495,7 @@ function CrochetBuilder({stitches,setStitches,layout,setLayout,yarnColors,onSave
   const autoScaleRef=useRef(1);
   const ccPinchRef=useRef(null);
   const ccPinchRatioRef=useRef(1);
+  const ccPinchStateRef=useRef(null);
   const rowRenderOffRef=useRef({});
   const SYM_COLS=["#778EE3","#E07B8A","#F59E0B","#3B6FD4","#059669","#111111"];
   const CELL=32, CELL_H=40, SNAP_R=1.6;
@@ -2727,32 +2895,37 @@ function CrochetBuilder({stitches,setStitches,layout,setLayout,yarnColors,onSave
     if(e.touches.length>=2){
       e.preventDefault();
       ccPinchHappenedRef.current=true;
-      ir.current={};// cancel any in-progress stitch drag
-      ccPinchRef.current=Math.hypot(e.touches[0].clientX-e.touches[1].clientX,e.touches[0].clientY-e.touches[1].clientY);
+      ir.current={};
+      const t0=e.touches[0],t1=e.touches[1];
+      const dist=Math.hypot(t0.clientX-t1.clientX,t0.clientY-t1.clientY);
+      ccPinchRef.current=dist;
+      const cv=canvasRef.current;
+      if(cv){
+        const rect=cv.getBoundingClientRect();
+        const dpr=window.devicePixelRatio||1;
+        const sx=(cv.width/dpr)/rect.width,sy=(cv.height/dpr)/rect.height;
+        const midX=((t0.clientX+t1.clientX)/2-rect.left)*sx;
+        const midY=((t0.clientY+t1.clientY)/2-rect.top)*sy;
+        ccPinchStateRef.current={dist,zoom,pan:{...pan},midX,midY,W:cv.width/dpr,H:cv.height/dpr};
+      }
     } else if(!ccPinchHappenedRef.current){
       ccPinchRef.current=null;
       onMouseDown(e);
     }
   };
   const handleTouchMove=e=>{
-    if(e.touches.length===2&&ccPinchRef.current!==null){
+    if(e.touches.length===2&&ccPinchStateRef.current){
       e.preventDefault();
-      const d=Math.hypot(e.touches[0].clientX-e.touches[1].clientX,e.touches[0].clientY-e.touches[1].clientY);
-      ccPinchRatioRef.current*=d/ccPinchRef.current;
-      ccPinchRef.current=d;
-      const cv=canvasRef.current;
-      if(cv){cv.style.transform=`scale(${Math.max(0.25,Math.min(3,ccPinchRatioRef.current))})`;cv.style.transformOrigin='center center';}
+      const t0=e.touches[0],t1=e.touches[1];
+      const d=Math.hypot(t0.clientX-t1.clientX,t0.clientY-t1.clientY);
+      const{dist:sd,zoom:sz,pan:sp,midX,midY,W,H}=ccPinchStateRef.current;
+      const newZoom=Math.max(0.25,Math.min(3,sz*d/sd));
+      setZoom(newZoom);
+      setPan({x:sp.x+(midX-W/2)*(1/newZoom-1/sz),y:sp.y+(midY-H/2)*(1/newZoom-1/sz)});
     } else if(e.touches.length!==2&&!ccPinchHappenedRef.current){ccPinchRef.current=null;onMouseMove(e);}
   };
   const handleTouchEnd=e=>{
-    if(e.touches.length<2){
-      if(ccPinchRef.current!==null){
-        setZoom(z=>Math.max(0.25,Math.min(3,z*ccPinchRatioRef.current)));
-        const cv=canvasRef.current;if(cv)cv.style.transform='';
-      }
-      ccPinchRef.current=null;
-      ccPinchRatioRef.current=1;
-    }
+    if(e.touches.length<2){ccPinchRef.current=null;ccPinchStateRef.current=null;ccPinchRatioRef.current=1;}
     const wasPinch=ccPinchHappenedRef.current;
     if(e.touches.length===0)ccPinchHappenedRef.current=false;
     if(!wasPinch)onMouseUp(e);
@@ -2849,7 +3022,7 @@ function CrochetBuilder({stitches,setStitches,layout,setLayout,yarnColors,onSave
 
       {/* ── Canvas + side panel ── */}
       <div style={{flex:1,minHeight:0,position:"relative",overflow:"hidden"}}>
-        <div ref={containerRef} style={{position:"absolute",inset:0,overflow:"hidden",background:canvasBg}}>
+        <div ref={containerRef} style={{position:"absolute",inset:0,overflow:"hidden",background:canvasBg,touchAction:"none",userSelect:"none"}}>
         {/* ── Anchor layout toolbar – visible when a stitch with children is selected ── */}
         {(()=>{
           if(!selectedKey)return null;
@@ -3197,6 +3370,7 @@ function YarnChip({yarn,onChange,onRemove}){
 
 /* ── Yarn Library Picker Sheet ── */
 function YarnLibPickerSheet({yarnLib,alreadyAdded,onPick,onClose}){
+  useBodyScrollLock();
   return createPortal(
     <div style={{position:"fixed",inset:0,background:"rgba(0,0,0,.45)",zIndex:60,display:"flex",alignItems:"flex-end",justifyContent:"center"}} onClick={e=>{if(e.target===e.currentTarget)onClose();}}>
       <div className="modal-in" style={{background:"#fff",borderRadius:"28px 28px 0 0",width:"100%",maxWidth:480,maxHeight:"70vh",display:"flex",flexDirection:"column"}}>
@@ -3470,6 +3644,7 @@ function SymbolLegendPanel({stitches,rowY}){
 }
 
 function ReadModeBottomSheet({title,open,onClose,children}){
+  useBodyScrollLockWhen(open);
   if(!open)return null;
   return createPortal(
     <div onClick={onClose} style={{position:"fixed",inset:0,zIndex:200000,display:"flex",
@@ -3509,6 +3684,10 @@ function PatternViewModal({pattern,notes,onClose,onEdit,onDesign,onSaveRowNotes,
   const[noteOpen,setNoteOpen]=useState(false);
   const[showSymbols,setShowSymbols]=useState(false);
   const[showSheetNotes,setShowSheetNotes]=useState(false);
+  const[savedMarker,setSavedMarker]=useState(pattern?.progressMarker??null);
+  const[pinToast,setPinToast]=useState(null);
+  const pinToastTimer=useRef(null);
+  const showPinToast=msg=>{clearTimeout(pinToastTimer.current);setPinToast(msg);pinToastTimer.current=setTimeout(()=>setPinToast(null),2000);};
 
   const stitches=pattern?.crochetStitches||[];
   // All y-levels sorted descending (y=0 = foundation chain at bottom, negative y = rows above)
@@ -3550,6 +3729,12 @@ function PatternViewModal({pattern,notes,onClose,onEdit,onDesign,onSaveRowNotes,
   if(pattern.type==="knit"){
     return createPortal(<KnitReadChart grid={pattern.grid||[]} onBack={onClose} progressMarker={pattern.progressMarker??null} onSaveProgress={onSaveProgress}/>,document.body);
   }
+  if(pattern.type==="rounds"){
+    return createPortal(<div style={{position:"fixed",inset:0,background:"white",zIndex:99999,display:"flex",flexDirection:"column"}}><CPM_RoundsReader pattern={pattern} themeColor={pattern.themeColor||"#778EE3"} onBack={onClose} notes={notes||""} onSaveProgress={onSaveProgress}/></div>,document.body);
+  }
+  if(pattern.type==="imported"){
+    return createPortal(<StepReader steps={pattern.steps||[]} patName={""} onBack={onClose} progressMarker={pattern.progressMarker??null} onSaveProgress={onSaveProgress}/>,document.body);
+  }
 
   return createPortal(
     <div style={{position:"fixed",inset:0,zIndex:99999,background:"white",display:"flex",flexDirection:"column"}}>
@@ -3585,9 +3770,9 @@ function PatternViewModal({pattern,notes,onClose,onEdit,onDesign,onSaveRowNotes,
                 {navBtn(()=>{setRowIdx(i=>Math.max(0,i-1));setNoteOpen(false);},rowIdx===0,"←")}
                 {navBtn(()=>{setRowIdx(i=>Math.min(totalRows-1,i+1));setNoteOpen(false);},rowIdx===totalRows-1,"→")}
                 {onSaveProgress&&(
-                  <button type="button" onClick={()=>onSaveProgress(rowIdx)} title="Save progress here"
-                    style={{width:36,height:36,borderRadius:10,border:"1.5px solid rgba(5,150,105,0.35)",background:"rgba(5,150,105,0.08)",cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center",color:"#059669",flexShrink:0}}>
-                    <Ico n="basil:pin-outline" sz={16}/>
+                  <button type="button" onClick={()=>{onSaveProgress(rowIdx);setSavedMarker(rowIdx);showPinToast(isFndActive?"FC pinned":`R${rowNum} pinned`);}} title="Save progress here"
+                    style={{width:36,height:36,borderRadius:10,border:savedMarker===rowIdx?"1.5px solid rgba(5,150,105,0.6)":"1.5px solid rgba(5,150,105,0.35)",background:savedMarker===rowIdx?"rgba(5,150,105,0.15)":"rgba(5,150,105,0.08)",cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center",color:"#059669",flexShrink:0}}>
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="12" y1="17" x2="12" y2="22"/><path d="M5 17h14v-1.76a2 2 0 0 0-1.11-1.79l-1.78-.9A2 2 0 0 1 15 10.76V6h1a2 2 0 0 0 0-4H8a2 2 0 0 0 0 4h1v4.76a2 2 0 0 1-1.11 1.79l-1.78.9A2 2 0 0 0 5 15.24Z"/></svg>
                   </button>
                 )}
               </div>
@@ -3602,7 +3787,7 @@ function PatternViewModal({pattern,notes,onClose,onEdit,onDesign,onSaveRowNotes,
                 const isFnd=y===0;
                 const label=isFnd?"FC":`R${actualRowLevels.indexOf(y)+1}`;
                 const active=i===rowIdx;
-                const isProgress=!!onSaveProgress&&i===pattern.progressMarker;
+                const isProgress=!!onSaveProgress&&i===savedMarker;
                 return(
                   <button key={i} onClick={()=>{setRowIdx(i);setNoteOpen(false);}}
                     style={{padding:"4px 10px",borderRadius:20,cursor:"pointer",
@@ -3610,7 +3795,7 @@ function PatternViewModal({pattern,notes,onClose,onEdit,onDesign,onSaveRowNotes,
                       background:active?(isFnd?"#92400E":"#778EE3"):(isFnd?"#FEF3C7":"#EEF0FD"),
                       color:active?"white":(isFnd?"#92400E":"#778EE3"),
                       fontSize:11,fontWeight:active?700:500,transition:"all 0.18s ease"}}>
-                    {label}{isProgress?<Ico n="basil:pin-outline" sz={9} style={{marginLeft:2}}/>:""}
+                    {label}{isProgress?<svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{marginLeft:2,verticalAlign:"middle"}}><line x1="12" y1="17" x2="12" y2="22"/><path d="M5 17h14v-1.76a2 2 0 0 0-1.11-1.79l-1.78-.9A2 2 0 0 1 15 10.76V6h1a2 2 0 0 0 0-4H8a2 2 0 0 0 0 4h1v4.76a2 2 0 0 1-1.11 1.79l-1.78.9A2 2 0 0 0 5 15.24Z"/></svg>:""}
                   </button>
                 );
               })}
@@ -3677,6 +3862,14 @@ function PatternViewModal({pattern,notes,onClose,onEdit,onDesign,onSaveRowNotes,
         )}
       </ReadModeBottomSheet>
 
+      {pinToast&&(
+        <div style={{position:"fixed",bottom:88,left:"50%",transform:"translateX(-50%)",zIndex:999999,
+          background:"#059669",color:"white",borderRadius:12,padding:"8px 18px",fontSize:13,fontWeight:700,
+          boxShadow:"0 4px 16px rgba(0,0,0,0.18)",pointerEvents:"none",whiteSpace:"nowrap",
+          animation:"sr-pop .2s ease"}}>
+          ✓ {pinToast}
+        </div>
+      )}
     </div>,
     document.body
   );
@@ -3703,7 +3896,7 @@ const REWARD_SPARKLES=[
   {x:"50%",y:"88%",size:16,shape:0,delay:0.18, color:"#3850A6"},
 ];
 
-function Card({project,onDelete,onEdit,onPickPattern,onDuplicate,onMarkComplete,onUpdateRows,onUpdatePattern,onFinishedPhoto,onArchive,onToggleSaved,isArchived=false}){
+function Card({project,patterns=[],onDelete,onEdit,onPickPattern,onAddPart,onRemovePart,onRenamePart,onSavePartProgress,onDuplicate,onMarkComplete,onUpdateRows,onUpdatePattern,onFinishedPhoto,onArchive,onToggleSaved,isArchived=false}){
   const{lang,t}=useLang();
   const{canvasBg="#FDFAF6"}=useSettings();
   const[expanded,setExpanded]=useState(false);
@@ -3712,6 +3905,22 @@ function Card({project,onDelete,onEdit,onPickPattern,onDuplicate,onMarkComplete,
   const[showMore,setShowMore]=useState(false);
   const[shareCopied,setShareCopied]=useState(false);
   const[showPatternView,setShowPatternView]=useState(false);
+  const[activePartIdx,setActivePartIdx]=useState(0);
+  const[addPartName,setAddPartName]=useState("");
+  const[showAddPart,setShowAddPart]=useState(false);
+  const[addPartLinkedId,setAddPartLinkedId]=useState(null);
+  const[addPartLinkedName,setAddPartLinkedName]=useState("");
+  const[showAddPartPicker,setShowAddPartPicker]=useState(false);
+  const[showEditPart,setShowEditPart]=useState(false);
+  const[editPartName,setEditPartName]=useState("");
+  const[viewingPartPattern,setViewingPartPattern]=useState(null);
+
+
+  const hasParts=(project.parts||[]).length>0;
+  const activePart=hasParts?((project.parts||[])[activePartIdx]||(project.parts||[])[0]):null;
+  const activeRows=activePart?(activePart.rowsCompleted||0):(project.rowsCompleted||0);
+  const activeTotalRows=activePart?(activePart.totalRows||0):(project.totalRows||0);
+  const activePct=activeTotalRows>0?Math.min(100,Math.round(activeRows/activeTotalRows*100)):0;
   const photoCardRef=useRef(null);
   const[processingPhoto,setProcessingPhoto]=useState(false);
 
@@ -3722,14 +3931,13 @@ function Card({project,onDelete,onEdit,onPickPattern,onDuplicate,onMarkComplete,
     else{navigator.clipboard?.writeText(text).then(()=>{setShareCopied(true);setTimeout(()=>setShareCopied(false),2000);}).catch(()=>{});}
   };
   const st=STATUS[project.status]||STATUS["In Progress"];
-  const priLabel={High:t.highPri,Medium:t.medPri,Low:t.lowPri}[project.priority]||t.medPri;
-  const priColor=PRI_COLOR[project.priority]||"#F59E0B";
   const days=project.dueDate?Math.ceil((new Date(project.dueDate)-new Date())/86400000):null;
   const dueLabel=days===null?"":days<0?`${Math.abs(days)} ${t.overdue}`:days===0?t.dueToday:`${days} ${t.daysLeft}`;
   const dueBg=days===null?"transparent":days<0?"#FEF2F2":days<=7?"#FFF7ED":"#F9FAFB";
   const dueColor=days===null?"#6B7280":days<0?"#DC2626":days<=7?"#EA580C":"#6B7280";
   const statusLabel=(STATUS_LABEL[lang]||STATUS_LABEL.en)[project.status]||project.status;
   const primaryColor=project.yarns?.[0]?.color||"#7C9A8E";
+  const accentText=(()=>{const[r,g,b]=hexToRgb(primaryColor);const lum=(0.299*r+0.587*g+0.114*b)/255;return lum>0.6?"#"+[r,g,b].map(v=>Math.round(v*0.5).toString(16).padStart(2,"0")).join(""):primaryColor;})();
   const patternPreviewRef=useRef(null);
 
   useEffect(()=>{
@@ -3744,6 +3952,8 @@ function Card({project,onDelete,onEdit,onPickPattern,onDuplicate,onMarkComplete,
 
   return(<>
     {showPatternView&&project.pattern&&<PatternViewModal pattern={project.pattern} notes={project.notes} onClose={()=>setShowPatternView(false)} onSaveRowNotes={onUpdatePattern?(rn=>onUpdatePattern({...project.pattern,rowNotes:rn})):undefined} onSaveProgress={onUpdatePattern?(idx=>onUpdatePattern({...project.pattern,progressMarker:idx})):undefined}/>}
+    {viewingPartPattern&&<PatternViewModal pattern={viewingPartPattern.data} notes={""} onClose={()=>setViewingPartPattern(null)} onSaveProgress={onSavePartProgress?(idx=>onSavePartProgress(viewingPartPattern.partId,idx)):undefined}/>}
+    {showAddPartPicker&&createPortal(<PickPatternModal patterns={patterns} onClose={()=>setShowAddPartPicker(false)} onPick={pat=>{setAddPartLinkedId(pat.id);setAddPartLinkedName(pat.name);setShowAddPartPicker(false);}}/>,document.body)}
     <div className="shadow-card bg-white rounded-3xl overflow-hidden w-full">
 
       {/* ── Always-visible collapsed view ── */}
@@ -3774,7 +3984,6 @@ function Card({project,onDelete,onEdit,onPickPattern,onDuplicate,onMarkComplete,
             <span style={{display:"inline-flex",alignItems:"center",gap:4,padding:"3px 9px",borderRadius:999,fontSize:11,fontWeight:600,background:st.bg,color:st.color}}>
               <span style={{width:5,height:5,borderRadius:999,background:st.dot,display:"inline-block"}}/>{statusLabel}
             </span>
-            <span style={{display:"inline-flex",alignItems:"center",padding:"3px 9px",borderRadius:999,fontSize:11,fontWeight:600,background:"#F5F6FF",color:priColor}}>{priLabel}</span>
             {days!==null&&<span style={{marginLeft:"auto",display:"inline-flex",alignItems:"center",padding:"3px 9px",borderRadius:999,fontSize:11,fontWeight:600,background:dueBg,color:dueColor}}>{dueLabel}</span>}
           </div>
         </div>
@@ -3782,7 +3991,7 @@ function Card({project,onDelete,onEdit,onPickPattern,onDuplicate,onMarkComplete,
         <div style={{padding:"0 18px 10px"}}>
           <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:5}}>
             <span style={{fontSize:11,color:"#6B7280",fontWeight:600}}>{project.rowsCompleted||0} / {project.totalRows||0} {t.rows}</span>
-            <span style={{fontSize:11,fontWeight:700,color:primaryColor}}>{project.progress||0}%</span>
+            <span style={{fontSize:11,fontWeight:700,color:accentText}}>{project.progress||0}%</span>
           </div>
           <div style={{height:5,borderRadius:999,background:"#F3F4F6",overflow:"hidden"}}>
             <div style={{height:"100%",borderRadius:999,width:`${project.progress||0}%`,background:`linear-gradient(90deg,${primaryColor}cc,${primaryColor})`,transition:"width .6s"}}/>
@@ -3799,68 +4008,134 @@ function Card({project,onDelete,onEdit,onPickPattern,onDuplicate,onMarkComplete,
         <>
           <div style={{height:1,background:"#F3F4F6"}}/>
           {/* Stats grid */}
-          <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",borderBottom:"1px solid #F3F4F6"}}>
-            {[[t.hook,project.hookSize||"—"],[t.balls,(project.yarns||[]).reduce((a,y)=>a+(Number(y.balls)||0),0)]].map(([l,v],i)=>(
-              <div key={l} style={{display:"flex",flexDirection:"column",alignItems:"center",padding:"10px 0",borderRight:i<1?"1px solid #F3F4F6":"none"}}>
+          <div style={{display:"grid",gridTemplateColumns:"1fr 1fr 1fr",borderBottom:"1px solid #F3F4F6"}}>
+            {[
+              [t.hook,project.hookSize||"—"],
+              [t.balls,(project.yarns||[]).reduce((a,y)=>a+(Number(y.balls)||0),0)],
+              [t.startDate,project.startDate?new Date(project.startDate).toLocaleDateString(undefined,{month:"short",day:"numeric"}):"—"],
+            ].map(([l,v],i)=>(
+              <div key={l} style={{display:"flex",flexDirection:"column",alignItems:"center",padding:"10px 0",borderRight:i<2?"1px solid #F3F4F6":"none"}}>
                 <span style={{fontSize:14,fontWeight:700,color:"#111"}}>{v}</span>
                 <span style={{fontSize:10,color:"#6B7280",marginTop:1}}>{l}</span>
               </div>
             ))}
           </div>
-          {/* Full progress with ring + row counter + checklist */}
-          <div style={{padding:"14px 18px",display:"flex",alignItems:"center",gap:12}}>
-            <ProgressRing pct={project.progress||0} color={primaryColor}/>
-            <div style={{flex:1}}>
-              <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:5}}>
-                <span style={{fontSize:12,fontWeight:600,color:"#374151"}}>{t.rows}</span>
-                <div style={{display:"flex",alignItems:"center",gap:6}}>
-                  <button onClick={e=>{e.stopPropagation();const r=Math.max(0,(project.rowsCompleted||0)-1);onUpdateRows(r);}} style={{width:22,height:22,borderRadius:7,border:"1.5px solid #E5E7EB",background:"#F9FAFB",color:"#6B7280",fontSize:14,fontWeight:700,cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center",lineHeight:1,padding:0}} disabled={!project.rowsCompleted}>−</button>
-                  <span style={{fontSize:12,fontWeight:700,color:primaryColor,minWidth:60,textAlign:"center"}}>{project.rowsCompleted||0} / {project.totalRows||0}</span>
-                  <button onClick={e=>{e.stopPropagation();const r=Math.min(project.totalRows||0,(project.rowsCompleted||0)+1);onUpdateRows(r);}} style={{width:22,height:22,borderRadius:7,border:"1.5px solid #E5E7EB",background:"#F9FAFB",color:"#6B7280",fontSize:14,fontWeight:700,cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center",lineHeight:1,padding:0}} disabled={(project.rowsCompleted||0)>=(project.totalRows||0)}>+</button>
-                </div>
-              </div>
-              <div style={{height:5,borderRadius:999,background:"#F3F4F6",overflow:"hidden"}}>
-                <div style={{height:"100%",borderRadius:999,width:`${project.progress||0}%`,background:`linear-gradient(90deg,${primaryColor}cc,${primaryColor})`,transition:"width .6s"}}/>
-              </div>
-              {project.checklist?.length>0&&(
-                <div style={{marginTop:8,display:"flex",flexDirection:"column",gap:5}}>
-                  {project.checklist.map((item,i)=>(
-                    <button key={i} onClick={e=>{e.stopPropagation();setChecked(p=>p.includes(i)?p.filter(x=>x!==i):[...p,i]);}} style={{display:"flex",alignItems:"center",gap:6,background:"none",border:"none",cursor:"pointer",textAlign:"left",padding:0}}>
-                      <div style={{width:15,height:15,borderRadius:4,flexShrink:0,border:checked.includes(i)?"none":"1.5px solid #D1D5DB",background:checked.includes(i)?primaryColor:"transparent",display:"flex",alignItems:"center",justifyContent:"center"}}>
-                        {checked.includes(i)&&<svg width="9" height="9" viewBox="0 0 10 10" fill="none"><path d="M2 5l2.5 2.5L8 3" stroke="white" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/></svg>}
-                      </div>
-                      <span style={{fontSize:11,color:checked.includes(i)?"#6B7280":"#374151",textDecoration:checked.includes(i)?"line-through":"none"}}>{item}</span>
-                    </button>
-                  ))}
-                </div>
-              )}
-            </div>
-          </div>
-          <div style={{height:1,background:"#F3F4F6",margin:"0 18px"}}/>
-          {/* Pattern row */}
-          <div style={{padding:"10px 18px",display:"flex",alignItems:"center",justifyContent:"space-between"}}>
-            <div style={{display:"flex",alignItems:"center",gap:8}}>
-              {project.pattern?(
-                <>
-                  {project.pattern.type==="knit"&&(
-                    <canvas ref={patternPreviewRef} onClick={e=>{e.stopPropagation();setShowPatternView(true);}} style={{width:36,height:36,borderRadius:6,border:"1px solid #E5E7EB",cursor:"zoom-in",flexShrink:0}}/>
-                  )}
-                  {project.pattern.type==="crochet"&&(
-                    <span onClick={e=>{e.stopPropagation();setShowPatternView(true);}} style={{cursor:"zoom-in",lineHeight:1,flexShrink:0}} title="View crochet pattern"><Ico n="basil:scissors-outline" sz={22}/></span>
-                  )}
-                  <div onClick={e=>{e.stopPropagation();setShowPatternView(true);}} style={{cursor:"zoom-in",minWidth:0}}>
-                    <div style={{fontSize:13,fontWeight:600,color:"#374151",overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap",maxWidth:150}}>
-                      {project.linkedPatternName||(project.pattern.type==="knit"?"Knit Grid":"Crochet Pattern")}
+          {/* ── Pattern section — PRIMARY ── */}
+          <div style={{padding:"14px 18px 10px"}}>
+            <div style={{fontSize:10,fontWeight:700,color:"#9CA3AF",textTransform:"uppercase",letterSpacing:"0.06em",marginBottom:8}}>Pattern</div>
+            <div style={{display:"flex",gap:6,flexWrap:"wrap",alignItems:"center"}}>
+              {hasParts
+                ?(project.parts||[]).map((part,i)=>{
+                    const pct=part.totalRows>0?Math.min(100,Math.round((part.rowsCompleted||0)/part.totalRows*100)):null;
+                    const isActive=i===activePartIdx;
+                    const libPat=part.linkedPatternId?(patterns||[]).find(p=>p.id===part.linkedPatternId):null;
+                    const canView=!!(libPat?.designData);
+                    const handleChipClick=e=>{
+                      e.stopPropagation();
+                      if(isActive&&canView){
+                        setViewingPartPattern({data:{...libPat.designData,progressMarker:part.progressMarker??libPat.designData.progressMarker},name:part.name,partId:part.id});
+                      } else {
+                        setActivePartIdx(i);
+                      }
+                    };
+                    return(
+                      <button key={part.id} onClick={handleChipClick}
+                        style={{display:"flex",alignItems:"center",gap:5,padding:"5px 10px",borderRadius:999,
+                                background:isActive?"#778EE3":"#F3F4F6",color:isActive?"white":"#374151",
+                                fontSize:11,fontWeight:700,border:isActive?"none":"1.5px solid #E5E7EB",cursor:"pointer",transition:"background .15s,color .15s"}}>
+                        {part.name}
+                        {pct!==null&&<span style={{fontSize:10,background:isActive?"rgba(255,255,255,.25)":"#778EE322",color:isActive?"white":"#778EE3",padding:"1px 5px",borderRadius:999}}>{pct}%</span>}
+                        {canView&&isActive&&<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" style={{opacity:.8}}><path strokeLinecap="round" strokeLinejoin="round" d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>}
+                        {canView&&!isActive&&<svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" style={{opacity:.4}}><path strokeLinecap="round" strokeLinejoin="round" d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>}
+                      </button>
+                    );
+                  })
+                :project.linkedPatternName
+                  ?<div onClick={e=>{e.stopPropagation();project.pattern&&setShowPatternView(true);}}
+                      style={{display:"flex",alignItems:"center",gap:5,padding:"5px 10px",borderRadius:999,background:"#778EE322",color:"#778EE3",fontSize:11,fontWeight:700,cursor:project.pattern?"pointer":"default"}}>
+                      <Ico n="basil:book-outline" sz={11}/>{project.linkedPatternName}
                     </div>
-                    <div style={{fontSize:10,color:"#6B7280",marginTop:1,display:"flex",alignItems:"center",gap:3}}>{project.pattern.type==="knit"?<><Ico n="basil:knot-outline" sz={10}/>Knit</>:<><Ico n="basil:scissors-outline" sz={10}/>Crochet</>}</div>
-                  </div>
-                </>
-              ):<span style={{fontSize:12,color:"#D1D5DB"}}>{t.noPattern}</span>}
+                  :<span style={{fontSize:11,color:"#D1D5DB"}}>{t.noPattern}</span>
+              }
+              {!hasParts&&onPickPattern&&<button onClick={e=>{e.stopPropagation();onPickPattern();}} style={{padding:"4px 8px",borderRadius:8,border:"1.5px solid #E5E7EB",background:"#F9FAFB",color:"#6B7280",fontSize:11,fontWeight:600,cursor:"pointer",display:"flex",alignItems:"center",gap:3,flexShrink:0}}><Ico n="basil:book-outline" sz={11}/>{t.library||"Library"}</button>}
+              {hasParts&&onRemovePart&&<button onClick={e=>{e.stopPropagation();if(showEditPart){setShowEditPart(false);}else{setEditPartName(activePart?.name||"");setShowEditPart(true);setShowAddPart(false);}}} style={{width:24,height:24,borderRadius:999,background:showEditPart?"#778EE322":"#F3F4F6",border:`1.5px solid ${showEditPart?"#778EE3":"#E5E7EB"}`,color:showEditPart?"#778EE3":"#6B7280",cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0}}><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path strokeLinecap="round" strokeLinejoin="round" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg></button>}
+              {onAddPart&&<button onClick={e=>{e.stopPropagation();setShowAddPart(v=>!v);setAddPartName("");setShowEditPart(false);}} style={{width:24,height:24,borderRadius:999,background:"#F3F4F6",border:"1.5px solid #E5E7EB",color:"#6B7280",fontSize:16,cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center",fontWeight:700,lineHeight:1,flexShrink:0}}>+</button>}
             </div>
-            <div style={{display:"flex",gap:5}}>
-              <button onClick={e=>{e.stopPropagation();onPickPattern();}} style={{padding:"4px 10px",borderRadius:8,border:"1.5px solid #E5E7EB",background:"#F9FAFB",color:"#6B7280",fontSize:11,fontWeight:600,cursor:"pointer",display:"flex",alignItems:"center",gap:4}}><Ico n="basil:book-outline" sz={12}/>Library</button>
-            </div>
+            {showAddPart&&(
+              <div onClick={e=>e.stopPropagation()} style={{marginTop:8,display:"flex",flexDirection:"column",gap:6}}>
+                <div style={{display:"flex",gap:6,alignItems:"center"}}>
+                  <input autoFocus value={addPartName} onChange={e=>setAddPartName(e.target.value)}
+                    onKeyDown={e=>{if(e.key==="Escape"){setAddPartName("");setAddPartLinkedId(null);setAddPartLinkedName("");setShowAddPart(false);}}}
+                    placeholder="e.g. Body, Sleeve…"
+                    style={{flex:1,padding:"6px 10px",borderRadius:8,border:"1.5px solid #778EE3",fontSize:12,color:"#111",background:"#FAFAFA"}}/>
+                  <button onClick={e=>{e.stopPropagation();setAddPartLinkedId(null);setAddPartLinkedName("");setShowAddPart(false);}} style={{width:28,height:28,borderRadius:8,background:"#F3F4F6",color:"#6B7280",fontSize:14,border:"none",cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center"}}>✕</button>
+                </div>
+                <div style={{display:"flex",gap:6,alignItems:"center"}}>
+                  <button onClick={e=>{e.stopPropagation();setShowAddPartPicker(true);}}
+                    style={{flex:1,padding:"6px 10px",borderRadius:8,border:`1.5px ${addPartLinkedId?"solid #778EE3":"dashed #D1D5DB"}`,background:addPartLinkedId?"#F5F6FF":"#FAFAFA",color:addPartLinkedId?"#778EE3":"#9CA3AF",fontSize:11,fontWeight:600,cursor:"pointer",display:"flex",alignItems:"center",gap:5,justifyContent:"center"}}>
+                    <Ico n="basil:book-outline" sz={12}/>
+                    {addPartLinkedId?addPartLinkedName:"Link pattern (optional)"}
+                    {addPartLinkedId&&<span onClick={e=>{e.stopPropagation();setAddPartLinkedId(null);setAddPartLinkedName("");}} style={{marginLeft:4,color:"#9CA3AF",fontSize:13,lineHeight:1}}>×</span>}
+                  </button>
+                  <button onClick={e=>{e.stopPropagation();if(addPartName.trim()){onAddPart({id:uid(),name:addPartName.trim(),rowsCompleted:0,totalRows:0,linkedPatternId:addPartLinkedId||undefined});setAddPartName("");setAddPartLinkedId(null);setAddPartLinkedName("");setShowAddPart(false);}}}
+                    disabled={!addPartName.trim()}
+                    style={{padding:"6px 14px",borderRadius:8,background:addPartName.trim()?"#778EE3":"#E5E7EB",color:addPartName.trim()?"white":"#9CA3AF",fontSize:12,fontWeight:700,border:"none",cursor:addPartName.trim()?"pointer":"default"}}>Add</button>
+                </div>
+              </div>
+            )}
+            {showEditPart&&activePart&&(
+              <div onClick={e=>e.stopPropagation()} style={{marginTop:8,display:"flex",flexDirection:"column",gap:6}}>
+                <div style={{display:"flex",gap:6,alignItems:"center"}}>
+                  <input autoFocus value={editPartName} onChange={e=>setEditPartName(e.target.value)}
+                    onKeyDown={e=>{if(e.key==="Enter"&&editPartName.trim()){if(editPartName.trim()!==activePart.name)onRenamePart&&onRenamePart(activePart.id,editPartName.trim());setShowEditPart(false);}if(e.key==="Escape")setShowEditPart(false);}}
+                    style={{flex:1,padding:"6px 10px",borderRadius:8,border:"1.5px solid #778EE3",fontSize:12,color:"#111",background:"#FAFAFA"}}/>
+                  <button onClick={e=>{e.stopPropagation();if(editPartName.trim()&&editPartName.trim()!==activePart.name){onRenamePart&&onRenamePart(activePart.id,editPartName.trim());}setShowEditPart(false);}}
+                    style={{padding:"6px 12px",borderRadius:8,background:"#778EE3",color:"white",fontSize:12,fontWeight:700,border:"none",cursor:"pointer"}}>Save</button>
+                </div>
+                <button onClick={e=>{e.stopPropagation();onRemovePart&&onRemovePart(activePart.id);setActivePartIdx(idx=>Math.max(0,Math.min(idx,(project.parts||[]).length-2)));setShowEditPart(false);}}
+                  style={{width:"100%",padding:"7px",borderRadius:8,background:"#FEF2F2",border:"1px solid #FECACA",color:"#EF4444",fontSize:12,fontWeight:600,cursor:"pointer"}}>Remove "{activePart.name}"</button>
+              </div>
+            )}
           </div>
+          {/* ── Rows section — SECONDARY ── */}
+          <div style={{padding:"12px 18px 14px",borderTop:"1px solid #F3F4F6"}}>
+            <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:6}}>
+              <span style={{fontSize:11,fontWeight:600,color:"#9CA3AF"}}>{t.rows}{activePart?` · ${activePart.name}`:""}</span>
+              <div style={{display:"flex",alignItems:"center",gap:6}}>
+                <button onClick={e=>{e.stopPropagation();const r=Math.max(0,activeRows-1);onUpdateRows(r,activePart?.id);}} style={{width:22,height:22,borderRadius:7,border:"1.5px solid #E5E7EB",background:"#F9FAFB",color:"#6B7280",fontSize:14,fontWeight:700,cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center",lineHeight:1,padding:0}} disabled={!activeRows}>−</button>
+                <span style={{fontSize:12,fontWeight:700,color:accentText,minWidth:55,textAlign:"center"}}>{activeRows}{activeTotalRows>0?` / ${activeTotalRows}`:""}</span>
+                <button onClick={e=>{e.stopPropagation();const r=activeTotalRows>0?Math.min(activeTotalRows,activeRows+1):activeRows+1;onUpdateRows(r,activePart?.id);}} style={{width:22,height:22,borderRadius:7,border:"1.5px solid #E5E7EB",background:"#F9FAFB",color:"#6B7280",fontSize:14,fontWeight:700,cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center",lineHeight:1,padding:0}} disabled={activeTotalRows>0&&activeRows>=activeTotalRows}>+</button>
+              </div>
+            </div>
+            {activeTotalRows>0&&(
+              <div style={{height:4,borderRadius:999,background:"#F3F4F6",overflow:"hidden"}}>
+                <div style={{height:"100%",borderRadius:999,width:`${activePct}%`,background:`linear-gradient(90deg,${primaryColor}cc,${primaryColor})`,transition:"width .6s"}}/>
+              </div>
+            )}
+            {project.checklist?.length>0&&(
+              <div style={{marginTop:8,display:"flex",flexDirection:"column",gap:5}}>
+                {project.checklist.map((item,i)=>(
+                  <button key={i} onClick={e=>{e.stopPropagation();setChecked(p=>p.includes(i)?p.filter(x=>x!==i):[...p,i]);}} style={{display:"flex",alignItems:"center",gap:6,background:"none",border:"none",cursor:"pointer",textAlign:"left",padding:0}}>
+                    <div style={{width:15,height:15,borderRadius:4,flexShrink:0,border:checked.includes(i)?"none":"1.5px solid #D1D5DB",background:checked.includes(i)?primaryColor:"transparent",display:"flex",alignItems:"center",justifyContent:"center"}}>
+                      {checked.includes(i)&&<svg width="9" height="9" viewBox="0 0 10 10" fill="none"><path d="M2 5l2.5 2.5L8 3" stroke="white" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/></svg>}
+                    </div>
+                    <span style={{fontSize:11,color:checked.includes(i)?"#6B7280":"#374151",textDecoration:checked.includes(i)?"line-through":"none"}}>{item}</span>
+                  </button>
+                ))}
+              </div>
+            )}
+          </div>
+          {/* Continue CTA */}
+          {project.status!=="Completed"&&(activeTotalRows===0||activeRows<activeTotalRows)&&(
+            <div style={{padding:"0 18px 14px"}}>
+              <button onClick={e=>{e.stopPropagation();const r=activeTotalRows>0?Math.min(activeTotalRows,activeRows+1):activeRows+1;onUpdateRows(r,activePart?.id);}}
+                style={{width:"100%",padding:"10px 14px",borderRadius:12,background:"#778EE3",color:"white",fontSize:13,fontWeight:700,cursor:"pointer",border:"none",display:"flex",alignItems:"center",justifyContent:"center",gap:8}}>
+                Row {activeRows} → Row {activeTotalRows>0?Math.min(activeTotalRows,activeRows+1):activeRows+1}
+                {activePart&&<span style={{fontSize:11,opacity:.75,fontWeight:500}}>· {activePart.name}</span>}
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7"/></svg>
+              </button>
+            </div>
+          )}
           {/* Notes */}
           <div style={{height:1,background:"#F3F4F6",margin:"0 18px"}}/>
           <div style={{padding:"0 18px"}}>
@@ -3937,7 +4212,7 @@ function Card({project,onDelete,onEdit,onPickPattern,onDuplicate,onMarkComplete,
                       ?<img src={project.finishedPhotoCutout} style={{width:32,height:32,objectFit:"contain",flexShrink:0,filter:"none"}}/>
                       :project.finishedPhoto
                         ?<img src={project.finishedPhoto} style={{width:32,height:32,borderRadius:8,objectFit:"cover",border:"2px solid white",boxShadow:"0 2px 6px rgba(0,0,0,.15)",flexShrink:0}}/>
-                        :<div style={{width:32,height:32,borderRadius:8,background:"#DDE3F8",display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0}}><Ico n="basil:camera-outline" sz={16}/></div>
+                        :<div style={{width:32,height:32,borderRadius:8,background:"#DDE3F8",display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0}}><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#778EE3" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M23 19a2 2 0 01-2 2H3a2 2 0 01-2-2V8a2 2 0 012-2h4l2-3h6l2 3h4a2 2 0 012 2z"/><circle cx="12" cy="13" r="4"/></svg></div>
                     }
                     <div style={{flex:1}}>
                       <div style={{fontSize:12,fontWeight:700,color:"#778EE3"}}>
@@ -3971,7 +4246,7 @@ function Card({project,onDelete,onEdit,onPickPattern,onDuplicate,onMarkComplete,
       )}
     </div>
     {/* More action sheet */}
-    {showMore&&(
+    {showMore&&(<ScrollLock>
       <div onClick={()=>setShowMore(false)} style={{position:"fixed",inset:0,zIndex:80,background:"rgba(0,0,0,.3)",backdropFilter:"blur(3px)",display:"flex",alignItems:"flex-end",justifyContent:"center",padding:"0 16px 24px"}}>
         <div onClick={e=>e.stopPropagation()} style={{width:"100%",maxWidth:360,background:"white",borderRadius:22,overflow:"hidden",boxShadow:"0 16px 60px rgba(0,0,0,.2)"}}>
           <div style={{padding:"12px 18px 8px",textAlign:"center",fontSize:12,color:"#6B7280",fontWeight:600,borderBottom:"1px solid #F3F4F6",overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{project.title}</div>
@@ -3994,13 +4269,15 @@ function Card({project,onDelete,onEdit,onPickPattern,onDuplicate,onMarkComplete,
           <button onClick={()=>setShowMore(false)} style={{width:"100%",padding:"14px 18px",background:"none",border:"none",cursor:"pointer",textAlign:"center",fontSize:14,fontWeight:600,color:"#6B7280"}}>{t.cancel}</button>
         </div>
       </div>
-    )}
+    </ScrollLock>)}
   </>);
 }
 
 /* ─── Project Form Modal (Add + Edit) ─────────────────────────────────────── */
-function ProjectModal({onClose,onSave,yarnLib,editMode=false,initialProject=null}){
+function ProjectModal({onClose,onSave,yarnLib,patterns=[],editMode=false,initialProject=null}){
+  useBodyScrollLock();
   const{t}=useLang();
+  const todayStr=new Date().toISOString().slice(0,10);
   const init=editMode&&initialProject?{
     title:initialProject.title||"",
     yarns:initialProject.yarns||[],
@@ -4008,6 +4285,7 @@ function ProjectModal({onClose,onSave,yarnLib,editMode=false,initialProject=null
     weight:initialProject.weight||"Worsted",
     status:initialProject.status||"Not Started",
     priority:initialProject.priority||"Medium",
+    startDate:initialProject.startDate||"",
     dueDate:initialProject.dueDate||"",
     rowsCompleted:initialProject.rowsCompleted||0,
     totalRows:initialProject.totalRows||100,
@@ -4016,30 +4294,35 @@ function ProjectModal({onClose,onSave,yarnLib,editMode=false,initialProject=null
     checklist:(initialProject.checklist||[]).join("\n"),
     refs:initialProject.refs||[],
     finishedPhoto:initialProject.finishedPhoto||null,
-  }:{title:"",yarns:[],hookSize:"5.0mm",weight:"Worsted",status:"Not Started",priority:"Medium",dueDate:"",rowsCompleted:0,totalRows:100,notes:"",tags:"",checklist:"",refs:[],finishedPhoto:null};
+  }:{title:"",yarns:[],hookSize:"5.0mm",weight:"Worsted",status:"Not Started",priority:"Medium",startDate:todayStr,dueDate:"",rowsCompleted:0,totalRows:100,notes:"",tags:"",checklist:"",refs:[],finishedPhoto:null};
 
   const[form,setForm]=useState(init);
   const[error,setError]=useState("");
   const[showYarnPicker,setShowYarnPicker]=useState(false);
   const[showPattern,setShowPattern]=useState(false);
   const[pattern,setPattern]=useState(editMode?initialProject?.pattern||null:null);
+  const[linkedPattern,setLinkedPattern]=useState(editMode?{id:initialProject?.linkedPatternId,name:initialProject?.linkedPatternName}:null);
+  const[showPatternPicker,setShowPatternPicker]=useState(false);
   const sf=(k,v)=>setForm(f=>({...f,[k]:v}));
   const photoRef=useRef(null);
 
   const submit=()=>{
     if(!form.title.trim()){setError(t.errName);return;}
-    const pct=form.totalRows>0?Math.min(100,Math.round((Number(form.rowsCompleted)/Number(form.totalRows))*100)):0;
-    const completedAt=form.status==="Completed"
+    const effectiveForm=editMode?form:{...form,status:"In Progress",priority:"Medium",rowsCompleted:0};
+    const pct=effectiveForm.totalRows>0?Math.min(100,Math.round((Number(effectiveForm.rowsCompleted)/Number(effectiveForm.totalRows))*100)):0;
+    const completedAt=effectiveForm.status==="Completed"
       ?(editMode&&initialProject?.completedAt?initialProject.completedAt:new Date().toISOString())
       :null;
+    const linkedPat=linkedPattern?.id?linkedPattern:null;
     const data={
       id:editMode?initialProject.id:uid(),
-      ...form,progress:pct,
-      rowsCompleted:Number(form.rowsCompleted),totalRows:Number(form.totalRows),
-      tags:form.tags.split(",").map(s=>s.trim()).filter(Boolean),
-      checklist:form.checklist.split("\n").map(s=>s.trim()).filter(Boolean),
-      refs:form.refs,pattern,completedAt,
-      finishedPhoto:form.finishedPhoto||null,
+      ...effectiveForm,progress:pct,
+      rowsCompleted:Number(effectiveForm.rowsCompleted),totalRows:Number(effectiveForm.totalRows),
+      tags:effectiveForm.tags.split(",").map(s=>s.trim()).filter(Boolean),
+      checklist:effectiveForm.checklist.split("\n").map(s=>s.trim()).filter(Boolean),
+      refs:effectiveForm.refs,pattern,completedAt,
+      linkedPatternId:linkedPat?.id||null,linkedPatternName:linkedPat?.name||null,
+      finishedPhoto:effectiveForm.finishedPhoto||null,
     };
     onSave(data);onClose();
   };
@@ -4064,6 +4347,20 @@ function ProjectModal({onClose,onSave,yarnLib,editMode=false,initialProject=null
 
           <FormField label={t.projectName} req><input style={iS} value={form.title} onChange={e=>sf("title",e.target.value)} placeholder="e.g. Autumn Harvest Shawl"/></FormField>
 
+          {/* Pattern picker (add mode) / Pattern editor button */}
+          <div style={{marginBottom:13}}>
+            {!editMode?(
+              <button onClick={()=>setShowPatternPicker(true)} style={{width:"100%",padding:"12px 14px",borderRadius:12,border:`1.5px dashed ${linkedPattern?.id?"#778EE3":"#D1D5DB"}`,background:linkedPattern?.id?"#F5F6FF":"#FAFAFA",color:linkedPattern?.id?"#778EE3":"#9CA3AF",fontSize:14,fontWeight:600,cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center",gap:8}}>
+                <Ico n="basil:book-outline" sz={16}/>
+                {linkedPattern?.id?<><span style={{color:"#778EE3",fontWeight:700}}>{linkedPattern.name}</span><span style={{fontSize:11,color:"#9CA3AF",fontWeight:400,marginLeft:4}}>· change</span></> :t.pickPattern}
+              </button>
+            ):(
+              <button onClick={()=>setShowPattern(true)} style={{width:"100%",padding:"10px",borderRadius:12,border:"1.5px dashed #778EE3",background:"#F5F6FF",color:"#778EE3",fontSize:14,fontWeight:600,cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center",gap:6}}>
+                {pattern?"✓ Pattern — Edit":<><Ico n="basil:paint-outline" sz={14}/>{t.designPattern}</>}
+              </button>
+            )}
+          </div>
+
           {/* Yarns */}
           <div style={{marginBottom:13}}>
             <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:8}}>
@@ -4086,65 +4383,70 @@ function ProjectModal({onClose,onSave,yarnLib,editMode=false,initialProject=null
 
           <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:12}}>
             <FormField label={t.hookSize}><input style={iS} value={form.hookSize} onChange={e=>sf("hookSize",e.target.value)} placeholder="5.0mm"/></FormField>
-            <FormField label={t.rowsDone}><input style={iS} type="number" min="0" value={form.rowsCompleted} onChange={e=>sf("rowsCompleted",Number(e.target.value))}/></FormField>
-            <FormField label={t.totalRows}><input style={iS} type="number" min="1" value={form.totalRows} onChange={e=>sf("totalRows",Number(e.target.value))}/></FormField>
-            <FormField label={t.dueDate}><input style={iS} type="date" value={form.dueDate} onChange={e=>sf("dueDate",e.target.value)}/></FormField>
-            <FormField label={t.status}><select style={{...iS,appearance:"none"}} value={form.status} onChange={e=>sf("status",e.target.value)}>{STATUS_KEYS.map(s=><option key={s}>{s}</option>)}</select></FormField>
-            <FormField label={t.priority}><select style={{...iS,appearance:"none"}} value={form.priority} onChange={e=>sf("priority",e.target.value)}>{PRIORITY_KEYS.map(p=><option key={p}>{p}</option>)}</select></FormField>
+            <FormField label={t.startDate}><input style={iS} type="date" value={form.startDate} onChange={e=>sf("startDate",e.target.value)}/></FormField>
           </div>
-          {form.status==="Completed"&&(
-            <div style={{marginBottom:13}}>
-              <label style={{display:"block",fontSize:12,fontWeight:600,color:"#6B7280",marginBottom:6,display:"flex",alignItems:"center",gap:4}}><Ico n="basil:camera-outline" sz={12}/>Finished Photo <span style={{fontSize:10,color:"#6B7280",fontWeight:400}}>(shows as sticker on Dashboard)</span></label>
-              {form.finishedPhoto
-                ?<div style={{position:"relative",borderRadius:14,overflow:"hidden",border:"1.5px solid #E5E7EB"}}>
-                    <img src={form.finishedPhoto} alt="finished" style={{width:"100%",maxHeight:180,objectFit:"cover",display:"block"}}/>
-                    <button onClick={()=>sf("finishedPhoto",null)} style={{position:"absolute",top:7,right:7,width:26,height:26,borderRadius:999,background:"rgba(0,0,0,.5)",border:"none",cursor:"pointer",color:"white",fontSize:14,display:"flex",alignItems:"center",justifyContent:"center"}}>✕</button>
-                  </div>
-                :<div onClick={()=>photoRef.current.click()} style={{border:"2px dashed #D1D5DB",borderRadius:14,padding:"28px 16px",textAlign:"center",cursor:"pointer",background:"#FAFAFA"}}>
-                    <div style={{marginBottom:6,display:"flex",justifyContent:"center"}}><Ico n="basil:camera-outline" sz={28}/></div>
-                    <div style={{fontSize:13,fontWeight:600,color:"#374151"}}>Add a finished photo</div>
-                    <div style={{fontSize:11,color:"#6B7280",marginTop:3}}>JPG or PNG</div>
-                  </div>
-              }
-              <input ref={photoRef} type="file" accept="image/*" style={{display:"none"}} onChange={e=>{
-                const f=e.target.files[0];if(!f)return;e.target.value="";
-                const r=new FileReader();r.onload=ev=>sf("finishedPhoto",ev.target.result);r.readAsDataURL(f);
-              }}/>
-            </div>
-          )}
-          <FormField label={t.tagsHint}><input style={iS} value={form.tags} onChange={e=>sf("tags",e.target.value)} placeholder="Shawl, Lace, Gift"/></FormField>
-          <FormField label={t.checklistHint}><textarea style={{...iS,resize:"vertical",minHeight:60,lineHeight:1.5}} value={form.checklist} onChange={e=>sf("checklist",e.target.value)} placeholder={"Block after finishing\nWeave in ends"}/></FormField>
-          <FormField label={t.notesLabel}><textarea style={{...iS,resize:"vertical",minHeight:60,lineHeight:1.5}} value={form.notes} onChange={e=>sf("notes",e.target.value)} placeholder={t.notesPlaceholder}/></FormField>
 
-          {/* References */}
-          <div style={{marginBottom:13}}>
-            <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:8}}>
-              <label style={{fontSize:12,fontWeight:600,color:"#6B7280"}}>{t.refs}</label>
-              <button onClick={()=>sf("refs",[...form.refs,{id:uid(),label:"",url:""}])} style={{fontSize:12,color:"#778EE3",background:"#F5F6FF",border:"1px solid #DDE3F8",borderRadius:7,padding:"3px 9px",cursor:"pointer",fontWeight:600}}>{t.addRef}</button>
+          {/* Extra fields — edit mode only */}
+          {editMode&&(<>
+            <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:12}}>
+              <FormField label={t.rowsDone}><input style={iS} type="number" min="0" value={form.rowsCompleted} onChange={e=>sf("rowsCompleted",Number(e.target.value))}/></FormField>
+              <FormField label={t.totalRows}><input style={iS} type="number" min="1" value={form.totalRows} onChange={e=>sf("totalRows",Number(e.target.value))}/></FormField>
+              <FormField label={t.startDate}><input style={iS} type="date" value={form.startDate} onChange={e=>sf("startDate",e.target.value)}/></FormField>
+              <FormField label={t.dueDate}><input style={iS} type="date" value={form.dueDate} onChange={e=>sf("dueDate",e.target.value)}/></FormField>
+              <FormField label={t.status}><select style={{...iS,appearance:"none"}} value={form.status} onChange={e=>sf("status",e.target.value)}>{STATUS_KEYS.map(s=><option key={s}>{s}</option>)}</select></FormField>
+              <FormField label={t.priority}><select style={{...iS,appearance:"none"}} value={form.priority} onChange={e=>sf("priority",e.target.value)}>{PRIORITY_KEYS.map(p=><option key={p}>{p}</option>)}</select></FormField>
             </div>
-            {form.refs.map((ref,i)=>(
-              <div key={ref.id} style={{display:"grid",gridTemplateColumns:"1fr 1fr auto",gap:6,marginBottom:6,alignItems:"center"}}>
-                <input style={{...iS,fontSize:12}} value={ref.label} placeholder={t.refPlaceholder} onChange={e=>sf("refs",form.refs.map((r,j)=>j===i?{...r,label:e.target.value}:r))}/>
-                <input style={{...iS,fontSize:12}} value={ref.url} placeholder={t.refUrlPlaceholder} onChange={e=>sf("refs",form.refs.map((r,j)=>j===i?{...r,url:e.target.value}:r))}/>
-                <button onClick={()=>sf("refs",form.refs.filter((_,j)=>j!==i))} style={{background:"none",border:"none",cursor:"pointer",color:"#FCA5A5",fontSize:18,padding:"0 2px"}}>×</button>
+            {form.status==="Completed"&&(
+              <div style={{marginBottom:13}}>
+                <label style={{display:"block",fontSize:12,fontWeight:600,color:"#6B7280",marginBottom:6,display:"flex",alignItems:"center",gap:4}}><Ico n="basil:camera-outline" sz={12}/>Finished Photo <span style={{fontSize:10,color:"#6B7280",fontWeight:400}}>(shows as sticker on Dashboard)</span></label>
+                {form.finishedPhoto
+                  ?<div style={{position:"relative",borderRadius:14,overflow:"hidden",border:"1.5px solid #E5E7EB"}}>
+                      <img src={form.finishedPhoto} alt="finished" style={{width:"100%",maxHeight:180,objectFit:"cover",display:"block"}}/>
+                      <button onClick={()=>sf("finishedPhoto",null)} style={{position:"absolute",top:7,right:7,width:26,height:26,borderRadius:999,background:"rgba(0,0,0,.5)",border:"none",cursor:"pointer",color:"white",fontSize:14,display:"flex",alignItems:"center",justifyContent:"center"}}>✕</button>
+                    </div>
+                  :<div onClick={()=>photoRef.current.click()} style={{border:"2px dashed #D1D5DB",borderRadius:14,padding:"28px 16px",textAlign:"center",cursor:"pointer",background:"#FAFAFA"}}>
+                      <div style={{marginBottom:6,display:"flex",justifyContent:"center"}}><Ico n="basil:camera-outline" sz={28}/></div>
+                      <div style={{fontSize:13,fontWeight:600,color:"#374151"}}>Add a finished photo</div>
+                      <div style={{fontSize:11,color:"#6B7280",marginTop:3}}>JPG or PNG</div>
+                    </div>
+                }
+                <input ref={photoRef} type="file" accept="image/*" style={{display:"none"}} onChange={e=>{
+                  const f=e.target.files[0];if(!f)return;e.target.value="";
+                  const r=new FileReader();r.onload=ev=>sf("finishedPhoto",ev.target.result);r.readAsDataURL(f);
+                }}/>
               </div>
-            ))}
-          </div>
-
-          {/* Pattern */}
-          <div style={{marginBottom:16}}>
-            <button onClick={()=>setShowPattern(true)} style={{width:"100%",padding:"10px",borderRadius:12,border:"1.5px dashed #778EE3",background:"#F5F6FF",color:"#778EE3",fontSize:14,fontWeight:600,cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center",gap:6}}>
-              {pattern?"✓ Pattern — Edit":<><Ico n="basil:paint-outline" sz={14}/>{t.designPattern}</>}
-            </button>
-          </div>
+            )}
+            <FormField label={t.tagsHint}><input style={iS} value={form.tags} onChange={e=>sf("tags",e.target.value)} placeholder="Shawl, Lace, Gift"/></FormField>
+            <FormField label={t.checklistHint}><textarea style={{...iS,resize:"vertical",minHeight:60,lineHeight:1.5}} value={form.checklist} onChange={e=>sf("checklist",e.target.value)} placeholder={"Block after finishing\nWeave in ends"}/></FormField>
+            <FormField label={t.notesLabel}><textarea style={{...iS,resize:"vertical",minHeight:60,lineHeight:1.5}} value={form.notes} onChange={e=>sf("notes",e.target.value)} placeholder={t.notesPlaceholder}/></FormField>
+            <div style={{marginBottom:13}}>
+              <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:8}}>
+                <label style={{fontSize:12,fontWeight:600,color:"#6B7280"}}>{t.refs}</label>
+                <button onClick={()=>sf("refs",[...form.refs,{id:uid(),label:"",url:""}])} style={{fontSize:12,color:"#778EE3",background:"#F5F6FF",border:"1px solid #DDE3F8",borderRadius:7,padding:"3px 9px",cursor:"pointer",fontWeight:600}}>{t.addRef}</button>
+              </div>
+              {form.refs.map((ref,i)=>(
+                <div key={ref.id} style={{display:"grid",gridTemplateColumns:"1fr 1fr auto",gap:6,marginBottom:6,alignItems:"center"}}>
+                  <input style={{...iS,fontSize:12}} value={ref.label} placeholder={t.refPlaceholder} onChange={e=>sf("refs",form.refs.map((r,j)=>j===i?{...r,label:e.target.value}:r))}/>
+                  <input style={{...iS,fontSize:12}} value={ref.url} placeholder={t.refUrlPlaceholder} onChange={e=>sf("refs",form.refs.map((r,j)=>j===i?{...r,url:e.target.value}:r))}/>
+                  <button onClick={()=>sf("refs",form.refs.filter((_,j)=>j!==i))} style={{background:"none",border:"none",cursor:"pointer",color:"#FCA5A5",fontSize:18,padding:"0 2px"}}>×</button>
+                </div>
+              ))}
+            </div>
+            <div style={{marginBottom:16}}>
+              <button onClick={()=>setShowPattern(true)} style={{width:"100%",padding:"10px",borderRadius:12,border:"1.5px dashed #778EE3",background:"#F5F6FF",color:"#778EE3",fontSize:14,fontWeight:600,cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center",gap:6}}>
+                {pattern?"✓ Pattern — Edit":<><Ico n="basil:paint-outline" sz={14}/>{t.designPattern}</>}
+              </button>
+            </div>
+          </>)}
         </div>
         <div style={{padding:"12px 20px 28px",flexShrink:0,borderTop:"1px solid #F3F4F6"}}>
           <button onClick={submit} style={{width:"100%",padding:"14px",borderRadius:14,background:"linear-gradient(135deg,#778EE3,#6183FF)",color:"#fff",fontSize:16,fontWeight:700,border:"none",cursor:"pointer"}}>
-            {editMode?t.saveChanges:t.addBtn}
+            {editMode?t.saveChanges:t.startProject}
           </button>
         </div>
       </div>
     </div>
+    {showPatternPicker&&<PickPatternModal patterns={patterns} onClose={()=>setShowPatternPicker(false)} onPick={pat=>{setLinkedPattern({id:pat.id,name:pat.name});setShowPatternPicker(false);}}/>}
     {showPattern&&<PatternMaker pattern={pattern} onSave={p=>setPattern(p)} onClose={()=>setShowPattern(false)}/>}
     </>
   );
@@ -4261,6 +4563,7 @@ function YarnPhotoCropModal({src,onCrop,onClose}){
 }
 
 function AddYarnModal({onClose,onAdd,initialYarn,onEdit}){
+  useBodyScrollLock();
   const editing=!!initialYarn;
   const{t}=useLang();
   const[form,setForm]=useState(editing?{
@@ -4449,9 +4752,9 @@ function YarnLibPage({yarnLib,setYarnLib,projects}){
                     <div style={{fontSize:11,color:"#6B7280"}}>{yarn.colorway}{yarn.weight?" · "+yarn.weight:""}</div>
                     {(yarn.composition&&yarn.composition.length>0)?(
                       <div style={{display:"flex",flexWrap:"wrap",gap:3,marginTop:3}}>
-                        {yarn.composition.map((c,i)=>(
-                          <span key={i} style={{fontSize:10,padding:"1px 6px",borderRadius:999,background:yarn.color+"18",color:yarn.color,fontWeight:700,border:`1px solid ${yarn.color}33`}}>{c.pct}% {c.fibre}</span>
-                        ))}
+                        {yarn.composition.map((c,i)=>{const[_r,_g,_b]=hexToRgb(yarn.color||"#7C9A8E");const _lum=(0.299*_r+0.587*_g+0.114*_b)/255;const _ct=_lum>0.6?"#"+[_r,_g,_b].map(v=>Math.round(v*0.5).toString(16).padStart(2,"0")).join(""):yarn.color;return(
+                          <span key={i} style={{fontSize:10,padding:"1px 6px",borderRadius:999,background:yarn.color+"18",color:_ct,fontWeight:700,border:`1px solid ${yarn.color}33`}}>{c.pct}% {c.fibre}</span>
+                        );})}
                       </div>
                     ):(
                       yarn.fibre&&<div style={{fontSize:10,color:"#6B7280",marginTop:2}}>{yarn.fibre}</div>
@@ -4512,6 +4815,7 @@ function YarnLibPage({yarnLib,setYarnLib,projects}){
 
 /* ─── Tools Library ─────────────────────────────────────────────────────────── */
 function AddToolModal({onClose,onAdd,editing,onEdit}){
+  useBodyScrollLock();
   const{t}=useLang();
   const[form,setForm]=useState(editing||{type:"Crochet Hook",size:"5.0mm",material:"Aluminum",brand:"",qty:1,condition:"Good",notes:""});
   const s=(k,v)=>setForm(f=>({...f,[k]:v}));
@@ -4669,6 +4973,7 @@ function imgPick(cb){
 
 /* ── Pattern Form (Add + Edit) ── */
 function PatternFormModal({onClose,onSave,initial,yarnLib=[],initialMethod}){
+  useBodyScrollLock();
   const editing=!!initial;
   const{t}=useLang();
   const blank={name:"",category:"Shawl",craft:"Crochet",difficulty:"Beginner",source:"",notes:"",tags:"",image:null,photos:[],designData:null,importText:"",importImage:null,importPdf:null};
@@ -4729,19 +5034,6 @@ function PatternFormModal({onClose,onSave,initial,yarnLib=[],initialMethod}){
         </div>
         <div style={{overflowY:"auto",padding:"16px 20px 8px",flex:1}}>
 
-          {/* Creation method selector */}
-          <div style={{display:"flex",gap:8,marginBottom:16}}>
-            {['design','import'].map(m=>(
-              <button key={m} onClick={()=>setCreationMethod(m)}
-                style={{flex:1,padding:"10px 0",borderRadius:20,border:"1.5px solid #BBC7F1",
-                  background:creationMethod===m?"#778EE3":"white",
-                  color:creationMethod===m?"white":"#778EE3",
-                  fontSize:13,fontWeight:700,cursor:"pointer",transition:"all 0.15s"}}>
-                {m==='design'?'Design Chart':'Import Pattern'}
-              </button>
-            ))}
-          </div>
-
           {/* Photos — up to 3, no crop */}
           <div style={{marginBottom:14}}>
             <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:6}}>
@@ -4781,7 +5073,7 @@ function PatternFormModal({onClose,onSave,initial,yarnLib=[],initialMethod}){
                 <button key={c.id} type="button" onClick={()=>{s("craft",c.id);if(c.id==="Knitting")setLayout("rows");}}
                   style={{flex:1,padding:"11px 8px",borderRadius:12,border:`2px solid ${form.craft===c.id?"#778EE3":"#E5E7EB"}`,background:form.craft===c.id?"#EBEEFB":"#FAFAFA",color:form.craft===c.id?"#778EE3":"#6B7280",cursor:"pointer",textAlign:"left",transition:"all 0.15s ease"}}>
                   <div style={{marginBottom:3}}><Ico n={c.ico} sz={20}/></div>
-                  <div style={{fontSize:13,fontWeight:700}}>{c.id}</div>
+                  <div style={{fontSize:13,fontWeight:700}}>{t.crafts?.[c.id]||c.id}</div>
                 </button>
               ))}
             </div>
@@ -4870,9 +5162,9 @@ function PatternFormModal({onClose,onSave,initial,yarnLib=[],initialMethod}){
 
           <FormField label={t.patternName2}><input style={iS} value={form.name} onChange={e=>s("name",e.target.value)} placeholder="e.g. Hitchhiker Shawl"/></FormField>
           <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:12}}>
-            <FormField label={t.patternCategory}><select style={{...iS,appearance:"none"}} value={form.category} onChange={e=>s("category",e.target.value)}>{PATTERN_CATEGORIES.map(x=><option key={x}>{x}</option>)}</select></FormField>
-            <FormField label={t.patternCraft}>{creationMethod==='import'?<select style={{...iS,appearance:"none"}} value={form.craft} onChange={e=>s("craft",e.target.value)}><option>Crochet</option><option>Knitting</option></select>:<div style={{...iS,background:"#F3F4F6",color:"#374151",fontWeight:600,display:"flex",alignItems:"center",cursor:"default"}}>{form.craft}</div>}</FormField>
-            <FormField label={t.patternDifficulty}><select style={{...iS,appearance:"none"}} value={form.difficulty} onChange={e=>s("difficulty",e.target.value)}>{PATTERN_DIFFICULTIES.map(x=><option key={x}>{x}</option>)}</select></FormField>
+            <FormField label={t.patternCategory}><select style={{...iS,appearance:"none"}} value={form.category} onChange={e=>s("category",e.target.value)}>{PATTERN_CATEGORIES.map(x=><option key={x} value={x}>{t.cats?.[x]||x}</option>)}</select></FormField>
+            <FormField label={t.patternCraft}>{creationMethod==='import'?<select style={{...iS,appearance:"none"}} value={form.craft} onChange={e=>s("craft",e.target.value)}><option value="Crochet">{t.crafts?.Crochet||"Crochet"}</option><option value="Knitting">{t.crafts?.Knitting||"Knitting"}</option></select>:<div style={{...iS,background:"#F3F4F6",color:"#374151",fontWeight:600,display:"flex",alignItems:"center",cursor:"default"}}>{t.crafts?.[form.craft]||form.craft}</div>}</FormField>
+            <FormField label={t.patternDifficulty}><select style={{...iS,appearance:"none"}} value={form.difficulty} onChange={e=>s("difficulty",e.target.value)}>{PATTERN_DIFFICULTIES.map(x=><option key={x} value={x}>{t.diffs?.[x]||x}</option>)}</select></FormField>
           </div>
           <FormField label={t.patternSource}><input style={iS} value={form.source} onChange={e=>s("source",e.target.value)} placeholder="https://www.ravelry.com/..."/></FormField>
           <FormField label={t.patternTags}><input style={iS} value={form.tags} onChange={e=>s("tags",e.target.value)} placeholder="Lace, Gift, Quick"/></FormField>
@@ -4890,9 +5182,13 @@ function PatternFormModal({onClose,onSave,initial,yarnLib=[],initialMethod}){
 function KnitReadChart({grid,onBack,progressMarker=null,onSaveProgress}){
   const{canvasBg="#FDFAF6"}=useSettings();
   const rows=grid.length;
+  const[pinToast,setPinToast]=useState(null);
+  const pinToastTimer=useRef(null);
+  const showPinToast=msg=>{clearTimeout(pinToastTimer.current);setPinToast(msg);pinToastTimer.current=setTimeout(()=>setPinToast(null),2000);};
   const cols=grid[0]?.length||0;
   const[scale,setScale]=useState(1);
   const[activeRow,setActiveRow]=useState(()=>progressMarker!=null&&progressMarker>=0&&progressMarker<grid.length?progressMarker:null);
+  const[savedMarker,setSavedMarker]=useState(progressMarker!=null&&progressMarker>=0&&progressMarker<grid.length?progressMarker:null);
   const[pan,setPan]=useState({x:0,y:0});
   const[grabbing,setGrabbing]=useState(false);
   const canvasRef=useRef(null);
@@ -4989,12 +5285,12 @@ function KnitReadChart({grid,onBack,progressMarker=null,onSaveProgress}){
       ctx.textBaseline="middle"; ctx.fillText(String(x),cx,MT+gH+MB/2); // bottom
     }
     // Progress marker — small green right-pointing triangle in left margin
-    if(progressMarker!==null&&progressMarker>=0&&progressMarker<rows){
-      const cy=MT+(progressMarker+0.5)*cellSize;
+    if(savedMarker!==null&&savedMarker>=0&&savedMarker<rows){
+      const cy=MT+(savedMarker+0.5)*cellSize;
       ctx.fillStyle="#059669";ctx.globalAlpha=1;
       ctx.beginPath();ctx.moveTo(2,cy-5);ctx.lineTo(12,cy);ctx.lineTo(2,cy+5);ctx.fill();
     }
-  },[grid,rows,cols,scale,activeRow,canvasBg,progressMarker]);
+  },[grid,rows,cols,scale,activeRow,canvasBg,savedMarker]);
 
   useLayoutEffect(()=>{draw();},[draw]);
 
@@ -5058,10 +5354,10 @@ function KnitReadChart({grid,onBack,progressMarker=null,onSaveProgress}){
           <button onClick={()=>navRow(-1)} title="Next row" style={{width:22,height:22,borderRadius:5,border:"none",background:"transparent",fontSize:14,fontWeight:700,cursor:"pointer",color:"#374151",display:"flex",alignItems:"center",justifyContent:"center"}}>+</button>
         </div>
         {onSaveProgress&&(
-          <button onClick={()=>{if(activeRow!==null)onSaveProgress(activeRow);}} disabled={activeRow===null}
+          <button onClick={()=>{if(activeRow!==null){onSaveProgress(activeRow);setSavedMarker(activeRow);showPinToast(`Row ${rows-activeRow} pinned`);}}} disabled={activeRow===null}
             title={activeRow===null?"Select a row first":"Save progress here"}
-            style={{padding:"4px 10px",borderRadius:8,border:"1.5px solid #BBC7F1",background:activeRow!==null?"rgba(5,150,105,0.08)":"#F3F4F6",color:activeRow!==null?"#059669":"#6B7280",fontSize:11,fontWeight:700,cursor:activeRow!==null?"pointer":"default",flexShrink:0,marginLeft:4}}>
-            <Ico n="basil:pin-outline" sz={11}/>{activeRow!==null?`Row ${rows-activeRow}`:"—"}
+            style={{padding:"4px 10px",borderRadius:8,border:savedMarker===activeRow&&activeRow!==null?"1.5px solid rgba(5,150,105,0.6)":"1.5px solid #BBC7F1",background:savedMarker===activeRow&&activeRow!==null?"rgba(5,150,105,0.15)":activeRow!==null?"rgba(5,150,105,0.08)":"#F3F4F6",color:activeRow!==null?"#059669":"#6B7280",fontSize:11,fontWeight:700,cursor:activeRow!==null?"pointer":"default",flexShrink:0,marginLeft:4}}>
+            <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{verticalAlign:"middle",marginRight:3}}><line x1="12" y1="17" x2="12" y2="22"/><path d="M5 17h14v-1.76a2 2 0 0 0-1.11-1.79l-1.78-.9A2 2 0 0 1 15 10.76V6h1a2 2 0 0 0 0-4H8a2 2 0 0 0 0 4h1v4.76a2 2 0 0 1-1.11 1.79l-1.78.9A2 2 0 0 0 5 15.24Z"/></svg>{savedMarker!==null?`Row ${rows-savedMarker}`:"—"}
           </button>
         )}
         <button onClick={onBack} style={{padding:"6px 14px",borderRadius:11,border:"none",background:"#778EE3",color:"white",fontSize:12,fontWeight:600,cursor:"pointer",marginLeft:4}}>← Back</button>
@@ -5073,16 +5369,26 @@ function KnitReadChart({grid,onBack,progressMarker=null,onSaveProgress}){
         onPointerDown={onPD} onPointerMove={onPM} onPointerUp={onPU}
         onClick={handleClick}
       >
-        <div style={{transform:`translate(${pan.x}px,${pan.y}px)`,display:"inline-block",padding:8}}>
-          <canvas ref={canvasRef} style={{display:"block"}}/>
+        <div style={{width:"100%",height:"100%",display:"flex",alignItems:"center",justifyContent:"center"}}>
+          <div style={{transform:`translate(${pan.x}px,${pan.y}px)`,display:"inline-block",padding:8}}>
+            <canvas ref={canvasRef} style={{display:"block"}}/>
+          </div>
         </div>
       </div>
+      {pinToast&&(
+        <div style={{position:"fixed",bottom:32,left:"50%",transform:"translateX(-50%)",zIndex:999999,
+          background:"#059669",color:"white",borderRadius:12,padding:"8px 18px",fontSize:13,fontWeight:700,
+          boxShadow:"0 4px 16px rgba(0,0,0,0.18)",pointerEvents:"none",whiteSpace:"nowrap",
+          animation:"sr-pop .2s ease"}}>
+          ✓ {pinToast}
+        </div>
+      )}
     </div>
   );
 }
 
 /* ── Step checklist reader for imported text patterns ── */
-function StepReader({steps=[],patName="",onBack}){
+function StepReader({steps=[],patName="",onBack,progressMarker=null,onSaveProgress}){
   const items=useMemo(()=>steps.map(s=>{
     const t=s.text.trim();
     const isSection=t.endsWith(":")&&!t.includes("(")&&t.length<=60;
@@ -5091,7 +5397,16 @@ function StepReader({steps=[],patName="",onBack}){
   }),[steps]);
 
   const stepItems=useMemo(()=>items.filter(i=>!i.isSection),[items]);
-  const[checked,setChecked]=useState({});
+  const[checked,setChecked]=useState(()=>{
+    if(progressMarker==null||progressMarker<0)return{};
+    const init={};
+    stepItems.slice(0,progressMarker+1).forEach(s=>{init[s.id]=true;});
+    return init;
+  });
+  const[savedMarker,setSavedMarker]=useState(progressMarker);
+  const[pinToast,setPinToast]=useState(null);
+  const pinToastTimer=useRef(null);
+  const showPinToast=msg=>{clearTimeout(pinToastTimer.current);setPinToast(msg);pinToastTimer.current=setTimeout(()=>setPinToast(null),2000);};
   const[counts,setCounts]=useState({});
   const[stitches,setStitches]=useState(0);
   const justChecked=useRef(new Set());
@@ -5154,6 +5469,12 @@ function StepReader({steps=[],patName="",onBack}){
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#6B7280" strokeWidth="2.5"><path strokeLinecap="round" strokeLinejoin="round" d="M15 19l-7-7 7-7"/></svg>
           </button>
           <span style={{flex:1,fontSize:15,fontWeight:800,color:"#111",overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{patName}</span>
+          {onSaveProgress&&(
+            <button type="button" onClick={()=>{const idx=checkedCount-1;if(idx>=0){onSaveProgress(idx);setSavedMarker(idx);showPinToast(`Step ${checkedCount} pinned`);}}} title="Save progress here"
+              style={{width:32,height:32,borderRadius:10,border:savedMarker===checkedCount-1&&checkedCount>0?"1.5px solid rgba(5,150,105,0.6)":"1.5px solid rgba(5,150,105,0.35)",background:savedMarker===checkedCount-1&&checkedCount>0?"rgba(5,150,105,0.15)":"rgba(5,150,105,0.08)",cursor:checkedCount>0?"pointer":"default",display:"flex",alignItems:"center",justifyContent:"center",color:"#059669",flexShrink:0,opacity:checkedCount>0?1:0.4}}>
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="12" y1="17" x2="12" y2="22"/><path d="M5 17h14v-1.76a2 2 0 0 0-1.11-1.79l-1.78-.9A2 2 0 0 1 15 10.76V6h1a2 2 0 0 0 0-4H8a2 2 0 0 0 0 4h1v4.76a2 2 0 0 1-1.11 1.79l-1.78.9A2 2 0 0 0 5 15.24Z"/></svg>
+            </button>
+          )}
           <span style={{fontSize:12,fontWeight:700,flexShrink:0,padding:"3px 10px",borderRadius:999,minWidth:52,textAlign:"center",
             color:allDone?"#16A34A":"#778EE3",background:allDone?"#DCFCE7":"#EBEEFB"}}>
             {checkedCount} / {total}
@@ -5195,11 +5516,10 @@ function StepReader({steps=[],patName="",onBack}){
             <div
               key={item.id}
               ref={el=>stepRefs.current[item.id]=el}
-              onClick={()=>!isDone&&toggleCheck(item.id)}
               style={{
                 padding:isDone?"9px 16px 9px 13px":"13px 16px 13px 13px",
                 display:"flex",alignItems:"flex-start",gap:10,
-                cursor:isDone?"default":"pointer",
+                cursor:"default",
                 opacity:isDone?0.42:1,
                 background:isActive?"rgba(36,123,160,0.07)":"white",
                 borderLeft:isActive?"3px solid #1A6A8A":"3px solid transparent",
@@ -5210,7 +5530,7 @@ function StepReader({steps=[],patName="",onBack}){
               {/* Checkbox */}
               <button
                 className={popping?"sr-pop":""}
-                onClick={e=>{e.stopPropagation();toggleCheck(item.id);}}
+                onClick={()=>toggleCheck(item.id)}
                 style={{
                   width:24,height:24,borderRadius:6,flexShrink:0,marginTop:0,cursor:"pointer",
                   border:`2px solid ${isDone?"#1A6A8A":isActive?"#1A6A8A":"#D1D5DB"}`,
@@ -5299,12 +5619,21 @@ function StepReader({steps=[],patName="",onBack}){
         </div>
       )}
 
+      {pinToast&&(
+        <div style={{position:"fixed",bottom:32,left:"50%",transform:"translateX(-50%)",zIndex:999999,
+          background:"#059669",color:"white",borderRadius:12,padding:"8px 18px",fontSize:13,fontWeight:700,
+          boxShadow:"0 4px 16px rgba(0,0,0,0.18)",pointerEvents:"none",whiteSpace:"nowrap",
+          animation:"sr-pop .2s ease"}}>
+          ✓ {pinToast}
+        </div>
+      )}
     </div>
   );
 }
 
 /* ── Pattern Detail Modal ── */
 function PatternDetailModal({pat,onClose,onEdit,onDelete,onUpdate,yarnLib=[]}){
+  useBodyScrollLock();
   const{t}=useLang();
   const[openMaker,setOpenMaker]=useState(false);
   const[openRoundsMaker,setOpenRoundsMaker]=useState(false);
@@ -5491,9 +5820,9 @@ function PatternDetailModal({pat,onClose,onEdit,onDelete,onUpdate,yarnLib=[]}){
 
           {/* ── Badges ── */}
           <div style={{padding:"14px 20px 0",display:"flex",gap:6,flexWrap:"wrap"}}>
-            <span style={{fontSize:11,fontWeight:700,padding:"3px 9px",borderRadius:999,background:accentColor+"18",color:accentColor}}>{pat.craft}</span>
-            <span style={{fontSize:11,fontWeight:700,padding:"3px 9px",borderRadius:999,background:(DIFF_COLOR[pat.difficulty]||"#6B7280")+"18",color:DIFF_COLOR[pat.difficulty]||"#6B7280"}}>{pat.difficulty}</span>
-            <span style={{fontSize:11,fontWeight:700,padding:"3px 9px",borderRadius:999,background:"#F3F4F6",color:"#6B7280"}}>{pat.category}</span>
+            <span style={{fontSize:11,fontWeight:700,padding:"3px 9px",borderRadius:999,background:accentColor+"18",color:accentColor}}>{t.crafts?.[pat.craft]||pat.craft}</span>
+            <span style={{fontSize:11,fontWeight:700,padding:"3px 9px",borderRadius:999,background:(DIFF_COLOR[pat.difficulty]||"#6B7280")+"18",color:DIFF_COLOR[pat.difficulty]||"#6B7280"}}>{t.diffs?.[pat.difficulty]||pat.difficulty}</span>
+            <span style={{fontSize:11,fontWeight:700,padding:"3px 9px",borderRadius:999,background:"#F3F4F6",color:"#6B7280"}}>{t.cats?.[pat.category]||pat.category}</span>
             {hasDesign&&<span style={{fontSize:11,fontWeight:700,padding:"3px 9px",borderRadius:999,background:"#F3E8FF",color:"#778EE3",display:"inline-flex",alignItems:"center",gap:3}}><Ico n="basil:paint-outline" sz={11}/>Designed</span>}
           </div>
 
@@ -5573,7 +5902,7 @@ function PatternDetailModal({pat,onClose,onEdit,onDelete,onUpdate,yarnLib=[]}){
         </div>
 
         {/* More action sheet */}
-        {showPatMore&&(
+        {showPatMore&&(<ScrollLock>
           <div onClick={()=>setShowPatMore(false)} style={{position:"fixed",inset:0,zIndex:300,background:"rgba(0,0,0,.3)",backdropFilter:"blur(3px)",display:"flex",alignItems:"flex-end",justifyContent:"center",padding:"0 16px 24px"}}>
             <div onClick={e=>e.stopPropagation()} style={{width:"100%",maxWidth:360,background:"white",borderRadius:22,overflow:"hidden",boxShadow:"0 16px 60px rgba(0,0,0,.2)"}}>
               <div style={{padding:"12px 18px 8px",textAlign:"center",fontSize:12,color:"#6B7280",fontWeight:600,borderBottom:"1px solid #F3F4F6",overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{pat.name}</div>
@@ -5586,7 +5915,7 @@ function PatternDetailModal({pat,onClose,onEdit,onDelete,onUpdate,yarnLib=[]}){
               <button onClick={()=>setShowPatMore(false)} style={{width:"100%",padding:"14px 18px",background:"none",border:"none",cursor:"pointer",textAlign:"center",fontSize:14,fontWeight:600,color:"#6B7280"}}>{t.cancel}</button>
             </div>
           </div>
-        )}
+        </ScrollLock>)}
       </div>
     </div>
     {imgFull&&(
@@ -5909,11 +6238,11 @@ function PatternLibPage({patterns,setPatterns,projects=[],yarnLib=[]}){
       <div style={{maxWidth:360,margin:"0 auto 14px",display:"flex",gap:8,flexWrap:"wrap"}}>
         <select value={filterCraft} onChange={e=>setFilterCraft(e.target.value)} style={selStyle}>
           <option value="All">{t.filterAll} craft</option>
-          {PATTERN_CRAFTS.map(x=><option key={x}>{x}</option>)}
+          {PATTERN_CRAFTS.map(x=><option key={x} value={x}>{t.crafts?.[x]||x}</option>)}
         </select>
         <select value={filterDiff} onChange={e=>setFilterDiff(e.target.value)} style={selStyle}>
           <option value="All">{t.filterAll} level</option>
-          {PATTERN_DIFFICULTIES.map(x=><option key={x}>{x}</option>)}
+          {PATTERN_DIFFICULTIES.map(x=><option key={x} value={x}>{t.diffs?.[x]||x}</option>)}
         </select>
         {(filterCraft!=="All"||filterDiff!=="All")&&<button type="button" onClick={()=>{setFilterCraft("All");setFilterDiff("All");}} style={{padding:"6px 10px",borderRadius:9,border:"1.5px solid #FCA5A5",background:"#FEF2F2",color:"#EF4444",fontSize:12,fontWeight:600,cursor:"pointer"}}>✕</button>}
       </div>
@@ -5954,9 +6283,9 @@ function PatternLibPage({patterns,setPatterns,projects=[],yarnLib=[]}){
               <div style={{flex:1,minWidth:0,padding:"10px 12px",display:"flex",flexDirection:"column",justifyContent:"center",gap:5}}>
                 <div style={{fontSize:14,fontWeight:700,color:"#111",overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{pat.name}</div>
                 <div style={{display:"flex",gap:4,flexWrap:"wrap",alignItems:"center"}}>
-                  <span style={{fontSize:10,fontWeight:700,padding:"2px 7px",borderRadius:999,background:accent+"18",color:accent}}>{pat.craft}</span>
-                  {pat.difficulty&&<span style={{fontSize:10,fontWeight:700,padding:"2px 7px",borderRadius:999,background:(DIFF_COLOR[pat.difficulty]||"#6B7280")+"18",color:DIFF_COLOR[pat.difficulty]||"#6B7280"}}>{pat.difficulty}</span>}
-                  {pat.category&&!pat._fromProject&&<span style={{fontSize:10,color:"#6B7280",overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{pat.category}</span>}
+                  <span style={{fontSize:10,fontWeight:700,padding:"2px 7px",borderRadius:999,background:accent+"18",color:accent}}>{t.crafts?.[pat.craft]||pat.craft}</span>
+                  {pat.difficulty&&<span style={{fontSize:10,fontWeight:700,padding:"2px 7px",borderRadius:999,background:(DIFF_COLOR[pat.difficulty]||"#6B7280")+"18",color:DIFF_COLOR[pat.difficulty]||"#6B7280"}}>{t.diffs?.[pat.difficulty]||pat.difficulty}</span>}
+                  {pat.category&&!pat._fromProject&&<span style={{fontSize:10,color:"#6B7280",overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{t.cats?.[pat.category]||pat.category}</span>}
                   {pat._fromProject&&<span style={{fontSize:10,color:"#6B7280",overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>from {pat._projectName}</span>}
                 </div>
               </div>
@@ -6084,27 +6413,34 @@ function CrochetChartView({stitches=[],highlightY=null,currentRowY=null,onRowCli
   const[fitDone,setFitDone]=useState(false);
   const dragRef=useRef(null);
 
-  // Pinch-to-zoom
+  // Pinch-to-zoom (toward pinch center)
   useEffect(()=>{
     if(!showControls)return;
     const el=containerRef.current;if(!el)return;
-    let pinch=null,pinchRatio=1;
-    const onTS=e=>{if(e.touches.length===2){e.preventDefault();pinch=Math.hypot(e.touches[0].clientX-e.touches[1].clientX,e.touches[0].clientY-e.touches[1].clientY);pinchRatio=1;}};
-    const onTM=e=>{
-      if(e.touches.length===2&&pinch!==null){
+    let pState=null;
+    const onTS=e=>{
+      if(e.touches.length===2){
         e.preventDefault();
-        const d=Math.hypot(e.touches[0].clientX-e.touches[1].clientX,e.touches[0].clientY-e.touches[1].clientY);
-        pinchRatio*=d/pinch;pinch=d;
-        const cv=canvasRef.current;
-        if(cv){cv.style.transform=`scale(${Math.max(0.3,Math.min(4,pinchRatio))})`;cv.style.transformOrigin='center center';}
+        const t0=e.touches[0],t1=e.touches[1];
+        const dist=Math.hypot(t0.clientX-t1.clientX,t0.clientY-t1.clientY);
+        const r=el.getBoundingClientRect();
+        const mx=(t0.clientX+t1.clientX)/2-r.left,my=(t0.clientY+t1.clientY)/2-r.top;
+        pState={dist,mx,my};
       }
     };
-    const onTE=e=>{
-      if(e.touches.length<2){
-        if(pinch!==null){setZoom(z=>Math.max(0.3,Math.min(4,z*pinchRatio)));const cv=canvasRef.current;if(cv)cv.style.transform='';}
-        pinch=null;pinchRatio=1;
+    const onTM=e=>{
+      if(e.touches.length===2&&pState){
+        e.preventDefault();
+        const t0=e.touches[0],t1=e.touches[1];
+        const d=Math.hypot(t0.clientX-t1.clientX,t0.clientY-t1.clientY);
+        const ratio=d/pState.dist;pState.dist=d;
+        const r=el.getBoundingClientRect();
+        setZoom(z=>{const nz=Math.max(0.3,Math.min(4,z*ratio));
+          setPan(p=>({x:p.x+(pState.mx-r.width/2)*(1/nz-1/z),y:p.y+(pState.my-r.height/2)*(1/nz-1/z)}));
+          return nz;});
       }
     };
+    const onTE=e=>{if(e.touches.length<2)pState=null;};
     el.addEventListener("touchstart",onTS,{passive:false});
     el.addEventListener("touchmove",onTM,{passive:false});
     el.addEventListener("touchend",onTE);
@@ -6337,6 +6673,7 @@ function ReadOnlyCrochetView({crochetStitches,crochetRows}){
 
 /* ─── Pick Pattern from Library Modal ──────────────────────────────────────── */
 function PickPatternModal({patterns,onClose,onPick}){
+  useBodyScrollLock();
   const{t}=useLang();
   const[filter,setFilter]=useState("All");
   const[preview,setPreview]=useState(null);
@@ -6429,7 +6766,7 @@ function PickPatternModal({patterns,onClose,onPick}){
         {/* craft filter pills */}
         <div style={{padding:"12px 20px 8px",display:"flex",gap:6,flexWrap:"wrap",flexShrink:0}}>
           {["All",...PATTERN_CRAFTS].map(c=>(
-            <button key={c} onClick={()=>setFilter(c)} style={{padding:"4px 12px",borderRadius:999,border:"none",cursor:"pointer",fontSize:12,fontWeight:700,background:filter===c?"#778EE3":"#F3F4F6",color:filter===c?"white":"#6B7280"}}>{c}</button>
+            <button key={c} onClick={()=>setFilter(c)} style={{padding:"4px 12px",borderRadius:999,border:"none",cursor:"pointer",fontSize:12,fontWeight:700,background:filter===c?"#778EE3":"#F3F4F6",color:filter===c?"white":"#6B7280"}}>{c==="All"?t.filterAll:(t.crafts?.[c]||c)}</button>
           ))}
         </div>
         <div style={{overflowY:"auto",padding:"4px 16px 24px",flex:1}}>
@@ -6448,14 +6785,18 @@ function PickPatternModal({patterns,onClose,onPick}){
                   <div style={{display:"flex",alignItems:"center",gap:12,padding:"12px 14px"}}>
                     {pat.image?(
                       <img src={pat.image} alt="" style={{width:48,height:48,borderRadius:10,objectFit:"cover",flexShrink:0}}/>
+                    ):pat.designData?(
+                      <div style={{width:48,height:48,borderRadius:10,overflow:"hidden",flexShrink:0,border:"1px solid #E5E7EB"}}>
+                        <PatternCardPreview patData={pat.designData} accent={accent} height={48} showDots={false} showRowLabels={false}/>
+                      </div>
                     ):(
                       <div style={{width:48,height:48,borderRadius:10,background:accent+"18",display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0}}>
-                        {pat.designData?<Ico n="basil:paint-outline" sz={22}/>:<Ico n={CAT_ICON[pat.category]||"basil:clipboard-outline"} sz={22}/>}
+                        <Ico n={CAT_ICON[pat.category]||"basil:clipboard-outline"} sz={22}/>
                       </div>
                     )}
                     <div style={{flex:1,minWidth:0}}>
                       <div style={{fontSize:14,fontWeight:700,color:"#111",overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{pat.name}</div>
-                      <div style={{fontSize:11,color:"#6B7280",marginTop:1}}>{pat.craft} · {pat.category}{pat.difficulty?" · "+pat.difficulty:""}</div>
+                      <div style={{fontSize:11,color:"#6B7280",marginTop:1}}>{t.crafts?.[pat.craft]||pat.craft} · {t.cats?.[pat.category]||pat.category}{pat.difficulty?" · "+(t.diffs?.[pat.difficulty]||pat.difficulty):""}</div>
                       {pat.designData&&<span style={{fontSize:10,fontWeight:700,padding:"1px 6px",borderRadius:999,background:"#F3E8FF",color:"#778EE3",marginTop:3,display:"inline-flex",alignItems:"center",gap:3}}><Ico n="basil:paint-outline" sz={10}/>Has design</span>}
                     </div>
                     <span style={{fontSize:10,fontWeight:700,padding:"3px 9px",borderRadius:999,background:accent+"12",color:accent,flexShrink:0}}>Preview</span>
@@ -6482,6 +6823,7 @@ const DASH_SECTIONS=[
 const DEFAULT_DASH_LAYOUT=DASH_SECTIONS.map(s=>({id:s.id,visible:true}));
 
 function DashLayoutModal({layout,setLayout,onClose}){
+  useBodyScrollLock();
   const{t}=useLang();
   const secLabel={stickers:t.dashSecStickers,stats:t.dashSecStats,progress:t.dashSecProgress,recent:t.dashSecRecent,library:t.dashSecLibrary,parties:t.dashSecParties};
   const secIcon=Object.fromEntries(DASH_SECTIONS.map(s=>[s.id,s.icon]));
@@ -6993,8 +7335,8 @@ function DashboardPage({projects,yarnLib,patterns,myPartyIds,setMyPartyIds,joine
           onLeave={async()=>{
             const entry=joinedParties.find(j=>j.partyId===dashDetail.id);
             if(!entry)return;
-            if(!window.confirm("Leave this party?"))return;
-            if(sb&&entry.signupId)await sb.from("party_signups").delete().eq("id",entry.signupId).catch(()=>{});
+            if(!window.confirm(t.partyLeaveConfirm))return;
+            if(sb&&entry.signupId){try{await sb.from("party_signups").delete().eq("id",entry.signupId);}catch{}}
             setJoinedParties(j=>j.filter(j=>j.partyId!==dashDetail.id));
             setDashDetail(null);
           }}
@@ -7003,7 +7345,7 @@ function DashboardPage({projects,yarnLib,patterns,myPartyIds,setMyPartyIds,joine
 
       {/* Sticker detail popup */}
       {selectedSticker&&createPortal(
-        <div onClick={()=>setSelectedSticker(null)} style={{position:"fixed",inset:0,background:"rgba(0,0,0,.55)",zIndex:400,display:"flex",alignItems:"center",justifyContent:"center",padding:24}}>
+        <ScrollLock><div onClick={()=>setSelectedSticker(null)} style={{position:"fixed",inset:0,background:"rgba(0,0,0,.55)",zIndex:400,display:"flex",alignItems:"center",justifyContent:"center",padding:24}}>
           <div onClick={e=>e.stopPropagation()} className="modal-in" style={{background:"white",borderRadius:24,overflow:"hidden",width:"100%",maxWidth:300,boxShadow:"0 24px 60px rgba(0,0,0,.25)"}}>
             <div style={{position:"relative"}}>
               {selectedSticker.finishedPhotoCutout
@@ -7036,7 +7378,7 @@ function DashboardPage({projects,yarnLib,patterns,myPartyIds,setMyPartyIds,joine
               )}
             </div>
           </div>
-        </div>,
+        </div></ScrollLock>,
         document.body
       )}
     </div>
@@ -7162,6 +7504,7 @@ function SocialSignInButton({provider, connected, connectedEmail, onConnect, onD
 }
 
 function SignInModal({provider, onClose, onSuccess}) {
+  useBodyScrollLock();
   const{t}=useLang();
   const [email, setEmail] = useState("");
   const [step, setStep] = useState("email"); // "email" | "done"
@@ -7517,12 +7860,12 @@ function SettingsPage({settings, setSettings, lang, setLang, onBack, rewards=REW
         <SectionCard title={t.settingsPatternPrefs}>
           <SettingRow label={t.settingsDefaultCraft}>
             <select value={settings.defaultCraft} onChange={e=>set("defaultCraft",e.target.value)} style={selectStyle}>
-              {PATTERN_CRAFTS.map(c=><option key={c} value={c}>{c}</option>)}
+              {PATTERN_CRAFTS.map(c=><option key={c} value={c}>{t.crafts?.[c]||c}</option>)}
             </select>
           </SettingRow>
           <SettingRow label={t.settingsDefaultDiff}>
             <select value={settings.defaultDifficulty} onChange={e=>set("defaultDifficulty",e.target.value)} style={selectStyle}>
-              {PATTERN_DIFFICULTIES.map(d=><option key={d} value={d}>{d}</option>)}
+              {PATTERN_DIFFICULTIES.map(d=><option key={d} value={d}>{t.diffs?.[d]||d}</option>)}
             </select>
           </SettingRow>
         </SectionCard>
@@ -7555,59 +7898,72 @@ function SettingsPage({settings, setSettings, lang, setLang, onBack, rewards=REW
 
 /* ─── Gauge Calculator ──────────────────────────────────────────────────────── */
 function GaugeCalculator({onClose}){
+  useBodyScrollLock();
   const{t}=useLang();
-  const[sp4,setSp4]=useState("");
-  const[rp4,setRp4]=useState("");
+  const[unit,setUnit]=useState("in");
+  const[sp,setSp]=useState("");
+  const[rp,setRp]=useState("");
   const[w,setW]=useState("");
   const[h,setH]=useState("");
-  const sts=sp4&&w?Math.round((parseFloat(w)/4)*parseFloat(sp4)):null;
-  const rws=rp4&&h?Math.round((parseFloat(h)/4)*parseFloat(rp4)):null;
-  const inp={width:"100%",padding:"9px 10px",borderRadius:10,border:"1.5px solid #E5E7EB",fontSize:14,color:"#111",background:"#FAFAFA",boxSizing:"border-box"};
+  const div=unit==="in"?4:10;
+  const u=unit==="in"?"in":"cm";
+  const sts=sp&&w?Math.round((parseFloat(w)/div)*parseFloat(sp)):null;
+  const rws=rp&&h?Math.round((parseFloat(h)/div)*parseFloat(rp)):null;
+  const inp={width:"100%",padding:"10px 12px",borderRadius:10,border:"1.5px solid #EEF0FD",fontSize:14,color:"#111",background:"white",boxSizing:"border-box",outline:"none"};
+  const switchUnit=v=>{setUnit(v);setSp("");setRp("");setW("");setH("");};
+  const secLabel={fontSize:12,fontWeight:600,color:"#B0B8D0",marginBottom:10};
+  const fieldLabel={fontSize:11,color:"#9CA3AF",marginBottom:5};
   return(
     <div style={{position:"fixed",inset:0,background:"rgba(0,0,0,.45)",zIndex:200,display:"flex",alignItems:"flex-end"}} onClick={onClose}>
       <div style={{width:"100%",background:"white",borderRadius:"20px 20px 0 0",padding:"20px 20px 40px",maxWidth:420,margin:"0 auto"}} onClick={e=>e.stopPropagation()}>
-        <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:18}}>
-          <div style={{fontSize:17,fontWeight:800,color:"#111"}}>{t.gaugeCalc}</div>
+        <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:20}}>
+          <div style={{display:"flex",alignItems:"center",gap:10}}>
+            <div style={{fontSize:17,fontWeight:800,color:"#111"}}>{t.gaugeCalc}</div>
+            <div style={{display:"flex",background:"#EBEEFB",borderRadius:20,padding:2,gap:2}}>
+              {["in","cm"].map(v=>(
+                <button key={v} onClick={()=>switchUnit(v)} style={{padding:"4px 12px",borderRadius:18,border:"none",cursor:"pointer",fontSize:11,fontWeight:700,background:unit===v?"#778EE3":"transparent",color:unit===v?"white":"#778EE3",transition:"all .15s"}}>
+                  {v}
+                </button>
+              ))}
+            </div>
+          </div>
           <button onClick={onClose} style={{width:30,height:30,borderRadius:999,background:"#F3F4F6",border:"none",cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center"}}>
             <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24"><path fill="#6B7280" d="M18.3 5.71a1 1 0 0 0-1.41 0L12 10.59 7.11 5.7A1 1 0 0 0 5.7 7.11L10.59 12 5.7 16.89a1 1 0 1 0 1.41 1.41L12 13.41l4.89 4.89a1 1 0 0 0 1.41-1.41L13.41 12l4.89-4.89a1 1 0 0 0 0-1.4"/></svg>
           </button>
         </div>
-        <div style={{fontSize:11,fontWeight:700,color:"#778EE3",letterSpacing:"0.07em",textTransform:"uppercase",marginBottom:10}}>Gauge Swatch</div>
-        <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:10,marginBottom:16}}>
-          <div>
-            <div style={{fontSize:11,color:"#6B7280",marginBottom:4}}>{t.stitches} {t.per4in}</div>
-            <input type="number" min="0" value={sp4} onChange={e=>setSp4(e.target.value)} placeholder="e.g. 18" style={inp}/>
-          </div>
-          <div>
-            <div style={{fontSize:11,color:"#6B7280",marginBottom:4}}>{t.rows} {t.per4in}</div>
-            <input type="number" min="0" value={rp4} onChange={e=>setRp4(e.target.value)} placeholder="e.g. 24" style={inp}/>
-          </div>
-        </div>
-        <div style={{fontSize:11,fontWeight:700,color:"#778EE3",letterSpacing:"0.07em",textTransform:"uppercase",marginBottom:10}}>Target Size</div>
+        <div style={secLabel}>{t.gaugeSwatch}</div>
         <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:10,marginBottom:20}}>
           <div>
-            <div style={{fontSize:11,color:"#6B7280",marginBottom:4}}>{t.gaugeWidth}</div>
-            <input type="number" min="0" value={w} onChange={e=>setW(e.target.value)} placeholder="e.g. 12" style={inp}/>
+            <div style={fieldLabel}>{unit==="in"?t.gaugeStsPer4in:t.gaugeStsPer10cm}</div>
+            <input type="number" min="0" value={sp} onChange={e=>setSp(e.target.value)} placeholder="e.g. 18" style={inp}/>
           </div>
           <div>
-            <div style={{fontSize:11,color:"#6B7280",marginBottom:4}}>{t.gaugeHeight}</div>
-            <input type="number" min="0" value={h} onChange={e=>setH(e.target.value)} placeholder="e.g. 16" style={inp}/>
+            <div style={fieldLabel}>{unit==="in"?t.gaugeRowsPer4in:t.gaugeRowsPer10cm}</div>
+            <input type="number" min="0" value={rp} onChange={e=>setRp(e.target.value)} placeholder="e.g. 24" style={inp}/>
           </div>
         </div>
-        {(sts!==null||rws!==null)&&(
-          <div style={{background:"#EBEEFB",borderRadius:14,padding:"14px 16px",display:"grid",gridTemplateColumns:"1fr 1fr",gap:12}}>
-            <div style={{textAlign:"center"}}>
-              <div style={{fontSize:11,color:"#6B7280",marginBottom:2}}>{t.castOn}</div>
-              <div style={{fontSize:32,fontWeight:900,color:"#778EE3",lineHeight:1}}>{sts??"-"}</div>
-              <div style={{fontSize:10,color:"#6B7280"}}>{t.stitches}</div>
-            </div>
-            <div style={{textAlign:"center"}}>
-              <div style={{fontSize:11,color:"#6B7280",marginBottom:2}}>{t.workRows}</div>
-              <div style={{fontSize:32,fontWeight:900,color:"#778EE3",lineHeight:1}}>{rws??"-"}</div>
-              <div style={{fontSize:10,color:"#6B7280"}}>{t.rows}</div>
-            </div>
+        <div style={secLabel}>{t.gaugeTargetSize}</div>
+        <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:10,marginBottom:22}}>
+          <div>
+            <div style={fieldLabel}>{unit==="in"?t.gaugeWidthIn:t.gaugeWidthCm}</div>
+            <input type="number" min="0" value={w} onChange={e=>setW(e.target.value)} placeholder={unit==="in"?"e.g. 12":"e.g. 30"} style={inp}/>
           </div>
-        )}
+          <div>
+            <div style={fieldLabel}>{unit==="in"?t.gaugeHeightIn:t.gaugeHeightCm}</div>
+            <input type="number" min="0" value={h} onChange={e=>setH(e.target.value)} placeholder={unit==="in"?"e.g. 16":"e.g. 40"} style={inp}/>
+          </div>
+        </div>
+        <div style={{background:"#F7F8FF",borderRadius:16,padding:"16px 20px",display:"grid",gridTemplateColumns:"1fr 1px 1fr",alignItems:"center"}}>
+          <div style={{textAlign:"center"}}>
+            <div style={{fontSize:36,fontWeight:800,lineHeight:1,color:sts!==null?"#778EE3":"#D1D5DB"}}>{sts??"-"}</div>
+            <div style={{fontSize:11,color:"#9CA3AF",marginTop:4}}>{t.stitches}</div>
+          </div>
+          <div style={{background:"#EEF0FD",height:36,margin:"0 auto",width:1}}/>
+          <div style={{textAlign:"center"}}>
+            <div style={{fontSize:36,fontWeight:800,lineHeight:1,color:rws!==null?"#778EE3":"#D1D5DB"}}>{rws??"-"}</div>
+            <div style={{fontSize:11,color:"#9CA3AF",marginTop:4}}>{t.rows}</div>
+          </div>
+        </div>
       </div>
     </div>
   );
@@ -7615,6 +7971,7 @@ function GaugeCalculator({onClose}){
 
 /* ─── Palette Generator Modal ───────────────────────────────────────────────── */
 function PaletteGeneratorModal({onClose}){
+  useBodyScrollLock();
   const{t}=useLang();
   const[mode,setMode]=useState("soft");
   const[palette,setPalette]=useState(()=>generatePalette("soft",[false,false,false,false],[]));
@@ -7704,8 +8061,8 @@ function CreatePage({yarnLib,patterns,setPatterns,setPage}){
         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" style={{position:"absolute",top:18,left:60,animation:"starSpin 17s linear infinite",pointerEvents:"none"}}><path d={SPARKLE_SHAPES[2]} stroke="#E3C277" strokeWidth="2.5" strokeLinecap="round"/></svg>
         <svg width="11" height="11" viewBox="0 0 24 24" fill="none" style={{position:"absolute",top:60,left:30,animation:"starSpinR 12s linear infinite",pointerEvents:"none"}}><path d={SPARKLE_SHAPES[2]} stroke="#778EE3" strokeWidth="2.5" strokeLinecap="round"/></svg>
         <div style={{position:"relative",padding:"40px 16px 52px",maxWidth:360,margin:"0 auto",width:"100%"}}>
-          <div style={{fontSize:12,fontWeight:700,color:"#778EE3",letterSpacing:"0.08em",textTransform:"uppercase",marginBottom:6}}>CREATE</div>
-          <div style={{fontSize:22,fontWeight:900,color:"#1a1a2e",lineHeight:1.25}}>what do you feel<br/>like making today?</div>
+          <div style={{fontSize:12,fontWeight:700,color:"#778EE3",letterSpacing:"0.08em",textTransform:"uppercase",marginBottom:6}}>{t.createPageLabel}</div>
+          <div style={{fontSize:22,fontWeight:900,color:"#1a1a2e",lineHeight:1.25,whiteSpace:"pre-line"}}>{t.createPageSubtitle}</div>
         </div>
       </div>
 
@@ -7720,7 +8077,7 @@ function CreatePage({yarnLib,patterns,setPatterns,setPage}){
           </div>
           <div style={{flex:1}}>
             <div style={{fontSize:17,fontWeight:900,color:"white",lineHeight:1.2}}>{t.createPattern}</div>
-            <div style={{fontSize:12,color:"rgba(255,255,255,.75)",marginTop:3}}>Design rows, rounds & stitches</div>
+            <div style={{fontSize:12,color:"rgba(255,255,255,.75)",marginTop:3}}>{t.createPatternDesc}</div>
           </div>
           <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" style={{flexShrink:0,opacity:0.7}}><path fill="white" d="M9.97 7.47a.75.75 0 0 0 0 1.06L13.44 12l-3.47 3.47a.75.75 0 1 0 1.06 1.06l4-4a.75.75 0 0 0 0-1.06l-4-4a.75.75 0 0 0-1.06 0"/></svg>
         </button>
@@ -7732,7 +8089,7 @@ function CreatePage({yarnLib,patterns,setPatterns,setPage}){
           </div>
           <div style={{flex:1}}>
             <div style={{fontSize:15,fontWeight:800,color:"#111"}}>{t.importPattern}</div>
-            <div style={{fontSize:11,color:"#6B7280",marginTop:2}}>Paste text, upload image or PDF</div>
+            <div style={{fontSize:11,color:"#6B7280",marginTop:2}}>{t.importPatternDesc}</div>
           </div>
           <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" style={{flexShrink:0,color:"#BBC7F1"}}><path fill="currentColor" d="M9.97 7.47a.75.75 0 0 0 0 1.06L13.44 12l-3.47 3.47a.75.75 0 1 0 1.06 1.06l4-4a.75.75 0 0 0 0-1.06l-4-4a.75.75 0 0 0-1.06 0"/></svg>
         </button>
@@ -7817,8 +8174,8 @@ function BottomNav({page,setPage,t,onAdd}){
 
       {/* Center FAB — absolutely positioned to float above bar */}
       <div style={{flex:1,position:"relative",alignSelf:"stretch"}}>
-        <button type="button" onClick={onAdd} style={{width:84,height:84,borderRadius:"50%",background:"none",border:"none",cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center",position:"absolute",bottom:12,left:"50%",transform:"translateX(-50%)",padding:0}}>
-          <img src="add.png" width="84" height="84" style={{objectFit:"contain"}}/>
+        <button type="button" onClick={onAdd} style={{width:76,height:76,borderRadius:"50%",background:"none",border:"none",cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center",position:"absolute",bottom:12,left:"50%",transform:"translateX(-50%)",padding:0}}>
+          <img src="add.png" width="76" height="76" style={{objectFit:"contain"}}/>
         </button>
       </div>
 
@@ -7828,27 +8185,10 @@ function BottomNav({page,setPage,t,onAdd}){
 }
 
 /* ─── Default Data ──────────────────────────────────────────────────────────── */
-const DEFAULTS=[
-  {id:"d1",title:"Autumn Harvest Shawl",yarns:[{id:"y1",libId:"lib1",brand:"Malabrigo",name:"Sock",colorway:"Aguas",color:"#7C9A8E",fibre:"Merino Wool",balls:2}],hookSize:"3.5mm",weight:"Fingering",status:"In Progress",priority:"High",dueDate:"2026-04-15",rowsCompleted:128,totalRows:200,progress:64,notes:"Remember to block after finishing. Increase tension slightly on wing repeats.",tags:["Shawl","Lace","Gift"],checklist:["Finish wing section","Block & pin","Weave in ends"],refs:[{id:"r1",label:"Ravelry Pattern",url:"https://www.ravelry.com/patterns/library/hitchhiker"},{id:"r2",label:"Tutorial Video",url:"https://www.youtube.com/"}],pattern:null},
-  {id:"d2",title:"Cozy Baby Blanket",yarns:[{id:"y2",libId:"lib2",brand:"Lion Brand",name:"Pound of Love",colorway:"Pastel Yellow",color:"#F5C842",fibre:"Acrylic",balls:3},{id:"y3",libId:null,brand:"Paintbox",name:"Cotton DK",colorway:"Soft Lilac",color:"#C4A0D4",fibre:"Cotton",balls:1}],hookSize:"5.0mm",weight:"Worsted",status:"In Progress",priority:"Medium",dueDate:"2026-03-20",rowsCompleted:45,totalRows:150,progress:30,notes:"Baby shower is on the 20th.",tags:["Blanket","Baby","C2C"],checklist:["Buy extra skein","Finish border"],refs:[{id:"r3",label:"C2C Tutorial",url:"https://www.youtube.com/"}],pattern:null},
-  {id:"d3",title:"Chunky Cable Sweater",yarns:[{id:"y4",libId:"lib3",brand:"Drops",name:"Andes",colorway:"Off White",color:"#A78BB5",fibre:"Wool",balls:6}],hookSize:"6.0mm",weight:"Bulky",status:"Completed",priority:"Low",dueDate:"2026-02-01",rowsCompleted:220,totalRows:220,progress:100,notes:"Blocked and gifted.",tags:["Sweater","Cable","Winter"],checklist:["Block","Gift wrap"],refs:[],pattern:null},
-  {id:"d4",title:"Market Tote Bag",yarns:[{id:"y5",libId:null,brand:"We Are Knitters",name:"Cotton",colorway:"Natural",color:"#C4956A",fibre:"Cotton",balls:1}],hookSize:"4.0mm",weight:"DK",status:"Not Started",priority:"Low",dueDate:"2026-06-01",rowsCompleted:0,totalRows:80,progress:0,notes:"Pick up cotton yarn next time.",tags:["Bag","Summer","Cotton"],checklist:["Buy yarn","Print pattern"],refs:[{id:"r4",label:"Blog Post",url:"https://www.paintboxdesigns.com/"}],pattern:null},
-];
-const DEFAULT_YARNS=[
-  {id:"lib1",brand:"Malabrigo",name:"Sock",colorway:"Aguas",color:"#7C9A8E",fibre:"Merino Wool",weight:"Fingering",ballsOwned:5},
-  {id:"lib2",brand:"Lion Brand",name:"Pound of Love",colorway:"Pastel Yellow",color:"#F5C842",fibre:"Acrylic",weight:"Worsted",ballsOwned:3},
-  {id:"lib3",brand:"Drops",name:"Andes",colorway:"Off White",color:"#A78BB5",fibre:"Wool",weight:"Bulky",ballsOwned:8},
-];
-const DEFAULT_TOOLS=[
-  {id:"t1",type:"Crochet Hook",size:"5.0mm",material:"Aluminum",brand:"Clover",qty:1,condition:"Good",notes:""},
-  {id:"t2",type:"Crochet Hook",size:"3.5mm",material:"Bamboo",brand:"Tulip",qty:2,condition:"Good",notes:""},
-  {id:"t3",type:"Knitting Needle",size:"US 8 / 5mm",material:"Wood",brand:"ChiaoGoo",qty:1,condition:"New",notes:"Birthday gift"},
-  {id:"t4",type:"Circular Needle",size:"US 6 / 4mm",material:"Aluminum",brand:"Addi",qty:1,condition:"Fair",notes:"80cm cable"},
-];
-const DEFAULT_PATTERNS=[
-  {id:"pt1",name:"Hitchhiker",category:"Shawl",craft:"Crochet",difficulty:"Intermediate",source:"https://www.ravelry.com/patterns/library/hitchhiker",notes:"Classic asymmetric shawl. Great for handspun.",tags:["Lace","Gift","Shawl"]},
-  {id:"pt2",name:"Simple Beanie",category:"Hat",craft:"Knitting",difficulty:"Beginner",source:"",notes:"My go-to hat pattern for quick gifts.",tags:["Hat","Quick"]},
-];
+const DEFAULTS=[];
+const DEFAULT_YARNS=[];
+const DEFAULT_TOOLS=[];
+const DEFAULT_PATTERNS=[];
 
 const AVATAR_PARTS={
   hair:   [null,"hair_1","hair_2","hair_3","hair_4","hair_5","hair_6","hair_7","hair_8"],
@@ -8823,23 +9163,42 @@ function useCpmCanvas(svgRef){
 
   useEffect(()=>{
     const el=svgRef.current;if(!el)return;
-    let pinch=null,pinchRatio=1;
-    const onTS=e=>{if(e.touches.length===2){e.preventDefault();pinch=Math.hypot(e.touches[0].clientX-e.touches[1].clientX,e.touches[0].clientY-e.touches[1].clientY);pinchRatio=1;}};
-    const onTM=e=>{
-      if(e.touches.length===2&&pinch!==null){
+    let pState=null,touchPan=null;
+    const onTS=e=>{
+      if(e.touches.length>=2){
+        e.preventDefault();touchPan=null;
+        const t0=e.touches[0],t1=e.touches[1];
+        const dist=Math.hypot(t0.clientX-t1.clientX,t0.clientY-t1.clientY);
+        const r=el.getBoundingClientRect();
+        const mx=(t0.clientX+t1.clientX)/2-r.left,my=(t0.clientY+t1.clientY)/2-r.top;
+        pState={dist,mx,my};
+      } else if(e.touches.length===1&&!pState){
         e.preventDefault();
-        const d=Math.hypot(e.touches[0].clientX-e.touches[1].clientX,e.touches[0].clientY-e.touches[1].clientY);
-        pinchRatio*=d/pinch;pinch=d;
-        el.style.transform=`scale(${Math.max(0.3,Math.min(4,pinchRatio))})`;
-        el.style.transformOrigin='center center';
+        const t=e.touches[0];
+        const r=el.getBoundingClientRect();const s=Math.min(r.width,r.height)/CPM_SVG_W;const ratio=1/s;
+        touchPan={sx:t.clientX*ratio,sy:t.clientY*ratio};
       }
     };
-    const onTE=e=>{
-      if(e.touches.length<2){
-        if(pinch!==null){setScale(s=>Math.max(0.3,Math.min(4,s*pinchRatio)));el.style.transform='';}
-        pinch=null;pinchRatio=1;
+    const onTM=e=>{
+      if(e.touches.length===2&&pState){
+        e.preventDefault();
+        const t0=e.touches[0],t1=e.touches[1];
+        const d=Math.hypot(t0.clientX-t1.clientX,t0.clientY-t1.clientY);
+        const ratio=d/pState.dist;pState.dist=d;
+        const r=el.getBoundingClientRect();
+        setScale(z=>{const nz=Math.max(0.3,Math.min(4,z*ratio));
+          setPan(p=>({x:p.x+(pState.mx-r.width/2)*(1/nz-1/z)*z,y:p.y+(pState.my-r.height/2)*(1/nz-1/z)*z}));
+          return nz;});
+      } else if(e.touches.length===1&&touchPan){
+        e.preventDefault();
+        const t=e.touches[0];
+        const r=el.getBoundingClientRect();const s=Math.min(r.width,r.height)/CPM_SVG_W;const ratio=1/s;
+        const nx=t.clientX*ratio,ny=t.clientY*ratio;
+        setPan(p=>({x:p.x+(nx-touchPan.sx),y:p.y+(ny-touchPan.sy)}));
+        touchPan={sx:nx,sy:ny};
       }
     };
+    const onTE=e=>{if(e.touches.length<2)pState=null;if(e.touches.length===0)touchPan=null;};
     el.addEventListener("touchstart",onTS,{passive:false});
     el.addEventListener("touchmove",onTM,{passive:false});
     el.addEventListener("touchend",onTE);
@@ -9837,8 +10196,12 @@ function CPM_Preview({pattern,onBack,themeColor="#111111",notes}){
 }
 
 // ── Standalone Rounds Reader (used by CPM_ReadModal) ─────────────────────────
-function CPM_RoundsReader({pattern,themeColor,onBack,notes}){
-  const[activeIdx,setActiveIdx]=useState(0);
+function CPM_RoundsReader({pattern,themeColor,onBack,notes,onSaveProgress}){
+  const[activeIdx,setActiveIdx]=useState(()=>pattern.progressMarker!=null&&pattern.progressMarker>=0&&pattern.progressMarker<(pattern.rounds?.length||0)?pattern.progressMarker:0);
+  const[savedMarker,setSavedMarker]=useState(pattern.progressMarker??null);
+  const[pinToast,setPinToast]=useState(null);
+  const pinToastTimer=useRef(null);
+  const showPinToast=msg=>{clearTimeout(pinToastTimer.current);setPinToast(msg);pinToastTimer.current=setTimeout(()=>setPinToast(null),2000);};
   const svgRef=useRef(null);
   const{readHighlightColor="#BBC7F1",canvasBg="#FDFAF6"}=useSettings();
   const{scale,setScale,dragging,onMD,tfm,resetView}=useCpmCanvas(svgRef);
@@ -9877,6 +10240,14 @@ function CPM_RoundsReader({pattern,themeColor,onBack,notes}){
         <div style={{fontSize:11,fontWeight:700,color:"#778EE3",letterSpacing:"0.07em",flex:1}}>READ CHART MODE</div>
         {onBack&&<button onClick={onBack} style={{padding:"6px 14px",borderRadius:11,border:"none",background:"#778EE3",color:"white",fontSize:12,fontWeight:600,cursor:"pointer"}}>← Back</button>}
       </div>
+      {pinToast&&(
+        <div style={{position:"fixed",bottom:32,left:"50%",transform:"translateX(-50%)",zIndex:999999,
+          background:"#059669",color:"white",borderRadius:12,padding:"8px 18px",fontSize:13,fontWeight:700,
+          boxShadow:"0 4px 16px rgba(0,0,0,0.18)",pointerEvents:"none",whiteSpace:"nowrap",
+          animation:"sr-pop .2s ease"}}>
+          ✓ {pinToast}
+        </div>
+      )}
       <div style={{flex:1,position:"relative",overflow:"hidden"}}>
         <svg ref={svgRef} viewBox={`0 0 ${CPM_SVG_W} ${CPM_SVG_W}`} overflow="visible"
           style={{width:"100%",height:"100%",background:canvasBg,cursor:dragging?"grabbing":"grab",touchAction:"none",display:"block"}}
@@ -9952,20 +10323,30 @@ function CPM_RoundsReader({pattern,themeColor,onBack,notes}){
           <div style={{display:"flex",gap:8,flexShrink:0}}>
             <NavBtn onClick={()=>setActiveIdx(i=>Math.max(0,i-1))} disabled={activeIdx===0} label="←"/>
             <NavBtn onClick={()=>setActiveIdx(i=>Math.min(rounds.length-1,i+1))} disabled={activeIdx===rounds.length-1} label="→"/>
+            {onSaveProgress&&(
+              <button type="button" onClick={()=>{onSaveProgress(activeIdx);setSavedMarker(activeIdx);showPinToast(`R${active.roundIndex} pinned`);}} title="Save progress here"
+                style={{width:36,height:36,borderRadius:10,border:savedMarker===activeIdx?"1.5px solid rgba(5,150,105,0.6)":"1.5px solid rgba(5,150,105,0.35)",background:savedMarker===activeIdx?"rgba(5,150,105,0.15)":"rgba(5,150,105,0.08)",cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center",color:"#059669",flexShrink:0}}>
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="12" y1="17" x2="12" y2="22"/><path d="M5 17h14v-1.76a2 2 0 0 0-1.11-1.79l-1.78-.9A2 2 0 0 1 15 10.76V6h1a2 2 0 0 0 0-4H8a2 2 0 0 0 0 4h1v4.76a2 2 0 0 1-1.11 1.79l-1.78.9A2 2 0 0 0 5 15.24Z"/></svg>
+              </button>
+            )}
           </div>
         </div>
         <div style={{height:3,background:"#EEF0FD",borderRadius:99,overflow:"hidden",marginBottom:8}}>
           <div style={{height:"100%",width:`${((activeIdx+1)/rounds.length)*100}%`,background:"#778EE3",borderRadius:99,transition:"width 0.35s ease"}}/>
         </div>
         <div style={{display:"flex",gap:5,flexWrap:"wrap"}}>
-          {rounds.map((r,i)=>(
-            <button key={i} onClick={()=>setActiveIdx(i)} style={{
-              padding:"4px 10px",borderRadius:20,border:"none",cursor:"pointer",
-              background:i===activeIdx?"#778EE3":"#EEF0FD",color:i===activeIdx?"white":"#778EE3",
-              fontSize:11,fontWeight:i===activeIdx?700:500,transition:"all 0.18s ease"}}>
-              R{r.roundIndex}
-            </button>
-          ))}
+          {rounds.map((r,i)=>{
+            const isProgress=!!onSaveProgress&&i===savedMarker;
+            return(
+              <button key={i} onClick={()=>setActiveIdx(i)} style={{
+                padding:"4px 10px",borderRadius:20,cursor:"pointer",
+                border:isProgress?"1.5px solid #059669":"none",
+                background:i===activeIdx?"#778EE3":"#EEF0FD",color:i===activeIdx?"white":"#778EE3",
+                fontSize:11,fontWeight:i===activeIdx?700:500,transition:"all 0.18s ease"}}>
+                R{r.roundIndex}{isProgress?<svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{marginLeft:2,verticalAlign:"middle"}}><line x1="12" y1="17" x2="12" y2="22"/><path d="M5 17h14v-1.76a2 2 0 0 0-1.11-1.79l-1.78-.9A2 2 0 0 1 15 10.76V6h1a2 2 0 0 0 0-4H8a2 2 0 0 0 0 4h1v4.76a2 2 0 0 1-1.11 1.79l-1.78.9A2 2 0 0 0 5 15.24Z"/></svg>:""}
+              </button>
+            );
+          })}
         </div>
         <div style={{marginTop:8,fontSize:10,color:"#3850A6",textAlign:"center"}}>Use ← → arrow keys to navigate</div>
         {(activeSymTypes.length>0||notes)&&(
@@ -10128,7 +10509,7 @@ function CircularPatternMaker({initialPattern=null,onSave=null,onClose=null,yarn
 }
 
 /* ─── Projects View (active + archive) ─────────────────────────────────────── */
-function ProjectsView({projects, setProjects, setEditingProject, setPickPatternFor, t, rewards=REWARD_DEFAULTS, setRewards, onJustCompleted}) {
+function ProjectsView({projects, patterns=[], setProjects, setEditingProject, setPickPatternFor, t, rewards=REWARD_DEFAULTS, setRewards, onJustCompleted}) {
   const [showArchive, setShowArchive] = useState(false);
   const [decorateMode, setDecorateMode] = useState(false);
   const active = projects.filter(p => !p.archived);
@@ -10148,16 +10529,36 @@ function ProjectsView({projects, setProjects, setEditingProject, setPickPatternF
   const cardProps = (p, isArchived) => ({
     key: p.id,
     project: p,
+    patterns,
     isArchived,
     onDelete: () => setProjects(prev => prev.filter(x => x.id !== p.id)),
     onEdit: () => setEditingProject(p),
     onPickPattern: isArchived ? undefined : () => setPickPatternFor(p.id),
+    onAddPart: isArchived ? undefined : part => setProjects(prev => prev.map(x => x.id===p.id?{...x,parts:[...(x.parts||[]),part]}:x)),
+    onRenamePart: isArchived ? undefined : (partId, name) => setProjects(prev => prev.map(x => x.id!==p.id?x:{...x,parts:(x.parts||[]).map(pt=>pt.id===partId?{...pt,name}:pt)})),
+    onSavePartProgress: isArchived ? undefined : (partId, markerIdx) => setProjects(prev => prev.map(x => x.id!==p.id?x:{...x,parts:(x.parts||[]).map(pt=>pt.id===partId?{...pt,progressMarker:markerIdx}:pt)})),
+    onRemovePart: isArchived ? undefined : partId => setProjects(prev => prev.map(x => {
+      if(x.id!==p.id) return x;
+      const parts=(x.parts||[]).filter(pt=>pt.id!==partId);
+      const td=parts.reduce((s,pt)=>s+(pt.rowsCompleted||0),0);
+      const ta=parts.reduce((s,pt)=>s+(pt.totalRows||0),0);
+      return{...x,parts,rowsCompleted:td,totalRows:ta,progress:ta>0?Math.min(100,Math.round(td/ta*100)):0};
+    })),
     onDuplicate: () => setProjects(prev => [{...p, id:uid(), title:p.title+" (copy)", archived:false}, ...prev]),
     onMarkComplete: () => {
       setProjects(prev => prev.map(x => x.id===p.id ? {...x, status:"Completed", progress:100} : x));
       if(!p.finishedPhoto && onJustCompleted) onJustCompleted(p.id);
     },
-    onUpdateRows: rows => setProjects(prev => prev.map(x => x.id===p.id ? {...x, rowsCompleted:rows, progress:x.totalRows?Math.round(rows/x.totalRows*100):0} : x)),
+    onUpdateRows: (rows, partId) => setProjects(prev => prev.map(x => {
+      if(x.id!==p.id) return x;
+      if(partId){
+        const parts=(x.parts||[]).map(pt=>pt.id===partId?{...pt,rowsCompleted:rows,progress:pt.totalRows>0?Math.min(100,Math.round(rows/pt.totalRows*100)):0}:pt);
+        const td=parts.reduce((s,pt)=>s+(pt.rowsCompleted||0),0);
+        const ta=parts.reduce((s,pt)=>s+(pt.totalRows||0),0);
+        return{...x,parts,rowsCompleted:td,totalRows:ta,progress:ta>0?Math.min(100,Math.round(td/ta*100)):0};
+      }
+      return{...x,rowsCompleted:rows,progress:x.totalRows?Math.round(rows/x.totalRows*100):0};
+    })),
     onUpdatePattern: pat => setProjects(prev => prev.map(x => x.id===p.id ? {...x, pattern:pat} : x)),
     onFinishedPhoto: ({original, cutout}) => {
       setProjects(prev => prev.map(x => x.id===p.id ? {...x, finishedPhoto:original, finishedPhotoCutout:cutout||null, completedAt:x.completedAt||new Date().toISOString()} : x));
@@ -10317,6 +10718,7 @@ function LocationInput({value,onChange,locationData,onLocationData,inputStyle}){
 }
 
 function CreatePartyModal({onClose,onCreated,settings}){
+  useBodyScrollLock();
   const{t}=useLang();
   const[form,setForm]=useState({title:"",description:"",date:"",time:"",location:"",place_name:"",craft_type:"both",max_attendees:"",is_public:false});
   const[locationData,setLocationData]=useState(null);
@@ -10397,7 +10799,7 @@ function CreatePartyModal({onClose,onCreated,settings}){
               <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:12,marginBottom:12}}>
                 <div>
                   <label style={{fontSize:12,fontWeight:600,color:"#6B7280",display:"block",marginBottom:4}}>{t.partyDate} <span style={{color:"#EF4444"}}>*</span></label>
-                  <input style={iS} type="date" value={form.date} onChange={e=>sf("date",e.target.value)}/>
+                  <input style={iS} type="date" value={form.date} min={new Date().toISOString().split("T")[0]} onChange={e=>sf("date",e.target.value)}/>
                 </div>
                 <div>
                   <label style={{fontSize:12,fontWeight:600,color:"#6B7280",display:"block",marginBottom:4}}>{t.partyTime} <span style={{color:"#EF4444"}}>*</span></label>
@@ -10446,6 +10848,7 @@ function CreatePartyModal({onClose,onCreated,settings}){
 }
 
 function JoinPartyModal({onClose,onJoined,settings,initialParty=null}){
+  useBodyScrollLock();
   const{t}=useLang();
   const[step,setStep]=useState(initialParty?"confirm":"code"); // "code" | "confirm" | "done"
   const[code,setCode]=useState("");
@@ -10565,6 +10968,7 @@ function JoinPartyModal({onClose,onJoined,settings,initialParty=null}){
 }
 
 function ManagePartyModal({partyId,onClose,onDeleted,settings}){
+  useBodyScrollLock();
   const{t}=useLang();
   const[tab,setTab]=useState("attendees"); // "attendees" | "edit" | "announce"
   const[party,setParty]=useState(null);
@@ -10752,7 +11156,7 @@ function ManagePartyModal({partyId,onClose,onDeleted,settings}){
                   <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:12,marginBottom:12}}>
                     <div>
                       <label style={{fontSize:12,fontWeight:600,color:"#6B7280",display:"block",marginBottom:4}}>{t.partyDate}</label>
-                      <input style={iS} type="date" value={editForm.date} onChange={e=>sf("date",e.target.value)}/>
+                      <input style={iS} type="date" value={editForm.date} min={new Date().toISOString().split("T")[0]} onChange={e=>sf("date",e.target.value)}/>
                     </div>
                     <div>
                       <label style={{fontSize:12,fontWeight:600,color:"#6B7280",display:"block",marginBottom:4}}>{t.partyTime}</label>
@@ -10837,8 +11241,8 @@ function ManagePartyModal({partyId,onClose,onDeleted,settings}){
               {manageAttendeeCard.attendee_country&&<div style={{fontSize:12,color:"#6B7280",marginTop:3}}>{manageAttendeeCard.attendee_country}</div>}
               {manageAttendeeCard.attendee_bio
                 ?<div style={{fontSize:13,color:"#374151",marginTop:12,lineHeight:1.65,padding:"0 4px"}}>{manageAttendeeCard.attendee_bio}</div>
-                :<div style={{fontSize:12,color:"#D1D5DB",marginTop:10,fontStyle:"italic"}}>No bio yet</div>}
-              <button onClick={()=>setManageAttendeeCard(null)} style={{marginTop:18,padding:"9px 28px",borderRadius:12,background:"#F3F4F6",border:"none",cursor:"pointer",fontWeight:700,fontSize:13,color:"#374151"}}>Close</button>
+                :<div style={{fontSize:12,color:"#D1D5DB",marginTop:10,fontStyle:"italic"}}>{t.partyNoBio}</div>}
+              <button onClick={()=>setManageAttendeeCard(null)} style={{marginTop:18,padding:"9px 28px",borderRadius:12,background:"#F3F4F6",border:"none",cursor:"pointer",fontWeight:700,fontSize:13,color:"#374151"}}>{t.partyClose}</button>
             </div>
           </div>
         )}
@@ -10885,10 +11289,10 @@ function PartyCard({party,isOwn,isJoined,attendeeCount,onManage,onJoinDirect,onD
           <div style={{width:40,height:40,borderRadius:12,background:accent+"18",display:"flex",alignItems:"center",justifyContent:"center",fontSize:20,flexShrink:0}}>{icon}</div>
           <div style={{flex:1,minWidth:0}}>
             <div style={{fontSize:14,fontWeight:700,color:"#111",overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{party.title}</div>
-            <div style={{fontSize:11,color:"#6B7280"}}>{party.host_name}{party.host_country?" · "+party.host_country:""}</div>
+            {party.host_name&&<div style={{fontSize:11,color:"#6B7280",marginTop:1,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{party.host_name}{party.host_country?" · "+party.host_country:""}</div>}
           </div>
           <div style={{display:"flex",flexDirection:"column",alignItems:"flex-end",gap:5,flexShrink:0}}>
-            <span style={{fontSize:10,fontWeight:700,padding:"2px 8px",borderRadius:999,background:statusColor+"18",color:statusColor}}>{statusLabel}</span>
+            {statusLabel!=="Open"&&<span style={{fontSize:10,fontWeight:700,padding:"2px 8px",borderRadius:999,background:statusColor+"18",color:statusColor}}>{statusLabel}</span>}
             {isOwn&&(
               <button onClick={e=>{e.stopPropagation();onManage();}} style={{color:"#3850A6",background:"none",border:"none",cursor:"pointer",padding:2,display:"flex",alignItems:"center",gap:3,fontSize:11,fontWeight:600}}>
                 <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path strokeLinecap="round" strokeLinejoin="round" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg>
@@ -10896,7 +11300,7 @@ function PartyCard({party,isOwn,isJoined,attendeeCount,onManage,onJoinDirect,onD
               </button>
             )}
             {!isOwn&&!isJoined&&onJoinDirect&&!full&&(
-              <button onClick={e=>{e.stopPropagation();onJoinDirect();}} style={{color:"#3850A6",background:"none",border:"none",cursor:"pointer",padding:2,fontSize:11,fontWeight:600}}>Join →</button>
+              <button onClick={e=>{e.stopPropagation();onJoinDirect();}} style={{color:"white",background:accent,border:"none",cursor:"pointer",padding:"5px 14px",borderRadius:999,fontSize:11,fontWeight:700,letterSpacing:"0.02em"}}>Join</button>
             )}
           </div>
         </div>
@@ -10919,8 +11323,11 @@ function PartyCard({party,isOwn,isJoined,attendeeCount,onManage,onJoinDirect,onD
               <span>{dateTime}</span>
             </div>
           )}
+        </div>
+        {/* Attendees row */}
+        <div style={{display:"flex",alignItems:"center",justifyContent:"flex-end",marginTop:10,paddingTop:8,borderTop:"1px solid #F3F4F6"}}>
           <div style={{display:"flex",alignItems:"center",gap:3,fontSize:11,color:full?"#EF4444":"#6B7280",flexShrink:0}}>
-            <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24"><path fill="currentColor" d="M12.75 7a.75.75 0 0 0-1.5 0v5a.75.75 0 0 0 .352.636l3 1.875a.75.75 0 1 0 .796-1.272l-2.648-1.655z"/><path fill="currentColor" fillRule="evenodd" d="M12 3.25a8.75 8.75 0 1 0 0 17.5a8.75 8.75 0 0 0 0-17.5M4.75 12a7.25 7.25 0 1 1 14.5 0a7.25 7.25 0 0 1-14.5 0" clipRule="evenodd"/></svg>
+            <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24"><path fill="currentColor" fillRule="evenodd" d="M8.75 8a3.25 3.25 0 1 1 6.5 0a3.25 3.25 0 0 1-6.5 0M12 3.25a4.75 4.75 0 1 0 0 9.5a4.75 4.75 0 0 0 0-9.5M7.254 14.25c-2.06.002-3.754 1.686-3.754 3.75v.577c0 .535.169 1.092.59 1.512c1.24 1.232 3.32 1.911 7.91 1.911s6.67-.679 7.91-1.91c.42-.42.59-.978.59-1.513V18c0-2.067-1.695-3.75-3.754-3.75z" clipRule="evenodd"/></svg>
             <span>{attendeeCount}{party.max_attendees?` / ${party.max_attendees}`:""}</span>
           </div>
         </div>
@@ -10947,6 +11354,7 @@ function PartyCard({party,isOwn,isJoined,attendeeCount,onManage,onJoinDirect,onD
 
 /* ── Party Detail Modal ── */
 function PartyDetailModal({party,attendeeCount,isJoined,onClose,onJoin,onLeave}){
+  useBodyScrollLock();
   const{t}=useLang();
   const icon=CRAFT_ICONS[party.craft_type]||"🎨";
   const accent=CRAFT_ACCENT[party.craft_type]||"#778EE3";
@@ -10977,9 +11385,6 @@ function PartyDetailModal({party,attendeeCount,isJoined,onClose,onJoin,onLeave})
             <div style={{width:44,height:44,borderRadius:14,background:accent+"18",display:"flex",alignItems:"center",justifyContent:"center",fontSize:22,flexShrink:0}}>{icon}</div>
             <div style={{minWidth:0}}>
               <div style={{fontSize:17,fontWeight:800,color:"#111",overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{party.title}</div>
-              <div onClick={()=>setShowHostCard(true)} style={{fontSize:12,color:"#778EE3",cursor:"pointer",textDecorationLine:"underline",textDecorationStyle:"dotted",display:"inline-block",marginTop:1}}>
-                {party.host_name}{party.host_country?" · "+party.host_country:""}
-              </div>
             </div>
           </div>
           <button onClick={onClose} style={{width:32,height:32,borderRadius:999,background:"#F3F4F6",border:"none",cursor:"pointer",flexShrink:0,marginLeft:10,display:"flex",alignItems:"center",justifyContent:"center"}}>
@@ -10996,8 +11401,8 @@ function PartyDetailModal({party,attendeeCount,isJoined,onClose,onJoin,onLeave})
               <div style={{fontSize:18,fontWeight:800,color:"#111"}}>{party.host_name}</div>
               {party.host_country&&<div style={{fontSize:12,color:"#6B7280",marginTop:3}}>{party.host_country}</div>}
               {party.host_bio&&<div style={{fontSize:13,color:"#374151",marginTop:12,lineHeight:1.65,padding:"0 4px"}}>{party.host_bio}</div>}
-              {!party.host_bio&&<div style={{fontSize:12,color:"#D1D5DB",marginTop:10,fontStyle:"italic"}}>No bio yet</div>}
-              <button onClick={()=>setShowHostCard(false)} style={{marginTop:18,padding:"9px 28px",borderRadius:12,background:"#F3F4F6",border:"none",cursor:"pointer",fontWeight:700,fontSize:13,color:"#374151"}}>Close</button>
+              {!party.host_bio&&<div style={{fontSize:12,color:"#D1D5DB",marginTop:10,fontStyle:"italic"}}>{t.partyNoBio}</div>}
+              <button onClick={()=>setShowHostCard(false)} style={{marginTop:18,padding:"9px 28px",borderRadius:12,background:"#F3F4F6",border:"none",cursor:"pointer",fontWeight:700,fontSize:13,color:"#374151"}}>{t.partyClose}</button>
             </div>
           </div>
         )}
@@ -11008,16 +11413,6 @@ function PartyDetailModal({party,attendeeCount,isJoined,onClose,onJoin,onLeave})
             {dateTime&&<div style={{display:"flex",alignItems:"center",gap:10,fontSize:13,color:"#374151"}}>
               <span style={{fontSize:18,width:24,textAlign:"center",flexShrink:0}}>🕒</span><span>{dateTime}</span>
             </div>}
-            {(party.place_name||party.formatted_address||displayLocation)&&(
-              <div style={{display:"flex",alignItems:"flex-start",gap:10,fontSize:13,color:"#374151"}}>
-                <span style={{fontSize:18,width:24,textAlign:"center",flexShrink:0,marginTop:1}}>📍</span>
-                <div>
-                  {party.place_name&&<div style={{fontWeight:600,color:"#111"}}>{party.place_name}</div>}
-                  {party.formatted_address&&<div style={{fontSize:11,color:"#6B7280",marginTop:2}}>{party.formatted_address}</div>}
-                  {!party.place_name&&!party.formatted_address&&displayLocation&&<div>{displayLocation}</div>}
-                </div>
-              </div>
-            )}
             <div style={{display:"flex",alignItems:"center",gap:10,fontSize:13,color:full?"#EF4444":"#374151"}}>
               <span style={{fontSize:18,width:24,textAlign:"center",flexShrink:0}}>👥</span>
               <span>{attendeeCount}{party.max_attendees?` / ${party.max_attendees} spots`:""}{full?" · Full":""}</span>
@@ -11032,6 +11427,30 @@ function PartyDetailModal({party,attendeeCount,isJoined,onClose,onJoin,onLeave})
             </div>
           )}
           {party.latitude&&party.longitude&&<PartyMap lat={party.latitude} lng={party.longitude} label={party.place_name||party.formatted_address||(party.location&&!party.location.startsWith("http")?party.location:"")}/>}
+          {/* Location — between map and who's coming */}
+          {(party.place_name||party.formatted_address||displayLocation)&&(
+            <div style={{display:"flex",alignItems:"flex-start",gap:10,fontSize:13,color:"#374151",marginTop:12,marginBottom:4}}>
+              <span style={{fontSize:18,width:24,textAlign:"center",flexShrink:0,marginTop:1}}>📍</span>
+              <div>
+                {party.place_name&&<div style={{fontWeight:600,color:"#111"}}>{party.place_name}</div>}
+                {party.formatted_address&&<div style={{fontSize:11,color:"#6B7280",marginTop:2}}>{party.formatted_address}</div>}
+                {!party.place_name&&!party.formatted_address&&displayLocation&&<div>{displayLocation}</div>}
+              </div>
+            </div>
+          )}
+          {/* Host row — just above who's coming, same style as attendee rows */}
+          {party.host_name&&(
+            <div onClick={()=>setShowHostCard(true)} style={{display:"flex",alignItems:"center",gap:10,padding:"10px 12px",background:"#F9FAFB",borderRadius:12,border:"1px solid #F3F4F6",cursor:"pointer",marginTop:8,marginBottom:8}}>
+              <div style={{width:36,height:36,borderRadius:999,overflow:"hidden",flexShrink:0,background:"#E5E7EB",display:"flex",alignItems:"center",justifyContent:"center"}}>
+                <PartyPhoto photo={party.host_photo} size={36} fallback={<div style={{width:"100%",height:"100%",background:`linear-gradient(135deg,${accent},${accent}99)`,display:"flex",alignItems:"center",justifyContent:"center",color:"white",fontWeight:700,fontSize:15}}>{party.host_name?.[0]?.toUpperCase()||"?"}</div>}/>
+              </div>
+              <div style={{flex:1,minWidth:0}}>
+                <div style={{fontSize:13,fontWeight:700,color:"#111"}}>{party.host_name}</div>
+                {party.host_country&&<div style={{fontSize:11,color:"#6B7280"}}>{party.host_country}</div>}
+              </div>
+              <span style={{fontSize:10,fontWeight:700,padding:"2px 7px",borderRadius:999,background:accent+"18",color:accent,flexShrink:0}}>Host</span>
+            </div>
+          )}
           {/* Attendees */}
           {attendees.length>0&&(
             <div style={{marginTop:4,marginBottom:14}}>
@@ -11079,22 +11498,22 @@ function PartyDetailModal({party,attendeeCount,isJoined,onClose,onJoin,onLeave})
               {attendeeCard.attendee_country&&<div style={{fontSize:12,color:"#6B7280",marginTop:3}}>{attendeeCard.attendee_country}</div>}
               {attendeeCard.attendee_bio
                 ?<div style={{fontSize:13,color:"#374151",marginTop:12,lineHeight:1.65,padding:"0 4px"}}>{attendeeCard.attendee_bio}</div>
-                :<div style={{fontSize:12,color:"#D1D5DB",marginTop:10,fontStyle:"italic"}}>No bio yet</div>}
-              <button onClick={()=>setAttendeeCard(null)} style={{marginTop:18,padding:"9px 28px",borderRadius:12,background:"#F3F4F6",border:"none",cursor:"pointer",fontWeight:700,fontSize:13,color:"#374151"}}>Close</button>
+                :<div style={{fontSize:12,color:"#D1D5DB",marginTop:10,fontStyle:"italic"}}>{t.partyNoBio}</div>}
+              <button onClick={()=>setAttendeeCard(null)} style={{marginTop:18,padding:"9px 28px",borderRadius:12,background:"#F3F4F6",border:"none",cursor:"pointer",fontWeight:700,fontSize:13,color:"#374151"}}>{t.partyClose}</button>
             </div>
           </div>
         )}
         {/* Footer */}
         <div style={{padding:"12px 20px 28px",flexShrink:0,borderTop:"1px solid #F3F4F6",display:"flex",flexDirection:"column",gap:8}}>
           {onJoin&&!full&&!isJoined?(
-            <button onClick={onJoin} style={{width:"100%",padding:"14px",borderRadius:14,background:`linear-gradient(135deg,${accent},${accent}bb)`,color:"#fff",fontSize:16,fontWeight:700,border:"none",cursor:"pointer"}}>Join this Party →</button>
+            <button onClick={onJoin} style={{width:"100%",padding:"14px",borderRadius:14,background:`linear-gradient(135deg,${accent},${accent}bb)`,color:"#fff",fontSize:16,fontWeight:700,border:"none",cursor:"pointer"}}>{t.partyJoinBtn} →</button>
           ):onJoin&&full?(
             <div style={{textAlign:"center",padding:"14px",color:"#EF4444",fontWeight:700,fontSize:14}}>{t.partyFull}</div>
           ):(
-            <button onClick={onClose} style={{width:"100%",padding:"14px",borderRadius:14,background:"#F3F4F6",color:"#374151",fontSize:15,fontWeight:700,border:"none",cursor:"pointer"}}>Close</button>
+            <button onClick={onClose} style={{width:"100%",padding:"14px",borderRadius:14,background:"#F3F4F6",color:"#374151",fontSize:15,fontWeight:700,border:"none",cursor:"pointer"}}>{t.partyClose}</button>
           )}
           {isJoined&&onLeave&&(
-            <button onClick={onLeave} style={{width:"100%",padding:"11px",borderRadius:14,background:"#FEF2F2",color:"#EF4444",fontSize:13,fontWeight:700,border:"none",cursor:"pointer"}}>Leave Party</button>
+            <button onClick={onLeave} style={{width:"100%",padding:"11px",borderRadius:14,background:"#FEF2F2",color:"#EF4444",fontSize:13,fontWeight:700,border:"none",cursor:"pointer"}}>{t.partyLeave}</button>
           )}
         </div>
       </div>
@@ -11138,15 +11557,17 @@ function ExplorePartiesPage({myPartyIds,joinedParties,setJoinedParties,settings}
 
   useEffect(()=>{if(sb)fetchData();},[fetchData]);
 
-  const cities=React.useMemo(()=>[...new Set(publicParties.map(p=>p.host_city).filter(Boolean))].sort(),[publicParties]);
-  const filteredParties=cityFilter==="all"?publicParties:publicParties.filter(p=>p.host_city===cityFilter);
+  const todayStr=new Date().toISOString().split("T")[0];
+  const activeParties=publicParties.filter(p=>!p.date||p.date>=todayStr);
+  const cities=React.useMemo(()=>[...new Set(activeParties.map(p=>p.host_city).filter(Boolean))].sort(),[activeParties]);
+  const filteredParties=cityFilter==="all"?activeParties:activeParties.filter(p=>p.host_city===cityFilter);
 
   return(
     <div style={{flex:1,overflowY:"auto",padding:"4px 16px 80px"}}>
       <div style={{maxWidth:360,margin:"0 auto"}}>
         <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:10}}>
-          <div style={{fontSize:13,color:"#6B7280"}}>{loading?"Loading…":`${filteredParties.length} part${filteredParties.length===1?"y":"ies"}${cityFilter!=="all"?" in "+cityFilter:" nearby"}`}</div>
-          <button onClick={()=>setShowJoin(true)} style={{padding:"6px 12px",borderRadius:9,border:"1.5px solid #E5E7EB",background:"white",fontSize:12,fontWeight:600,color:"#374151",cursor:"pointer"}}>Join with code</button>
+          <div style={{fontSize:13,color:"#6B7280"}}>{loading?t.partyLoading:`${filteredParties.length} ${t.partyParties}${cityFilter!=="all"?" · "+cityFilter:" · "+t.partyNearby}`}</div>
+          <button onClick={()=>setShowJoin(true)} style={{padding:"6px 12px",borderRadius:9,border:"1.5px solid #E5E7EB",background:"white",fontSize:12,fontWeight:600,color:"#374151",cursor:"pointer"}}>{t.partyJoinCode}</button>
         </div>
 
         {/* City filter */}
@@ -11154,7 +11575,7 @@ function ExplorePartiesPage({myPartyIds,joinedParties,setJoinedParties,settings}
           <div style={{marginBottom:12}}>
             <select value={cityFilter} onChange={e=>setCityFilter(e.target.value)}
               style={{width:"100%",padding:"9px 12px",borderRadius:10,border:"1.5px solid #E5E7EB",fontSize:13,fontWeight:600,color:cityFilter==="all"?"#6B7280":"#778EE3",background:"white",appearance:"none",backgroundImage:`url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%236B7280' stroke-width='2.5'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' d='M19 9l-7 7-7-7'/%3E%3C/svg%3E")`,backgroundRepeat:"no-repeat",backgroundPosition:"right 12px center",paddingRight:32,cursor:"pointer"}}>
-              <option value="all">🌍 All cities</option>
+              <option value="all">🌍 {t.partyAllCities}</option>
               {cities.map(c=><option key={c} value={c}>🏙️ {c}</option>)}
             </select>
           </div>
@@ -11163,8 +11584,8 @@ function ExplorePartiesPage({myPartyIds,joinedParties,setJoinedParties,settings}
         {!loading&&filteredParties.length===0&&(
           <div style={{textAlign:"center",padding:"50px 20px",color:"#6B7280"}}>
             <div style={{fontSize:36,marginBottom:10}}>🌍</div>
-            <div style={{fontSize:15,fontWeight:600,color:"#4B5563",marginBottom:4}}>{cityFilter!=="all"?`No parties in ${cityFilter}`:"No parties nearby"}</div>
-            <div style={{fontSize:13}}>{settings?.profileCountry?`No public parties in ${settings.profileCountry} yet`:"Set your country in Settings to see local parties"}</div>
+            <div style={{fontSize:15,fontWeight:600,color:"#4B5563",marginBottom:4}}>{cityFilter!=="all"?`${t.partyNoPartiesCity} ${cityFilter}`:t.partyNoNearby}</div>
+            <div style={{fontSize:13}}>{settings?.profileCountry?t.partyNoCountry:t.partySetCountry}</div>
           </div>
         )}
 
@@ -11223,7 +11644,10 @@ function HostPartiesPage({myPartyIds,setMyPartyIds,joinedParties,setJoinedPartie
 
   useEffect(()=>{if(sb)fetchData();},[fetchData]);
 
-  const hasAny=myParties.length>0||joinedPartyData.length>0;
+  const todayStr=new Date().toISOString().split("T")[0];
+  const activeMyParties=myParties.filter(p=>!p.date||p.date>=todayStr);
+  const activeJoinedParties=joinedPartyData.filter(p=>!p.date||p.date>=todayStr);
+  const hasAny=activeMyParties.length>0||activeJoinedParties.length>0;
   const SectionLabel=({children})=>(
     <div style={{fontSize:10,fontWeight:700,color:"#6B7280",textTransform:"uppercase",letterSpacing:"0.07em",marginBottom:8,marginTop:4}}>{children}</div>
   );
@@ -11232,7 +11656,7 @@ function HostPartiesPage({myPartyIds,setMyPartyIds,joinedParties,setJoinedPartie
     <div style={{flex:1,overflowY:"auto",padding:"4px 16px 80px"}}>
       <div style={{maxWidth:360,margin:"0 auto"}}>
         <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:12}}>
-          <div style={{fontSize:13,color:"#6B7280"}}>{loading?"Loading…":hasAny?`${myPartyIds.length+joinedParties.length} part${myPartyIds.length+joinedParties.length===1?"y":"ies"}`:"Your craft gatherings"}</div>
+          <div style={{fontSize:13,color:"#6B7280"}}>{loading?t.partyLoading:hasAny?`${myPartyIds.length+joinedParties.length} ${t.partyParties}`:t.partyGatherings}</div>
           <button onClick={()=>setShowCreate(true)} style={{width:36,height:36,borderRadius:11,background:"linear-gradient(135deg,#778EE3,#6183FF)",border:"none",cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center",boxShadow:"0 4px 14px #778EE344"}}>
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.5"><path strokeLinecap="round" strokeLinejoin="round" d="M12 4v16m8-8H4"/></svg>
           </button>
@@ -11241,28 +11665,28 @@ function HostPartiesPage({myPartyIds,setMyPartyIds,joinedParties,setJoinedPartie
         {!loading&&!hasAny&&(
           <div style={{textAlign:"center",padding:"50px 20px",color:"#6B7280"}}>
             <div style={{marginBottom:10,display:"flex",justifyContent:"center"}}><Ico n="basil:user-group-outline" sz={36}/></div>
-            <div style={{fontSize:15,fontWeight:600,color:"#4B5563",marginBottom:4}}>No parties yet</div>
-            <div style={{fontSize:13,marginBottom:20}}>Host your first craft meetup</div>
-            <button onClick={()=>setShowCreate(true)} style={{padding:"10px 20px",borderRadius:11,background:"linear-gradient(135deg,#778EE3,#6183FF)",border:"none",color:"white",fontSize:13,fontWeight:700,cursor:"pointer"}}>+ Host a Party</button>
+            <div style={{fontSize:15,fontWeight:600,color:"#4B5563",marginBottom:4}}>{t.partyNoParties}</div>
+            <div style={{fontSize:13,marginBottom:20}}>{t.partyFirstMeetup}</div>
+            <button onClick={()=>setShowCreate(true)} style={{padding:"10px 20px",borderRadius:11,background:"linear-gradient(135deg,#778EE3,#6183FF)",border:"none",color:"white",fontSize:13,fontWeight:700,cursor:"pointer"}}>+ {t.partyCreate}</button>
           </div>
         )}
 
-        {!loading&&myParties.length>0&&(
+        {!loading&&activeMyParties.length>0&&(
           <div style={{marginBottom:24}}>
-            <SectionLabel>Hosting</SectionLabel>
+            <SectionLabel>{t.partyHosting}</SectionLabel>
             <div style={{display:"flex",flexDirection:"column",gap:10}}>
-              {myParties.map(p=>(
+              {activeMyParties.map(p=>(
                 <PartyCard key={p.id} party={p} isOwn attendeeCount={attendeeCounts[p.id]||0} onManage={()=>setManageId(p.id)} onDetail={()=>setDetailTarget(p)}/>
               ))}
             </div>
           </div>
         )}
 
-        {!loading&&joinedPartyData.length>0&&(
+        {!loading&&activeJoinedParties.length>0&&(
           <div style={{marginBottom:24}}>
-            <SectionLabel>Joined</SectionLabel>
+            <SectionLabel>{t.partyJoined}</SectionLabel>
             <div style={{display:"flex",flexDirection:"column",gap:10}}>
-              {joinedPartyData.map(p=>(
+              {activeJoinedParties.map(p=>(
                 <PartyCard key={p.id} party={p} isJoined attendeeCount={attendeeCounts[p.id]||0} onDetail={()=>setDetailTarget(p)}/>
               ))}
             </div>
@@ -11279,8 +11703,8 @@ function HostPartiesPage({myPartyIds,setMyPartyIds,joinedParties,setJoinedPartie
           onLeave={joinedParties.some(j=>j.partyId===detailTarget?.id)?async()=>{
             const entry=joinedParties.find(j=>j.partyId===detailTarget.id);
             if(!entry)return;
-            if(!window.confirm("Leave this party?"))return;
-            if(sb&&entry.signupId)await sb.from("party_signups").delete().eq("id",entry.signupId).catch(()=>{});
+            if(!window.confirm(t.partyLeaveConfirm))return;
+            if(sb&&entry.signupId){try{await sb.from("party_signups").delete().eq("id",entry.signupId);}catch{}}
             setJoinedParties(j=>j.filter(j=>j.partyId!==detailTarget.id));
             setDetailTarget(null);
             fetchData();
@@ -11294,12 +11718,13 @@ function HostPartiesPage({myPartyIds,setMyPartyIds,joinedParties,setJoinedPartie
 /* ── PartiesPage — tab shell, mirrors LibraryPage exactly ── */
 function PartiesPage({myPartyIds,setMyPartyIds,joinedParties,setJoinedParties,settings}){
   const[tab,setTab]=useState("explore");
+  const{t}=useLang();
   return(
     <div style={{flex:1,display:"flex",flexDirection:"column",overflow:"hidden"}}>
       <div style={{padding:"40px 16px 12px",maxWidth:360,margin:"0 auto",width:"100%",flexShrink:0}}>
-        <div style={{fontSize:12,fontWeight:700,color:"#778EE3",letterSpacing:"0.08em",textTransform:"uppercase",marginBottom:6}}>Social</div>
+        <div style={{fontSize:12,fontWeight:700,color:"#778EE3",letterSpacing:"0.08em",textTransform:"uppercase",marginBottom:6}}>{t.navParties}</div>
         <div style={{background:"#F3F4F6",borderRadius:14,padding:3,display:"flex",gap:2}}>
-          {[{id:"explore",ico:"basil:map-outline",lbl:"Explore"},{id:"host",ico:"basil:user-group-outline",lbl:"My Parties"}].map(tb=>(
+          {[{id:"explore",ico:"basil:map-outline",lbl:t.partyTabExplore},{id:"host",ico:"basil:user-group-outline",lbl:t.partyMyParties}].map(tb=>(
             <button key={tb.id} onClick={()=>setTab(tb.id)} style={{flex:1,padding:"8px 0",borderRadius:11,border:"none",cursor:"pointer",fontSize:12,fontWeight:700,background:tab===tb.id?"white":"transparent",color:tab===tb.id?"#778EE3":"#6B7280",boxShadow:tab===tb.id?"0 2px 8px rgba(0,0,0,.1)":"none",transition:"all .2s",display:"flex",alignItems:"center",justifyContent:"center",gap:4}}>
               <Ico n={tb.ico} sz={13}/>{tb.lbl}
             </button>
@@ -11318,6 +11743,7 @@ function PartiesPage({myPartyIds,setMyPartyIds,joinedParties,setJoinedParties,se
 
 /* ─── PhotoReminderModal ── shown after marking a project complete ──────────── */
 function PhotoReminderModal({project,onPhoto,onSkip}){
+  useBodyScrollLock();
   const cameraRef=useRef(null);
   const galleryRef=useRef(null);
   const[processing,setProcessing]=useState(false);
@@ -11448,6 +11874,7 @@ function FramedAvatar({src,size=76,frameId,style={}}){
 
 /* ─── RewardModal ── shown after a project is completed ─────────────────────── */
 function RewardModal({celebration,rewards,setRewards,setPendingCelebration,settings}){
+  useBodyScrollLock();
   const{count,milestone}=celebration;
   const rewardDef=milestone?(MILESTONE_MAP[milestone]||{}):{};
   const pickedSticker=useMemo(()=>{
@@ -11611,19 +12038,32 @@ function App(){
         {(page==="projects"||page==="dashboard")&&(
           <div style={{padding:"40px 16px 0",maxWidth:360,margin:"0 auto",width:"100%"}}>
             <div style={{marginBottom:10}}>
-              <div style={{fontSize:12,fontWeight:700,color:"#778EE3",letterSpacing:"0.08em",textTransform:"uppercase"}}>{t.appLabel}</div>
+              <div style={{fontSize:12,fontWeight:700,color:"#778EE3",letterSpacing:"0.08em",textTransform:"uppercase"}}>{page==="dashboard"?"DASHBOARD":t.appLabel}</div>
             </div>
             <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:22}}>
               <div>
-                <img src="mitime.png" alt="mitime" style={{height:52,width:"auto",display:"block"}}/>
-                <div style={{fontSize:13,color:"#6B7280",marginTop:2}}>{projects.filter(p=>!p.archived).length} {t.projects} · {projects.filter(p=>p.status==="In Progress"&&!p.archived).length} {t.inProgress}</div>
+                <img src="Sec_logo_nobg.png" alt="mitime" style={{height:74,width:"auto",display:"block"}}/>
+                <svg version="1.1" xmlns="http://www.w3.org/2000/svg" style={{display:"none"}} xmlnsXlink="http://www.w3.org/1999/xlink" x="0px" y="0px" viewBox="0 0 1536 1024" xmlSpace="preserve">
+<path fill="#000000" opacity="1" d="M142.487,658.976C145.019,661.331 147.362,663.941 150.119,665.994C159.002,672.607 169.093,674.747 180.071,674.069C189.335,673.496 197.173,669.516 203.145,663.151C212.967,652.683 216.505,639.245 216.926,625.214C217.326,611.869 214.736,598.793 211.506,585.869C207.747,570.831 206.063,555.802 210.986,540.611C216.920,522.295 236.679,520.875 246.564,531.954C255.163,541.591 256.433,553.366 256.789,565.128C257.121,576.091 254.970,587.122 255.198,598.096C255.464,610.933 258.673,622.958 268.751,632.329C283.386,645.940 304.652,643.087 315.653,627.524C324.440,615.093 325.869,600.262 324.913,585.457C323.849,568.973 320.333,552.622 322.993,535.977C324.311,527.728 326.463,519.926 331.981,513.349C338.416,505.677 349.213,507.119 354.174,514.315C362.496,526.387 359.972,539.577 359.544,552.479C359.250,561.354 356.384,570.153 356.185,579.020C355.945,589.650 356.655,600.411 358.141,610.948C360.715,629.184 369.519,644.583 384.245,655.440C399.820,666.921 417.587,672.624 437.367,668.994C448.403,666.969 458.142,662.305 466.646,654.930C469.943,652.071 473.327,649.024 477.204,647.186C484.925,643.524 491.955,647.351 498.306,651.178C510.863,658.746 524.587,662.129 538.885,662.826C552.301,663.480 564.869,659.606 575.783,651.620C581.949,647.108 587.970,646.687 594.451,650.237C598.408,652.404 602.138,655.007 606.168,657.016C631.113,669.449 657.368,674.125 685.193,671.130C699.059,669.637 712.010,666.164 724.217,659.421C738.339,651.620 748.573,640.910 751.779,624.595C753.376,616.469 749.102,603.916 741.966,598.936C734.677,593.848 728.285,588.010 725.528,579.035C720.281,561.955 722.115,544.702 724.356,527.538C726.043,514.617 727.222,501.727 723.583,489.119C717.579,468.320 691.496,460.549 675.393,477.034C667.162,485.461 662.813,495.861 660.134,506.876C657.960,515.815 656.924,525.080 656.004,534.262C655.216,542.130 654.791,550.108 655.133,557.998C655.631,569.497 658.650,580.743 657.142,592.515C655.276,607.094 644.088,610.854 633.467,603.896C626.772,599.509 623.185,592.739 621.132,585.413C618.107,574.619 615.801,563.719 617.911,552.237C619.586,543.122 619.732,533.732 621.302,524.592C623.473,511.960 625.411,499.364 622.956,486.617C621.325,478.142 616.922,471.129 609.301,466.821C597.624,460.218 583.830,464.242 575.953,475.925C568.116,487.550 562.695,500.285 559.100,513.706C556.642,522.884 554.776,532.318 553.761,541.758C552.810,550.604 552.811,559.639 553.341,568.535C553.859,577.228 554.400,585.676 552.338,594.360C549.876,604.725 536.234,608.709 527.849,600.459C519.141,591.891 516.147,581.222 515.064,569.773C513.078,548.775 519.025,528.480 521.142,507.842C522.407,495.505 521.407,483.961 513.405,473.814C500.114,456.960 482.253,459.965 470.470,472.484C462.922,480.503 458.623,491.158 454.967,501.732C450.976,513.277 448.140,525.049 448.025,537.327C447.915,549.152 447.078,561.073 448.284,572.774C449.165,581.320 449.115,589.378 445.820,597.133C444.672,599.836 441.990,602.534 439.326,603.813C433.635,606.546 426.615,602.819 422.873,596.466C417.838,587.916 416.349,578.527 416.067,568.931C415.511,550.023 415.466,531.100 414.938,512.190C414.560,498.638 410.762,485.777 405.987,473.197C398.779,454.206 388.560,437.643 370.914,426.205C354.255,415.407 330.971,415.205 314.342,426.031C304.360,432.528 297.545,441.657 290.868,451.168C284.340,460.465 275.895,461.872 267.971,452.349C265.714,449.637 263.910,446.507 262.162,443.419C256.216,432.916 249.853,422.890 240.008,415.338C226.884,405.272 211.943,402.153 196.172,404.186C179.406,406.346 165.372,415.304 153.757,427.021C143.641,437.226 136.138,449.534 130.311,462.958C120.683,485.141 116.197,508.429 115.252,532.241C114.553,549.845 115.524,567.629 117.272,585.181C118.640,598.918 121.546,612.643 125.247,625.963C128.520,637.744 133.276,649.250 142.487,658.976M814.028,658.584C818.160,660.413 822.260,662.317 826.429,664.056C841.468,670.333 857.223,672.720 873.165,669.784C888.708,666.921 902.516,660.228 912.564,647.067C919.493,637.993 923.504,628.595 922.141,616.779C920.241,600.296 905.584,592.104 891.009,593.779C883.992,594.585 876.667,594.889 870.090,590.623C860.038,584.103 857.046,573.964 856.092,563.103C854.492,544.885 859.234,527.606 865.183,510.626C867.457,504.135 872.724,499.713 878.073,500.058C884.406,500.467 890.795,500.918 897.003,502.146C908.434,504.408 918.977,502.715 928.371,495.891C945.503,483.446 945.832,458.460 928.003,445.917C918.383,439.149 907.254,439.214 896.402,438.041C886.288,436.948 884.311,433.051 886.957,425.131C891.597,411.242 895.591,397.353 895.139,382.332C894.566,363.303 876.890,349.745 858.890,355.561C843.198,360.630 834.602,373.109 828.182,386.991C823.211,397.740 819.896,409.254 815.799,420.411C814.116,424.995 809.795,428.051 804.838,427.931C796.923,427.738 789.016,427.229 781.101,427.035C766.301,426.673 752.564,436.228 748.971,451.864C746.228,463.800 750.153,476.087 758.690,482.028C766.412,487.402 775.195,489.191 784.240,489.970C796.105,490.992 799.079,497.901 798.733,507.354C798.486,514.126 796.083,520.922 794.006,527.506C788.540,544.837 781.135,561.703 780.052,580.105C779.418,590.873 778.397,602.063 780.528,612.452C784.567,632.147 795.891,647.632 814.028,658.584M1136.607,485.026C1135.179,483.627 1133.655,482.313 1132.338,480.817C1118.589,465.202 1093.265,465.539 1077.480,477.898C1066.024,486.867 1057.861,498.100 1052.218,511.347C1046.139,525.619 1042.002,540.377 1042.070,556.000C1042.122,568.087 1043.089,580.178 1042.922,592.257C1042.756,604.262 1040.907,616.273 1041.198,628.248C1041.579,643.930 1047.212,656.913 1063.370,663.165C1077.364,668.579 1092.890,661.733 1098.830,649.508C1103.168,640.579 1102.922,631.001 1100.806,621.752C1097.614,607.800 1095.123,593.831 1096.085,579.511C1096.636,571.304 1097.780,563.135 1102.975,556.118C1105.427,552.807 1108.141,549.488 1112.278,550.298C1116.689,551.161 1119.546,554.867 1120.953,559.241C1124.636,570.695 1123.001,582.409 1121.788,593.915C1120.515,606.005 1120.745,617.541 1126.820,628.428C1130.560,635.128 1136.553,638.958 1143.829,638.799C1151.529,638.630 1157.670,634.389 1160.676,626.862C1164.336,617.693 1163.141,608.184 1162.464,598.664C1161.763,588.786 1159.988,578.739 1165.863,569.489C1168.078,565.999 1170.690,564.158 1174.839,564.026C1179.318,563.884 1182.083,565.795 1184.248,569.666C1188.386,577.068 1188.693,584.788 1188.137,593.046C1187.456,603.164 1187.298,613.427 1188.216,623.508C1188.908,631.110 1191.225,638.662 1193.576,645.993C1196.853,656.212 1203.893,664.009 1211.653,671.127C1224.257,682.687 1238.993,688.557 1256.212,686.922C1263.040,686.274 1269.502,683.104 1273.434,677.846C1284.224,663.416 1279.786,648.104 1265.105,638.616C1258.473,634.330 1251.181,630.960 1244.943,626.189C1230.414,615.077 1226.668,598.630 1225.112,581.688C1223.670,565.975 1220.536,550.994 1211.024,538.018C1200.128,523.152 1181.268,517.227 1164.270,527.118C1157.248,531.204 1148.926,529.273 1147.925,518.702C1146.811,506.933 1144.390,495.403 1136.607,485.026M1280.980,629.461C1282.263,630.768 1283.381,632.310 1284.855,633.345C1302.851,645.991 1322.250,653.574 1344.888,652.205C1356.192,651.521 1366.671,649.018 1376.437,643.794C1388.735,637.217 1398.805,628.396 1403.298,614.397C1405.871,606.382 1404.362,599.460 1398.895,593.485C1391.573,585.482 1380.875,583.624 1370.565,589.338C1361.434,594.399 1353.314,601.249 1344.468,606.868C1335.227,612.738 1325.425,613.398 1315.729,607.838C1312.393,605.924 1309.521,602.796 1310.293,598.740C1310.960,595.234 1313.826,593.027 1317.857,592.966C1319.269,592.945 1320.670,592.347 1322.079,592.027C1332.232,589.716 1342.094,586.512 1349.995,579.463C1366.153,565.046 1374.919,547.419 1374.151,525.143C1373.675,511.341 1368.595,499.844 1359.536,490.156C1346.075,475.761 1328.697,471.294 1309.995,475.222C1285.081,480.455 1268.138,496.808 1257.153,519.029C1248.315,536.907 1245.811,555.987 1249.932,575.855C1254.314,596.987 1264.436,614.618 1280.980,629.461M1015.652,498.062C1008.591,485.155 994.395,481.636 982.479,488.050C975.206,491.965 970.791,498.223 966.725,504.805C958.831,517.583 952.934,531.279 948.599,545.697C942.651,565.481 939.388,585.346 942.870,606.104C945.274,620.442 950.553,632.930 961.868,642.304C971.897,650.613 983.562,652.849 996.110,649.975C1003.873,648.197 1010.051,643.951 1015.133,637.552C1021.657,629.336 1023.509,613.162 1015.912,604.654C1009.352,597.306 1007.218,588.734 1007.094,579.591C1006.893,564.686 1011.232,550.494 1015.365,536.345C1019.015,523.851 1021.487,511.386 1015.652,498.062M1041.098,425.506C1037.670,422.378 1034.242,419.250 1030.303,415.656C1037.299,414.155 1040.718,409.407 1043.970,404.561C1045.055,402.944 1045.302,400.976 1045.642,399.031C1046.435,394.490 1041.116,394.546 1041.570,391.131C1042.169,386.632 1039.772,384.554 1035.996,382.037C1029.913,377.983 1027.996,377.090 1022.131,380.940C1021.226,381.534 1020.024,381.777 1018.923,381.952C1015.441,382.506 1011.942,382.951 1007.546,383.564C1006.671,377.988 1006.405,372.480 1004.840,367.369C1003.200,362.013 1004.937,356.000 1000.831,351.086C997.491,347.089 993.527,349.603 989.928,349.236C988.775,349.119 986.618,351.656 986.155,353.322C984.830,358.081 984.140,363.016 983.167,368.052C978.678,365.117 973.991,362.450 969.767,359.185C964.937,355.452 959.958,355.869 955.035,358.085C950.535,360.111 949.942,365.608 953.311,370.756C959.796,380.664 966.356,390.523 972.939,400.483C971.279,400.967 969.854,401.158 968.640,401.770C958.411,406.931 948.112,412.006 939.223,419.386C935.872,422.167 933.133,425.616 934.766,430.262C937.394,437.739 941.549,440.916 947.404,440.187C951.037,439.735 954.602,438.727 958.197,437.969C961.675,437.236 965.173,436.586 968.625,435.745C971.275,435.099 973.867,434.213 977.205,433.219C976.249,441.273 975.461,447.904 974.674,454.534C975.283,454.376 975.891,454.217 976.500,454.058C977.347,455.470 978.175,456.894 979.048,458.290C979.626,459.214 980.070,460.455 980.921,460.927C983.021,462.093 985.251,463.171 987.562,463.760C989.381,464.224 992.084,464.724 993.206,463.787C997.068,460.560 1003.786,462.964 1006.081,457.048C1011.060,457.308 1009.447,453.738 1009.035,450.294C1011.080,451.583 1012.410,452.425 1013.742,453.261C1018.354,456.155 1022.661,460.042 1028.719,458.827C1032.192,458.131 1035.545,456.361 1039.005,456.196C1043.516,455.980 1047.592,456.122 1048.338,450.294C1048.384,449.934 1049.256,449.655 1049.768,449.385C1050.805,448.837 1052.676,448.411 1052.745,447.776C1052.914,446.219 1052.445,444.503 1051.886,442.978C1051.092,440.816 1048.864,438.551 1049.219,436.710C1050.474,430.187 1045.366,428.705 1041.098,425.506M510.894,388.381C491.556,375.772 468.780,386.408 464.647,407.017C460.767,426.369 479.319,446.409 499.513,440.828C505.230,439.248 511.211,436.436 515.523,432.496C521.201,427.306 524.148,419.646 523.768,411.867C523.314,402.578 518.889,394.759 510.894,388.381M577.983,395.533C567.584,408.913 572.200,427.529 583.341,436.044C593.557,443.853 607.873,444.347 617.476,437.555C627.794,430.256 634.388,419.686 629.103,404.445C623.369,387.909 609.870,381.930 595.106,384.292C588.671,385.321 582.099,388.435 577.983,395.533M720.003,396.516C710.978,389.259 700.976,387.818 690.420,392.285C676.870,398.018 671.361,410.475 673.121,424.046C675.118,439.452 688.663,449.317 702.835,448.748C715.082,448.256 725.967,441.895 730.122,426.503C733.218,415.035 729.036,404.057 720.003,396.516z"/>
+<path fill="#768EE2" opacity="1" d="M142.237,658.720C133.276,649.250 128.520,637.744 125.247,625.963C121.546,612.643 118.640,598.918 117.272,585.181C115.524,567.629 114.553,549.845 115.252,532.241C116.197,508.429 120.683,485.141 130.311,462.958C136.138,449.534 143.641,437.226 153.757,427.021C165.372,415.304 179.406,406.346 196.172,404.186C211.943,402.153 226.884,405.272 240.008,415.338C249.853,422.890 256.216,432.916 262.162,443.419C263.910,446.507 265.714,449.637 267.971,452.349C275.895,461.872 284.340,460.465 290.868,451.168C297.545,441.657 304.360,432.528 314.342,426.031C330.971,415.205 354.255,415.407 370.914,426.205C388.560,437.643 398.779,454.206 405.987,473.197C410.762,485.777 414.560,498.638 414.938,512.190C415.466,531.100 415.511,550.023 416.067,568.931C416.349,578.527 417.838,587.916 422.873,596.466C426.615,602.819 433.635,606.546 439.326,603.813C441.990,602.534 444.672,599.836 445.820,597.133C449.115,589.378 449.165,581.320 448.284,572.774C447.078,561.073 447.915,549.152 448.025,537.327C448.140,525.049 450.976,513.277 454.967,501.732C458.623,491.158 462.922,480.503 470.470,472.484C482.253,459.965 500.114,456.960 513.405,473.814C521.407,483.961 522.407,495.505 521.142,507.842C519.025,528.480 513.078,548.775 515.064,569.773C516.147,581.222 519.141,591.891 527.849,600.459C536.234,608.709 549.876,604.725 552.338,594.360C554.400,585.676 553.859,577.228 553.341,568.535C552.811,559.639 552.810,550.604 553.761,541.758C554.776,532.318 556.642,522.884 559.100,513.706C562.695,500.285 568.116,487.550 575.953,475.925C583.830,464.242 597.624,460.218 609.301,466.821C616.922,471.129 621.325,478.142 622.956,486.617C625.411,499.364 623.473,511.960 621.302,524.592C619.732,533.732 619.586,543.122 617.911,552.237C615.801,563.719 618.107,574.619 621.132,585.413C623.185,592.739 626.772,599.509 633.467,603.896C644.088,610.854 655.276,607.094 657.142,592.515C658.650,580.743 655.631,569.497 655.133,557.998C654.791,550.108 655.216,542.130 656.004,534.262C656.924,525.080 657.960,515.815 660.134,506.876C662.813,495.861 667.162,485.461 675.393,477.034C691.496,460.549 717.579,468.320 723.583,489.119C727.222,501.727 726.043,514.617 724.356,527.538C722.115,544.702 720.281,561.955 725.528,579.035C728.285,588.010 734.677,593.848 741.966,598.936C749.102,603.916 753.376,616.469 751.779,624.595C748.573,640.910 738.339,651.620 724.217,659.421C712.010,666.164 699.059,669.637 685.193,671.130C657.368,674.125 631.113,669.449 606.168,657.016C602.138,655.007 598.408,652.404 594.451,650.237C587.970,646.687 581.949,647.108 575.783,651.620C564.869,659.606 552.301,663.480 538.885,662.826C524.587,662.129 510.863,658.746 498.306,651.178C491.955,647.351 484.925,643.524 477.204,647.186C473.327,649.024 469.943,652.071 466.646,654.930C458.142,662.305 448.403,666.969 437.367,668.994C417.587,672.624 399.820,666.921 384.245,655.440C369.519,644.583 360.715,629.184 358.141,610.948C356.655,600.411 355.945,589.650 356.185,579.020C356.384,570.153 359.250,561.354 359.544,552.479C359.972,539.577 362.496,526.387 354.174,514.315C349.213,507.119 338.416,505.677 331.981,513.349C326.463,519.926 324.311,527.728 322.993,535.977C320.333,552.622 323.849,568.973 324.913,585.457C325.869,600.262 324.440,615.093 315.653,627.524C304.652,643.087 283.386,645.940 268.751,632.329C258.673,622.958 255.464,610.933 255.198,598.096C254.970,587.122 257.121,576.091 256.789,565.128C256.433,553.366 255.163,541.591 246.564,531.954C236.679,520.875 216.920,522.295 210.986,540.611C206.063,555.802 207.747,570.831 211.506,585.869C214.736,598.793 217.326,611.869 216.926,625.214C216.505,639.245 212.967,652.683 203.145,663.151C197.173,669.516 189.335,673.496 180.071,674.069C169.093,674.747 159.002,672.607 150.119,665.994C147.362,663.941 145.019,661.331 142.237,658.720z"/>
+<path fill="#778EE3" opacity="1" d="M813.776,658.303C795.891,647.632 784.567,632.147 780.528,612.452C778.397,602.063 779.418,590.873 780.052,580.105C781.135,561.703 788.540,544.837 794.006,527.506C796.083,520.922 798.486,514.126 798.733,507.354C799.079,497.901 796.105,490.992 784.240,489.970C775.195,489.191 766.412,487.402 758.690,482.028C750.153,476.087 746.228,463.800 748.971,451.864C752.564,436.228 766.301,426.673 781.101,427.035C789.016,427.229 796.923,427.738 804.838,427.931C809.795,428.051 814.116,424.995 815.799,420.411C819.896,409.254 823.211,397.740 828.182,386.991C834.602,373.109 843.198,360.630 858.890,355.561C876.890,349.745 894.566,363.303 895.139,382.332C895.591,397.353 891.597,411.242 886.957,425.131C884.311,433.051 886.288,436.948 896.402,438.041C907.254,439.214 918.383,439.149 928.003,445.917C945.832,458.460 945.503,483.446 928.371,495.891C918.977,502.715 908.434,504.408 897.003,502.146C890.795,500.918 884.406,500.467 878.073,500.058C872.724,499.713 867.457,504.135 865.183,510.626C859.234,527.606 854.492,544.885 856.092,563.103C857.046,573.964 860.038,584.103 870.090,590.623C876.667,594.889 883.992,594.585 891.009,593.779C905.584,592.104 920.241,600.296 922.141,616.779C923.504,628.595 919.493,637.993 912.564,647.067C902.516,660.228 888.708,666.921 873.165,669.784C857.223,672.720 841.468,670.333 826.429,664.056C822.260,662.317 818.160,660.413 813.776,658.303z"/>
+<path fill="#778EE3" opacity="1" d="M1136.853,485.295C1144.390,495.403 1146.811,506.933 1147.925,518.702C1148.926,529.273 1157.248,531.204 1164.270,527.118C1181.268,517.227 1200.128,523.152 1211.024,538.018C1220.536,550.994 1223.670,565.975 1225.112,581.688C1226.668,598.630 1230.414,615.077 1244.943,626.189C1251.181,630.960 1258.473,634.330 1265.105,638.616C1279.786,648.104 1284.224,663.416 1273.434,677.846C1269.502,683.104 1263.040,686.274 1256.212,686.922C1238.993,688.557 1224.257,682.687 1211.653,671.127C1203.893,664.009 1196.853,656.212 1193.576,645.993C1191.225,638.662 1188.908,631.110 1188.216,623.508C1187.298,613.427 1187.456,603.164 1188.137,593.046C1188.693,584.788 1188.386,577.068 1184.248,569.666C1182.083,565.795 1179.318,563.884 1174.839,564.026C1170.690,564.158 1168.078,565.999 1165.863,569.489C1159.988,578.739 1161.763,588.786 1162.464,598.664C1163.141,608.184 1164.336,617.693 1160.676,626.862C1157.670,634.389 1151.529,638.630 1143.829,638.799C1136.553,638.958 1130.560,635.128 1126.820,628.428C1120.745,617.541 1120.515,606.005 1121.788,593.915C1123.001,582.409 1124.636,570.695 1120.953,559.241C1119.546,554.867 1116.689,551.161 1112.278,550.298C1108.141,549.488 1105.427,552.807 1102.975,556.118C1097.780,563.135 1096.636,571.304 1096.085,579.511C1095.123,593.831 1097.614,607.800 1100.806,621.752C1102.922,631.001 1103.168,640.579 1098.830,649.508C1092.890,661.733 1077.364,668.579 1063.370,663.165C1047.212,656.913 1041.579,643.930 1041.198,628.248C1040.907,616.273 1042.756,604.262 1042.922,592.257C1043.089,580.178 1042.122,568.087 1042.070,556.000C1042.002,540.377 1046.139,525.619 1052.218,511.347C1057.861,498.100 1066.024,486.867 1077.480,477.898C1093.265,465.539 1118.589,465.202 1132.338,480.817C1133.655,482.313 1135.179,483.627 1136.853,485.295z"/>
+<path fill="#778EE3" opacity="1" d="M1280.719,629.209C1264.436,614.618 1254.314,596.987 1249.932,575.855C1245.811,555.987 1248.315,536.907 1257.153,519.029C1268.138,496.808 1285.081,480.455 1309.995,475.222C1328.697,471.294 1346.075,475.761 1359.536,490.156C1368.595,499.844 1373.675,511.341 1374.151,525.143C1374.919,547.419 1366.153,565.046 1349.995,579.463C1342.094,586.512 1332.232,589.716 1322.079,592.027C1320.670,592.347 1319.269,592.945 1317.857,592.966C1313.826,593.027 1310.960,595.234 1310.293,598.740C1309.521,602.796 1312.393,605.924 1315.729,607.838C1325.425,613.398 1335.227,612.738 1344.468,606.868C1353.314,601.249 1361.434,594.399 1370.565,589.338C1380.875,583.624 1391.573,585.482 1398.895,593.485C1404.362,599.460 1405.871,606.382 1403.298,614.397C1398.805,628.396 1388.735,637.217 1376.437,643.794C1366.671,649.018 1356.192,651.521 1344.888,652.205C1322.250,653.574 1302.851,645.991 1284.855,633.345C1283.381,632.310 1282.263,630.768 1280.719,629.209M1326.582,550.909C1328.946,545.491 1331.639,540.188 1333.580,534.622C1335.493,529.137 1333.076,520.560 1329.645,518.287C1324.948,515.175 1317.483,515.165 1313.055,518.486C1302.008,526.771 1296.009,537.567 1295.989,551.685C1295.973,562.550 1305.795,565.456 1312.467,561.608C1317.336,558.799 1321.549,554.854 1326.582,550.909z"/>
+<path fill="#768CE2" opacity="1" d="M1015.830,498.410C1021.487,511.386 1019.015,523.851 1015.365,536.345C1011.232,550.494 1006.893,564.686 1007.094,579.591C1007.218,588.734 1009.352,597.306 1015.912,604.654C1023.509,613.162 1021.657,629.336 1015.133,637.552C1010.051,643.951 1003.873,648.197 996.110,649.975C983.562,652.849 971.897,650.613 961.868,642.304C950.553,632.930 945.274,620.442 942.870,606.104C939.388,585.346 942.651,565.481 948.599,545.697C952.934,531.279 958.831,517.583 966.725,504.805C970.791,498.223 975.206,491.965 982.479,488.050C994.395,481.636 1008.591,485.155 1015.830,498.410z"/>
+<path fill="#E3C276" opacity="1" d="M1041.421,425.723C1045.366,428.705 1050.474,430.187 1049.219,436.710C1048.864,438.551 1051.092,440.816 1051.886,442.978C1052.445,444.503 1052.914,446.219 1052.745,447.776C1052.676,448.411 1050.805,448.837 1049.768,449.385C1049.256,449.655 1048.384,449.934 1048.338,450.294C1047.592,456.122 1043.516,455.980 1039.005,456.196C1035.545,456.361 1032.192,458.131 1028.719,458.827C1022.661,460.042 1018.354,456.155 1013.742,453.261C1012.410,452.425 1011.080,451.583 1009.035,450.294C1009.447,453.738 1011.060,457.308 1006.081,457.048C1003.786,462.964 997.068,460.560 993.206,463.787C992.084,464.724 989.381,464.224 987.562,463.760C985.251,463.171 983.021,462.093 980.921,460.927C980.070,460.455 979.626,459.214 979.048,458.290C978.175,456.894 977.347,455.470 976.500,454.058C975.891,454.217 975.283,454.376 974.674,454.534C975.461,447.904 976.249,441.273 977.205,433.219C973.867,434.213 971.275,435.099 968.625,435.745C965.173,436.586 961.675,437.236 958.197,437.969C954.602,438.727 951.037,439.735 947.404,440.187C941.549,440.916 937.394,437.739 934.766,430.262C933.133,425.616 935.872,422.167 939.223,419.386C948.112,412.006 958.411,406.931 968.640,401.770C969.854,401.158 971.279,400.967 972.939,400.483C966.356,390.523 959.796,380.664 953.311,370.756C949.942,365.608 950.535,360.111 955.035,358.085C959.958,355.869 964.937,355.452 969.767,359.185C973.991,362.450 978.678,365.117 983.167,368.052C984.140,363.016 984.830,358.081 986.155,353.322C986.618,351.656 988.775,349.119 989.928,349.236C993.527,349.603 997.491,347.089 1000.831,351.086C1004.937,356.000 1003.200,362.013 1004.840,367.369C1006.405,372.480 1006.671,377.988 1007.546,383.564C1011.942,382.951 1015.441,382.506 1018.923,381.952C1020.024,381.777 1021.226,381.534 1022.131,380.940C1027.996,377.090 1029.913,377.983 1035.996,382.037C1039.772,384.554 1042.169,386.632 1041.570,391.131C1041.116,394.546 1046.435,394.490 1045.642,399.031C1045.302,400.976 1045.055,402.944 1043.970,404.561C1040.718,409.407 1037.299,414.155 1030.303,415.656C1034.242,419.250 1037.670,422.378 1041.421,425.723z"/>
+<path fill="#E4C276" opacity="1" d="M511.144,388.654C518.889,394.759 523.314,402.578 523.768,411.867C524.148,419.646 521.201,427.306 515.523,432.496C511.211,436.436 505.230,439.248 499.513,440.828C479.319,446.409 460.767,426.369 464.647,407.017C468.780,386.408 491.556,375.772 511.144,388.654z"/>
+<path fill="#E5C376" opacity="1" d="M578.241,395.263C582.099,388.435 588.671,385.321 595.106,384.292C609.870,381.930 623.369,387.909 629.103,404.445C634.388,419.686 627.794,430.256 617.476,437.555C607.873,444.347 593.557,443.853 583.341,436.044C572.200,427.529 567.584,408.913 578.241,395.263z"/>
+<path fill="#E5C278" opacity="1" d="M720.272,396.774C729.036,404.057 733.218,415.035 730.122,426.503C725.967,441.895 715.082,448.256 702.835,448.748C688.663,449.317 675.118,439.452 673.121,424.046C671.361,410.475 676.870,398.018 690.420,392.285C700.976,387.818 710.978,389.259 720.272,396.774z"/>
+<path fill="#000000" opacity="1" d="M1326.318,551.162C1321.549,554.854 1317.336,558.799 1312.467,561.608C1305.795,565.456 1295.973,562.550 1295.989,551.685C1296.009,537.567 1302.008,526.771 1313.055,518.486C1317.483,515.165 1324.948,515.175 1329.645,518.287C1333.076,520.560 1335.493,529.137 1333.580,534.622C1331.639,540.188 1328.946,545.491 1326.318,551.162z"/>
+</svg>
+                {page!=="dashboard"&&<div style={{fontSize:13,color:"#6B7280",marginTop:2}}>{projects.filter(p=>!p.archived).length} {t.projects} · {projects.filter(p=>p.status==="In Progress"&&!p.archived).length} {t.inProgress}</div>}
               </div>
             </div>
           </div>
         )}
 
         {page==="projects"?(
-          <ProjectsView projects={projects} setProjects={setProjects} setEditingProject={setEditingProject} setPickPatternFor={setPickPatternFor} t={t} rewards={rewards} setRewards={setRewards} onJustCompleted={id=>setPendingPhotoProjectId(id)}/>
+          <ProjectsView projects={projects} patterns={patterns} setProjects={setProjects} setEditingProject={setEditingProject} setPickPatternFor={setPickPatternFor} t={t} rewards={rewards} setRewards={setRewards} onJustCompleted={id=>setPendingPhotoProjectId(id)}/>
         ):page==="dashboard"?(
           <DashboardPage projects={projects} yarnLib={yarnLib} patterns={patterns} myPartyIds={myPartyIds} setMyPartyIds={setMyPartyIds} joinedParties={joinedParties} setJoinedParties={setJoinedParties} settings={settings} setPage={setPage}/>
         ):page==="create"?(
@@ -11645,6 +12085,7 @@ function App(){
             onClose={()=>setShowAdd(false)}
             onSave={p=>setProjects(prev=>[p,...prev])}
             yarnLib={yarnLib}
+            patterns={patterns}
           />
         )}
         {editingProject&&(
