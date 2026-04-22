@@ -4,7 +4,14 @@
   <meta charset="UTF-8"/>
   <meta name="viewport" content="width=device-width,initial-scale=1.0"/>
   <title>mitime</title>
-  <link rel="icon" type="image/png" href="browsertab.png"/>
+  <link rel="icon" type="image/svg+xml" href="app_icon_rounded.svg"/>
+  <link rel="icon" type="image/png" href="app_icon.png"/>
+  <link rel="apple-touch-icon" href="app_icon_rounded.svg"/>
+  <link rel="manifest" href="manifest.json"/>
+  <meta name="mobile-web-app-capable" content="yes"/>
+  <meta name="apple-mobile-web-app-capable" content="yes"/>
+  <meta name="apple-mobile-web-app-status-bar-style" content="default"/>
+  <meta name="apple-mobile-web-app-title" content="mitime"/>
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://unpkg.com/react@18/umd/react.development.js"></script>
   <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
@@ -2278,16 +2285,17 @@ function CrochetSymIcon({id,color,w=32,h=32}){
 
 // Unified stitch button — used in both editors' main toolbar row.
 function CrochetStitchBtn({id,label,active,activeColor,onClick,desc=""}){
+  const ac=activeColor||"#778EE3";
   return(
     <button type="button" onClick={onClick} title={desc||label}
       style={{flexShrink:0,display:"flex",flexDirection:"column",alignItems:"center",
         justifyContent:"center",padding:"4px 5px",gap:2,borderRadius:8,cursor:"pointer",
-        border:active?"2px solid #778EE3":"1.5px solid #E5E7EB",
-        background:active?"#DDE3F8":"white",minWidth:44,height:52}}>
+        border:active?`2px solid ${ac}`:"1.5px solid #E5E7EB",
+        background:active?ac+"22":"white",minWidth:44,height:52}}>
       <div style={{width:30,height:30,flexShrink:0,display:"flex",alignItems:"center",justifyContent:"center",overflow:"hidden"}}>
-        <CrochetSymIcon id={id} color={activeColor||"#374151"} w={30} h={30}/>
+        <CrochetSymIcon id={id} color="#374151" w={30} h={30}/>
       </div>
-      <span style={{fontSize:8,fontWeight:700,color:active?"#778EE3":"#6B7280",lineHeight:1}}>{label}</span>
+      <span style={{fontSize:8,fontWeight:700,color:active?ac:"#6B7280",lineHeight:1}}>{label}</span>
     </button>
   );
 }
@@ -2387,12 +2395,12 @@ function CrochetMorePanel({pos,groups,activeId,activeGroup,activeColor,
                     onClick={()=>onSelectGroup({id:item.id,label:item.label,stitchType:fixedSt,count:fixedN})}
                     style={{display:"flex",flexDirection:"column",alignItems:"center",gap:1,
                       padding:"5px 6px",borderRadius:8,cursor:"pointer",minWidth:44,
-                      border:isAct?"2px solid #778EE3":"1.5px solid #E5E7EB",
-                      background:isAct?"#DDE3F8":"#FAFAFA"}}>
+                      border:isAct?`2px solid ${activeColor}`:"1.5px solid #E5E7EB",
+                      background:isAct?activeColor+"22":"#FAFAFA"}}>
                     <div style={{width:32,height:32,flexShrink:0,display:"flex",alignItems:"center",justifyContent:"center",overflow:"hidden"}}>
-                      <CrochetSymIcon id={previewSym} color={isAct?"#778EE3":activeColor} w={32} h={32}/>
+                      <CrochetSymIcon id={previewSym} color="#374151" w={32} h={32}/>
                     </div>
-                    <span style={{fontSize:8,fontWeight:700,color:isAct?"#778EE3":"#6B7280"}}>{item.label}</span>
+                    <span style={{fontSize:8,fontWeight:700,color:isAct?activeColor:"#6B7280"}}>{item.label}</span>
                   </button>
                 );
               }
@@ -2405,12 +2413,12 @@ function CrochetMorePanel({pos,groups,activeId,activeGroup,activeColor,
                     onClick={()=>onSelect(item.id)}
                     style={{display:"flex",flexDirection:"column",alignItems:"center",gap:1,
                       padding:"5px 6px",borderRadius:8,cursor:"pointer",minWidth:44,
-                      border:act2?"2px solid #778EE3":"1.5px solid #E5E7EB",
-                      background:act2?"#DDE3F8":"#FAFAFA"}}>
+                      border:act2?`2px solid ${activeColor}`:"1.5px solid #E5E7EB",
+                      background:act2?activeColor+"22":"#FAFAFA"}}>
                     <div style={{width:32,height:32,flexShrink:0,display:"flex",alignItems:"center",justifyContent:"center",overflow:"hidden"}}>
-                      <CrochetSymIcon id={item.id} color={act2?"#778EE3":activeColor} w={32} h={32}/>
+                      <CrochetSymIcon id={item.id} color="#374151" w={32} h={32}/>
                     </div>
-                    <span style={{fontSize:8,fontWeight:700,color:act2?"#778EE3":"#6B7280"}}>{item.label}</span>
+                    <span style={{fontSize:8,fontWeight:700,color:act2?activeColor:"#6B7280"}}>{item.label}</span>
                   </button>
                   {hasPins&&(
                     <button type="button"
@@ -2470,6 +2478,13 @@ function CrochetBuilder({stitches,setStitches,layout,setLayout,yarnColors,onSave
   const[guides,setGuides]=useState([]);
   const[hoverCell,setHoverCell]=useState(null);
   const[zoom,setZoom]=useState(1);
+  const[batchMode,setBatchMode]=useState(false);
+  const[batchSpacingOpen,setBatchSpacingOpen]=useState(false);
+  const[batchColorOpen,setBatchColorOpen]=useState(false);
+  const[batchAlignOpen,setBatchAlignOpen]=useState(false);
+  const[batchKeys,setBatchKeys]=useState(new Set());
+  const[lassoRect,setLassoRect]=useState(null);
+  const[rowGaps,setRowGaps]=useState(()=>layout?.rowGaps??{});
   const canvasRef=useRef(null);
   const containerRef=useRef(null);
   // Center the canvas origin once layout is rendered (after layout selection).
@@ -2490,6 +2505,7 @@ function CrochetBuilder({stitches,setStitches,layout,setLayout,yarnColors,onSave
       setPan({x:W/2,y:H/2});
     }
   },[layout]);
+  useEffect(()=>{setRowGaps(layout?.rowGaps??{});},[layout]);
   const ir=useRef({});
   const lastTouchRef=useRef(0);
   const autoScaleRef=useRef(1);
@@ -2511,11 +2527,12 @@ function CrochetBuilder({stitches,setStitches,layout,setLayout,yarnColors,onSave
       for(let i=1;i<allRowYs.length;i++){
         const lRy=allRowYs[i-1],uRy=allRowYs[i];
         const maxH=Math.max(CELL_H-ROW_GAP_PX,...stitches.filter(s=>Math.round(s.y)===lRy).map(s=>getSymH(s.id)));
-        off[uRy]=off[lRy]-(maxH+ROW_GAP_PX);
+        const extra=rowGaps[lRy]??0;
+        off[uRy]=off[lRy]-(maxH+ROW_GAP_PX+extra);
       }
     }
     rowRenderOffRef.current=off;
-  },[stitches]);
+  },[stitches,rowGaps]);
 
   // Pixel offset of a row in canvas coords (using live ref so event handlers stay accurate)
   const rowPxOff=gy=>{const ry=Math.round(gy);const off=rowRenderOffRef.current;return off[ry]!==undefined?off[ry]:gy*CELL_H;};
@@ -2658,7 +2675,7 @@ function CrochetBuilder({stitches,setStitches,layout,setLayout,yarnColors,onSave
   const clearAll=()=>commit([]);
   const savePNG=()=>{const c=canvasRef.current;if(!c)return;const a=document.createElement("a");a.href=c.toDataURL("image/png");a.download="crochet-pattern.png";a.click();};
   const usedSymIds=[...new Set(stitches.map(s=>s.id))];
-  const getXY=e=>{const c=canvasRef.current,rect=c.getBoundingClientRect(),dpr=window.devicePixelRatio||1,sx=c.width/(dpr*rect.width),sy=c.height/(dpr*rect.height),src=e.touches?.length?e.touches[0]:e.changedTouches?.length?e.changedTouches[0]:e;const rawMx=(src.clientX-rect.left)*sx,rawMy=(src.clientY-rect.top)*sy;const s=autoScaleRef.current,cW=c.width/dpr,cH=c.height/dpr;return{mx:cW/2+(rawMx-cW/2)/s,my:cH/2+(rawMy-cH/2)/s};};
+  const getXY=e=>{const c=canvasRef.current,rect=c.getBoundingClientRect(),dpr=window.devicePixelRatio||1,sx=c.width/(dpr*rect.width),sy=c.height/(dpr*rect.height),src=e.touches?.length?e.touches[0]:e.changedTouches?.length?e.changedTouches[0]:e;const rawMx=(src.clientX-rect.left)*sx,rawMy=(src.clientY-rect.top)*sy;const s=autoScaleRef.current,cW=c.width/dpr,cH=c.height/dpr;return{mx:cW/2+(rawMx-cW/2)/s,my:cH/2+(rawMy-cH/2)/s,rawMx,rawMy,cW,cH};};
   // Convert canvas coords to approximate grid coords (for placement only, not hit-detection)
   const toCont=(mx,my,p)=>({gx:(mx-p.x)/CELL,gy:(my-p.y)/CELL_H});
   const calcGuides=(mx,my,xk)=>{
@@ -2750,15 +2767,28 @@ function CrochetBuilder({stitches,setStitches,layout,setLayout,yarnColors,onSave
         ctx.setLineDash([]);
       }
     });
+    // Precompute per-row max stitch height (used to raise ch/vch to row top)
+    const _bsc=CELL*(28/32)/20;
+    const _rowMaxH={};
+    stitches.forEach(s=>{const ry=Math.round(s.y);const h=(ROWS_SYM_H[s.id]||20)*_bsc;if(!_rowMaxH[ry]||h>_rowMaxH[ry])_rowMaxH[ry]=h;});
+    const _chFloat=(id,gy)=>{
+      if(id!=="ch"&&id!=="vch")return 0;
+      const chH=(ROWS_SYM_H.ch||18)*_bsc;
+      const mxH=_rowMaxH[Math.round(gy)]||chH;
+      // Only float when a significantly taller stitch (hdc+) is in the same row.
+      // Use mxH - chH/2 so the oval center aligns with the tall stitch's top bar.
+      return mxH>chH*1.5?mxH-chH/2:0;
+    };
     // Hover hint (continuous coords)
     if(hoverCell&&!ir.current.isPanning){
-      const hcx=p.x+hoverCell.gx*CELL,hcy=p.y+rowPxOff(hoverCell.gy);
+      const hcx=p.x+hoverCell.gx*CELL;
+      const hcy=p.y+rowPxOff(hoverCell.gy)-_chFloat(activeSym,hoverCell.gy);
       ctx.fillStyle=hoverCell.snapTo?"rgba(245,158,11,0.1)":"rgba(124,58,237,0.07)";
       ctx.strokeStyle=hoverCell.snapTo?"rgba(245,158,11,0.5)":"rgba(124,58,237,0.22)";
       ctx.lineWidth=1.5;ctx.setLineDash([3,3]);
       rrect(ctx,hcx-CELL/2+2,hcy-CELL/2+2,CELL-4,CELL-4,5);ctx.fill();ctx.stroke();ctx.setLineDash([]);
       // Preview symbol at hover position
-      if(activeTool!=="eraser"){
+      if(activeTool==="place"){
         const hoverAngle=hoverCell.snapTo?(previewFanPos(hoverCell.snapTo,stitches)||{}).fanAngle||0:0;
         ctx.globalAlpha=0.3;drawSymOnCanvas(ctx,activeSym,hcx,hcy,CELL,activeColor,hoverAngle);ctx.globalAlpha=1;
       }
@@ -2768,11 +2798,17 @@ function CrochetBuilder({stitches,setStitches,layout,setLayout,yarnColors,onSave
     // symbols rotated around their foot — no unified placeholder shape.
     stitches.forEach(s=>{
       if(dragSt&&dragSt.key===s.key)return;
-      const scx=p.x+s.x*CELL,scy=p.y+rowPxOff(s.y);
+      const scx=p.x+s.x*CELL,scy=p.y+rowPxOff(s.y)-_chFloat(s.id,s.y);
       drawSymOnCanvas(ctx,s.id,scx,scy,CELL,s.color,s.fanAngle||0);
       if(s.key===selectedKey){
         ctx.strokeStyle="#778EE3";ctx.lineWidth=2;ctx.setLineDash([]);
         ctx.beginPath();ctx.arc(scx,scy,CELL/2+1,0,Math.PI*2);ctx.stroke();
+      }
+      if(batchKeys.has(s.key)){
+        ctx.fillStyle="rgba(119,142,227,0.28)";
+        ctx.beginPath();ctx.arc(scx,scy,CELL/2+3,0,Math.PI*2);ctx.fill();
+        ctx.strokeStyle="#778EE3";ctx.lineWidth=2;ctx.setLineDash([]);
+        ctx.beginPath();ctx.arc(scx,scy,CELL/2+3,0,Math.PI*2);ctx.stroke();
       }
     });
     // Drag preview + snap highlight
@@ -2796,11 +2832,11 @@ function CrochetBuilder({stitches,setStitches,layout,setLayout,yarnColors,onSave
           const prevPositions=computeChildPositions(anc,N,getAnchorCfg(ancNode||anc));
           siblings.forEach((sib,i)=>{
             const{x:fx,y:fy,fanAngle:fa}=prevPositions[i];
-            ctx.globalAlpha=0.25;drawSymOnCanvas(ctx,sib.id,p.x+fx*CELL,p.y+rowPxOff(fy),CELL,sib.color,fa||0);ctx.globalAlpha=1;
+            ctx.globalAlpha=0.25;drawSymOnCanvas(ctx,sib.id,p.x+fx*CELL,p.y+rowPxOff(fy)-_chFloat(sib.id,fy),CELL,sib.color,fa||0);ctx.globalAlpha=1;
           });
         }
         const previewAngle=anc?(previewFanPos(anc.key,stitches.filter(s=>s.key!==ds.key))||{}).fanAngle||0:0;
-        ctx.globalAlpha=0.6;drawSymOnCanvas(ctx,ds.id,p.x+tx*CELL,p.y+rowPxOff(ty),CELL,ds.color,previewAngle);ctx.globalAlpha=1;
+        ctx.globalAlpha=0.6;drawSymOnCanvas(ctx,ds.id,p.x+tx*CELL,p.y+rowPxOff(ty)-_chFloat(ds.id,ty),CELL,ds.color,previewAngle);ctx.globalAlpha=1;
       }
     }
     ctx.restore();
@@ -2808,28 +2844,23 @@ function CrochetBuilder({stitches,setStitches,layout,setLayout,yarnColors,onSave
     if(stitches.length>0){
       const rowYs=[...new Set(stitches.map(s=>Math.round(s.y)))].sort((a,b)=>b-a);
       const actualRowYs=rowYs.filter(y=>y!==0);
-      ctx.font="bold 9px -apple-system,sans-serif";ctx.textBaseline="middle";
       rowYs.forEach((ry)=>{
         const pixOff=rowRenderOff[ry]!==undefined?rowRenderOff[ry]:ry*CELL_H;
         const cy=(p.y+pixOff-H/2)*zoom+H/2;
         if(cy<0||cy>H)return;
-        if(ry===0){
-          // Foundation chain — label as FC, distinct colour
-          ctx.fillStyle="rgba(146,64,14,0.5)";
-          const label="FC";
-          ctx.textAlign="left";ctx.fillText(label,4,cy);
-          ctx.textAlign="right";ctx.fillText(label,W-4,cy);
-        }else{
-          ctx.fillStyle="rgba(124,58,237,0.5)";
-          const label=`R${actualRowYs.indexOf(ry)+1}`;
-          ctx.textAlign="left";ctx.fillText(label,4,cy);
-          ctx.textAlign="right";ctx.fillText(label,W-4,cy);
-        }
+        const rowSts=stitches.filter(s=>Math.round(s.y)===ry);
+        const rowFullySel=batchMode&&rowSts.length>0&&rowSts.every(s=>batchKeys.has(s.key));
+        const label=ry===0?"FC":`R${actualRowYs.indexOf(ry)+1}`;
+        const baseColor=ry===0?"rgba(146,64,14,0.6)":"rgba(124,58,237,0.55)";
+        ctx.font="bold 9px -apple-system,sans-serif";ctx.textBaseline="middle";
+        ctx.fillStyle=baseColor;
+        ctx.textAlign="left";ctx.fillText(label,4,cy);
+        ctx.textAlign="right";ctx.fillText(label,W-4,cy);
       });
     }
     // Empty hint (not scaled — always centered in canvas)
     if(stitches.length===0){ctx.globalAlpha=0.15;drawSymOnCanvas(ctx,"mr",W/2,H/2,40,"#6B7280");ctx.globalAlpha=1;ctx.font="11px Inter,system-ui,sans-serif";ctx.textAlign="center";ctx.textBaseline="middle";ctx.fillStyle="#BBBBBB";ctx.fillText("Tap to place · near existing = snaps as child · drag to move",W/2,H/2+26);}
-  },[stitches,pan,guides,hoverCell,dragSt,layout,_contSz,zoom,chartGridVisible,chartHighlightRow,snapEnabled]);
+  },[stitches,pan,guides,hoverCell,dragSt,layout,_contSz,zoom,chartGridVisible,chartHighlightRow,snapEnabled,batchKeys,batchMode,rowGaps]);
 
   const onMouseDown=e=>{
     if(e.touches!==undefined){lastTouchRef.current=Date.now();}
@@ -2837,11 +2868,21 @@ function CrochetBuilder({stitches,setStitches,layout,setLayout,yarnColors,onSave
     e.preventDefault();
     const{mx,my}=getXY(e);
     const hit=stAt(mx,my);
+    if(batchMode){
+      if(hit){ir.current={isBatchClick:true,key:hit.key,startMX:mx,startMY:my,moved:false,origPan:{...pan}};}
+      else{ir.current={isPanning:true,startMX:mx,startMY:my,origPan:{...pan},moved:false};}
+      return;
+    }
     if(hit){ir.current={isDragging:true,key:hit.key,startMX:mx,startMY:my,moved:false};setDragSt({key:hit.key,mx,my});}
     else{ir.current={isPanning:true,startMX:mx,startMY:my,origPan:{...pan},moved:false};}
   };
   const onMouseMove=e=>{
     const{mx,my}=getXY(e);const d=ir.current;
+    if(d.isBatchClick){
+      if(!d.moved)d.moved=Math.hypot(mx-d.startMX,my-d.startMY)>4;
+      if(d.moved)setPan({x:d.origPan.x+(mx-d.startMX),y:d.origPan.y+(my-d.startMY)});
+      return;
+    }
     if(d.isDragging){
       // One-way: once moved, stays moved (prevents flip-back if pointer returns near start)
       if(!d.moved)d.moved=Math.hypot(mx-d.startMX,my-d.startMY)>4;
@@ -2863,6 +2904,11 @@ function CrochetBuilder({stitches,setStitches,layout,setLayout,yarnColors,onSave
   };
   const onMouseUp=e=>{
     const{mx,my}=getXY(e);const d=ir.current;
+    if(d.isBatchClick){
+      const k=d.key;ir.current={};
+      if(!d.moved){setBatchKeys(prev=>{const n=new Set(prev);n.has(k)?n.delete(k):n.add(k);return n;});}
+      return;
+    }
     if(d.isDragging){
       if(!d.moved){
         if(activeTool==="eraser")removeSt(d.key);
@@ -2881,7 +2927,7 @@ function CrochetBuilder({stitches,setStitches,layout,setLayout,yarnColors,onSave
     }else if(d.isPanning&&!d.moved){
       // Tap on empty canvas — place stitch
       setSelectedKey(null);
-      if(activeTool!=="eraser"){if(activeGroup)placeGroup(mx,my);else placeAt(mx,my);}
+      if(activeTool==="place"){if(activeGroup)placeGroup(mx,my);else placeAt(mx,my);}
     }
     ir.current={};setHoverCell(null);setGuides([]);
   };
@@ -2964,16 +3010,16 @@ function CrochetBuilder({stitches,setStitches,layout,setLayout,yarnColors,onSave
           style={{...ccPanelBtnSt,opacity:future.length?1:0.3,cursor:future.length?"pointer":"default"}}>
           <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#6B7280" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-.49-3.84"/></svg>
         </button>
-        <button type="button" onClick={clearAll} title="Clear all"
-          style={{...ccPanelBtnSt}}>
-          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#FCA5A5" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg>
+        <button type="button" onClick={()=>{setBatchMode(v=>{const next=!v;if(!next){setBatchKeys(new Set());setLassoRect(null);setBatchSpacingOpen(false);setBatchColorOpen(false);setBatchAlignOpen(false);}else{setPanelOpen(false);}return next;});}} title="Batch Actions"
+          style={{...ccPanelBtnSt,border:`1.5px solid ${batchMode?"#778EE3":"#E5E7EB"}`,background:batchMode?"#DDE3F8":"white"}}>
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke={batchMode?"#778EE3":"#6B7280"} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
         </button>
         {/* Right actions */}
         <div style={{marginLeft:"auto",display:"flex",gap:4,alignItems:"center"}}>
           {onSave&&<button type="button" onClick={onSave}
             style={{padding:"4px 12px",borderRadius:7,border:"none",background:"#778EE3",color:"white",cursor:"pointer",fontSize:10,fontWeight:700}}>✓ Save</button>}
           <div style={{width:1,height:16,background:"#E5E7EB",margin:"0 2px"}}/>
-          <button type="button" onClick={()=>setPanelOpen(v=>!v)} title="Settings"
+          <button type="button" onClick={()=>{if(batchMode){setBatchMode(false);setBatchKeys(new Set());setLassoRect(null);setBatchSpacingOpen(false);setBatchColorOpen(false);setBatchAlignOpen(false);}setPanelOpen(v=>!v);}} title="Settings"
             style={{...ccPanelBtnSt,border:`1.5px solid ${panelOpen?"#778EE3":"#E5E7EB"}`,background:panelOpen?"#DDE3F8":"white"}}>
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke={panelOpen?"#778EE3":"#6B7280"} strokeWidth="2">
               <circle cx="12" cy="12" r="3"/><path strokeLinecap="round" d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-4 0v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83-2.83l.06-.06A1.65 1.65 0 004.68 15a1.65 1.65 0 00-1.51-1H3a2 2 0 010-4h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 012.83-2.83l.06.06A1.65 1.65 0 009 4.68a1.65 1.65 0 001-1.51V3a2 2 0 014 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 2.83l-.06.06A1.65 1.65 0 0019.4 9a1.65 1.65 0 001.51 1H21a2 2 0 010 4h-.09a1.65 1.65 0 00-1.51 1z"/>
@@ -2988,8 +3034,8 @@ function CrochetBuilder({stitches,setStitches,layout,setLayout,yarnColors,onSave
           const sym=ROWS_ALL_SYMS.find(s=>s.id===id);if(!sym)return null;
           return(
             <CrochetStitchBtn key={id} id={id} label={sym.label} desc={sym.desc}
-              active={activeSym===id&&!activeGroup} activeColor={activeColor}
-              onClick={()=>{setActiveSym(id);setActiveGroup(null);}}/>
+              active={activeSym===id&&!activeGroup&&activeTool==="place"} activeColor={activeColor}
+              onClick={()=>{setActiveSym(id);setActiveGroup(null);setActiveTool("place");}}/>
           );
         })}
         <div ref={moreAnchorRef} className="cc-more-root" style={{position:"relative",flexShrink:0,display:"flex"}}>
@@ -3007,9 +3053,9 @@ function CrochetBuilder({stitches,setStitches,layout,setLayout,yarnColors,onSave
                 {label:"STRUCTURAL",items:ROWS_ALL_SYMS.filter(s=>s.category==="structure"&&!isPinned(s.id))
                   .map(s=>({id:s.id,label:s.label,desc:s.desc}))},
               ].filter(g=>g.items.length>0)}
-              activeId={activeSym} activeGroup={activeGroup} activeColor={activeColor}
-              onSelect={id=>{setActiveSym(id);setActiveGroup(null);setShowMore(false);}}
-              onSelectGroup={g=>{setActiveGroup(g);setActiveSym(g.stitchType);setShowMore(false);}}
+              activeId={activeTool==="place"?activeSym:null} activeGroup={activeTool==="place"?activeGroup:null} activeColor={activeColor}
+              onSelect={id=>{setActiveSym(id);setActiveGroup(null);setActiveTool("place");setShowMore(false);}}
+              onSelectGroup={g=>{setActiveGroup(g);setActiveSym(g.stitchType);setActiveTool("place");setShowMore(false);}}
               groupCfg={groupCfg} setGroupCfg={setGroupCfg}
               onClearGroup={()=>{setActiveGroup(null);setShowMore(false);}}
               pinnedIds={pinnedIds} onPin={pin} onUnpin={unpin}
@@ -3046,10 +3092,157 @@ function CrochetBuilder({stitches,setStitches,layout,setLayout,yarnColors,onSave
         <canvas ref={canvasRef}
           onMouseDown={onMouseDown} onMouseMove={onMouseMove} onMouseUp={onMouseUp} onMouseLeave={onMouseLeave}
           onTouchStart={handleTouchStart} onTouchMove={handleTouchMove} onTouchEnd={handleTouchEnd}
-          style={{position:"absolute",inset:0,cursor:activeTool==="eraser"?"cell":dragSt?"grabbing":"crosshair"}}/>
+          style={{position:"absolute",inset:0,cursor:batchMode?"crosshair":activeTool==="eraser"?"cell":activeTool==="place"?dragSt?"grabbing":"crosshair":dragSt?"grabbing":"default"}}/>
         </div>{/* end containerRef */}
 
-        {/* ── Side panel (right overlay) ── */}
+        {/* ── Batch mode: bottom action bar + modals ── */}
+        {batchMode&&(()=>{
+          const selArr=stitches.filter(s=>batchKeys.has(s.key));
+          const allRowYs=[...new Set(stitches.map(s=>Math.round(s.y)))].sort((a,b)=>b-a);
+          const actualRowYs=allRowYs.filter(y=>y!==0);
+          const selRowSet=new Set(selArr.map(s=>Math.round(s.y)));
+          const rowYs=allRowYs.filter(ry=>selRowSet.has(ry));
+          const spBtn={width:36,height:36,borderRadius:"50%",border:"none",cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0,boxShadow:"0 2px 8px rgba(0,0,0,0.18)"};
+          const spStBtn={width:32,height:32,borderRadius:"50%",border:"1.5px solid #DDE3F8",background:"white",cursor:"pointer",fontSize:17,fontWeight:700,color:"#778EE3",display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0};
+          return(<>
+            {/* Row selector — compact pill list, top-left, always visible in batch mode */}
+            {!batchSpacingOpen&&(
+              <div style={{position:"absolute",top:8,left:8,zIndex:30,
+                background:"rgba(255,255,255,0.96)",backdropFilter:"blur(8px)",
+                borderRadius:12,boxShadow:"0 2px 12px rgba(0,0,0,0.10)",
+                padding:"6px 5px",display:"flex",flexDirection:"column",gap:3,
+                maxHeight:"55vh",overflowY:"auto"}}>
+                {allRowYs.map(ry=>{
+                  const lbl=ry===0?"FC":`R${actualRowYs.indexOf(ry)+1}`;
+                  const rowSts=stitches.filter(s=>Math.round(s.y)===ry);
+                  const allSel=rowSts.length>0&&rowSts.every(s=>batchKeys.has(s.key));
+                  const partSel=!allSel&&rowSts.some(s=>batchKeys.has(s.key));
+                  return(
+                    <button key={ry} type="button"
+                      onClick={()=>setBatchKeys(prev=>{const n=new Set(prev);rowSts.forEach(s=>allSel?n.delete(s.key):n.add(s.key));return n;})}
+                      style={{minWidth:36,padding:"5px 9px",borderRadius:8,border:"none",
+                        background:allSel?"#778EE3":partSel?"rgba(119,142,227,0.25)":"rgba(119,142,227,0.07)",
+                        color:allSel?"white":"#778EE3",
+                        fontSize:11,fontWeight:700,cursor:"pointer",textAlign:"center"}}>
+                      {lbl}
+                    </button>
+                  );
+                })}
+              </div>
+            )}
+            {/* Row Spacing — compact floating card, top-left (replaces row selector when open) */}
+            {batchSpacingOpen&&(
+              <div style={{position:"absolute",top:8,left:8,zIndex:35,
+                background:"white",borderRadius:14,
+                boxShadow:"0 4px 20px rgba(0,0,0,0.13)",width:198,
+                display:"flex",flexDirection:"column",overflow:"hidden",maxHeight:"54vh"}}>
+                <div style={{padding:"12px 14px 9px",display:"flex",justifyContent:"space-between",alignItems:"center",flexShrink:0}}>
+                  <span style={{fontSize:12,fontWeight:700,color:"#1C1C1E"}}>Row Spacing</span>
+                  <button type="button" onClick={()=>setBatchSpacingOpen(false)}
+                    style={{width:22,height:22,borderRadius:"50%",border:"none",background:"#F2F2F7",cursor:"pointer",fontSize:13,color:"#6B7280",display:"flex",alignItems:"center",justifyContent:"center",fontWeight:400}}>×</button>
+                </div>
+                <div style={{overflowY:"auto",padding:"0 14px 12px"}}>
+                  {rowYs.length===0&&<p style={{fontSize:10,color:"#9CA3AF",margin:"7px 0",textAlign:"center"}}>{batchKeys.size===0?"Select stitches to adjust spacing":"No rows"}</p>}
+                  {rowYs.map(ry=>{
+                    const label=ry===0?"FC":`R${actualRowYs.indexOf(ry)+1}`;
+                    const extra=rowGaps[ry]??0;
+                    return(
+                      <div key={ry} style={{display:"flex",alignItems:"center",justifyContent:"space-between",padding:"10px 0",borderBottom:"1px solid #F2F2F7"}}>
+                        <span style={{fontSize:12,fontWeight:500,color:"#1C1C1E",minWidth:32}}>{label}</span>
+                        <div style={{display:"flex",alignItems:"center",gap:14}}>
+                          <button type="button" onClick={()=>{const nv=Math.max(0,extra-4);const ng={...rowGaps,[ry]:nv};setRowGaps(ng);setLayout(l=>({...l,rowGaps:ng}));}}
+                            style={{width:25,height:25,borderRadius:"50%",border:"1.5px solid #E5E7EB",background:"white",cursor:"pointer",fontSize:14,color:"#374151",display:"flex",alignItems:"center",justifyContent:"center",lineHeight:1}}>−</button>
+                          <span style={{minWidth:18,textAlign:"center",fontSize:13,fontWeight:600,color:"#1C1C1E"}}>{extra}</span>
+                          <button type="button" onClick={()=>{const nv=extra+4;const ng={...rowGaps,[ry]:nv};setRowGaps(ng);setLayout(l=>({...l,rowGaps:ng}));}}
+                            style={{width:25,height:25,borderRadius:"50%",border:"1.5px solid #E5E7EB",background:"white",cursor:"pointer",fontSize:14,color:"#374151",display:"flex",alignItems:"center",justifyContent:"center",lineHeight:1}}>+</button>
+                        </div>
+                      </div>
+                    );
+                  })}
+                  {rowYs.length>0&&<button type="button" onClick={()=>{setRowGaps({});setLayout(l=>({...l,rowGaps:{}}));}}
+                    style={{width:"100%",marginTop:9,padding:"6px",borderRadius:7,border:"none",background:"#F2F2F7",color:"#778EE3",fontSize:10,fontWeight:600,cursor:"pointer"}}>
+                    Reset all
+                  </button>}
+                </div>
+              </div>
+            )}
+            {/* Color picker popup */}
+            {batchColorOpen&&(
+              <div style={{position:"absolute",inset:0,zIndex:40,display:"flex",alignItems:"flex-end",justifyContent:"center",background:"rgba(0,0,0,0.18)"}}
+                onClick={e=>{if(e.target===e.currentTarget)setBatchColorOpen(false);}}>
+                <div style={{background:"white",borderRadius:"18px 18px 0 0",padding:"18px 20px 28px",width:"100%",maxWidth:420,boxShadow:"0 -4px 24px rgba(0,0,0,0.14)"}}>
+                  <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:14}}>
+                    <span style={{fontSize:13,fontWeight:800,color:"#374151"}}>Change Color</span>
+                    <button type="button" onClick={()=>setBatchColorOpen(false)}
+                      style={{width:26,height:26,borderRadius:"50%",border:"none",background:"#F3F4F6",cursor:"pointer",fontSize:14,color:"#6B7280",display:"flex",alignItems:"center",justifyContent:"center"}}>×</button>
+                  </div>
+                  <div style={{display:"flex",flexWrap:"wrap",gap:8,justifyContent:"center"}}>
+                    {(yarnColors?.length?yarnColors.map(y=>y.color):SYM_COLS).map((c,i)=>(
+                      <button key={i} type="button" onClick={()=>{commit(stitches.map(s=>batchKeys.has(s.key)?{...s,color:c}:s));setBatchColorOpen(false);}}
+                        style={{width:40,height:40,borderRadius:"50%",background:c,border:"2.5px solid #E5E7EB",cursor:"pointer",boxShadow:c==="#ffffff"?"inset 0 0 0 1px #E5E7EB":""}}/>
+                    ))}
+                    <label style={{width:40,height:40,borderRadius:"50%",border:"2px dashed #DDE3F8",cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center",color:"#778EE3",fontSize:18,fontWeight:700}}>
+                      +<input type="color" defaultValue="#778EE3" style={{width:0,height:0,opacity:0,position:"absolute"}} onChange={e=>{const c=e.target.value;commit(stitches.map(s=>batchKeys.has(s.key)?{...s,color:c}:s));setBatchColorOpen(false);}}/>
+                    </label>
+                  </div>
+                </div>
+              </div>
+            )}
+            {/* Align — floating card above action bar */}
+            {batchAlignOpen&&(
+              <div style={{position:"absolute",bottom:86,left:"50%",transform:"translateX(-50%)",zIndex:35,
+                background:"white",borderRadius:16,border:"1px solid #EAECF5",
+                boxShadow:"0 4px 24px rgba(119,142,227,0.18)",width:220,padding:"10px 12px 12px"}}>
+                <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:10}}>
+                  <span style={{fontSize:11,fontWeight:800,color:"#374151",letterSpacing:"0.04em"}}>ALIGN</span>
+                  <button type="button" onClick={()=>setBatchAlignOpen(false)}
+                    style={{width:20,height:20,borderRadius:"50%",border:"none",background:"#F3F4F6",cursor:"pointer",fontSize:12,color:"#6B7280",display:"flex",alignItems:"center",justifyContent:"center"}}>×</button>
+                </div>
+                <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:7}}>
+                  {[
+                    ["↔","Align Row",()=>{const rows=selArr.map(s=>Math.round(s.y));const freq={};rows.forEach(r=>{freq[r]=(freq[r]||0)+1;});const targetY=parseInt(Object.entries(freq).sort((a,b)=>b[1]-a[1])[0][0]);commit(stitches.map(s=>batchKeys.has(s.key)?{...s,y:targetY}:s));setBatchAlignOpen(false);}],
+                    ["⇔","Distribute",()=>{const sorted=[...selArr].sort((a,b)=>a.x-b.x);if(sorted.length<2)return;const minX=sorted[0].x,maxX=sorted[sorted.length-1].x;const step=(maxX-minX)/(sorted.length-1);const keyToX={};sorted.forEach((s,i)=>{keyToX[s.key]=minX+i*step;});commit(stitches.map(s=>batchKeys.has(s.key)?{...s,x:Math.round(keyToX[s.key]*2)/2}:s));setBatchAlignOpen(false);}],
+                    ["↕","Center Col",()=>{const xs=selArr.map(s=>s.x).sort((a,b)=>a-b);const medX=xs[Math.floor(xs.length/2)];commit(stitches.map(s=>batchKeys.has(s.key)?{...s,x:medX}:s));setBatchAlignOpen(false);}],
+                    ["⇤","Align Left",()=>{const minX=Math.min(...selArr.map(s=>s.x));commit(stitches.map(s=>batchKeys.has(s.key)?{...s,x:minX}:s));setBatchAlignOpen(false);}],
+                  ].map(([icon,label,fn])=>(
+                    <button key={label} type="button" onClick={fn}
+                      style={{padding:"9px 6px",borderRadius:10,border:"1.5px solid #DDE3F8",background:"#F5F7FF",fontSize:10,fontWeight:700,color:"#778EE3",cursor:"pointer",display:"flex",flexDirection:"column",alignItems:"center",gap:3}}>
+                      <span style={{fontSize:15}}>{icon}</span>{label}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            )}
+            {/* Bottom action bar */}
+            <div style={{position:"absolute",bottom:0,left:0,right:0,zIndex:25,
+              background:"rgba(255,255,255,0.96)",backdropFilter:"blur(12px)",
+              borderTop:"1px solid #EAECF5",padding:"10px 8px 16px",
+              display:"flex",alignItems:"flex-start",justifyContent:"space-around"}}>
+              {/* Selection count chip */}
+              <div style={{position:"absolute",top:-14,left:"50%",transform:"translateX(-50%)",
+                background:"#DDE3F8",color:"#4A5FA0",borderRadius:10,padding:"2px 10px",
+                fontSize:10,fontWeight:700,boxShadow:"0 1px 4px rgba(119,142,227,0.2)",
+                whiteSpace:"nowrap",border:"1px solid #C5CEED"}}>
+                {batchKeys.size>0?`${batchKeys.size} selected`:"Tap or lasso-select stitches"}
+              </div>
+              {[
+                {icon:<svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#E05C7A" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><path d="M3 6h18M8 6V4h8v2M19 6l-1 14H6L5 6"/></svg>, label:"Delete", bg:"#FDE8ED", show:batchKeys.size>0, fn:()=>{commit(stitches.filter(s=>!batchKeys.has(s.key)));setBatchKeys(new Set());}},
+                {icon:<svg width="17" height="17" viewBox="0 0 24 24" fill="#778EE3"><path d="M8.89 15.403a1 1 0 1 0 .243 1.985a1 1 0 0 0-.243-1.985m-3.342-2.614a1 1 0 1 1 1.985-.243a1 1 0 0 1-1.985.243m2.371-5.327a1 1 0 1 0 .243 1.985a1 1 0 0 0-.243-1.985m7.778 1.819a1 1 0 1 1 1.986-.243a1 1 0 0 1-1.986.243m-3.704 1.598a1 1 0 1 0 .242 1.985a1 1 0 0 0-.242-1.985m-.6-3.842a1 1 0 1 1 1.985-.243a1 1 0 0 1-1.985.243"/><path fill="#778EE3" fillRule="evenodd" d="M2.253 11.764c.13-5.384 4.6-9.642 9.983-9.511c5.383.13 9.642 4.6 9.511 9.983a1.47 1.47 0 0 1-.334.91a1.8 1.8 0 0 1-.721.513c-.502.21-1.131.275-1.754.28c-2.689.018-5.024 2.33-5.177 5.058c-.035.636-.144 1.283-.418 1.792a1.9 1.9 0 0 1-.62.695a1.66 1.66 0 0 1-.96.263c-5.382-.13-9.64-4.6-9.51-9.983M12.2 3.752a8.25 8.25 0 0 0-.4 16.496c.068.001.093-.014.106-.021a.4.4 0 0 0 .117-.15c.117-.217.21-.601.24-1.164c.195-3.475 3.142-6.45 6.665-6.475c.562-.003.956-.068 1.186-.163a.5.5 0 0 0 .134-.076A8.25 8.25 0 0 0 12.2 3.752" clipRule="evenodd"/></svg>, label:"Color", bg:"#E8ECFB", show:batchKeys.size>0, fn:()=>setBatchColorOpen(true)},
+                {icon:<svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#778EE3" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><path d="M8 3v4M16 3v4M3 9h18M8 17v4M16 17v4M3 15h18"/></svg>, label:"Spacing", bg:"#DDE3F8", show:true, fn:()=>setBatchSpacingOpen(true)},
+                {icon:<svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#7C6DD4" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 10H3M21 6H3M21 14H3M21 18H3"/></svg>, label:"Align", bg:"#ECEAFC", show:batchKeys.size>=2, fn:()=>setBatchAlignOpen(true)},
+                {icon:<svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#5B8AD6" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/></svg>, label:batchKeys.size===stitches.length&&stitches.length>0?"Deselect":"Select All", bg:"#E3EEFB", show:true, fn:()=>{const allSelected=batchKeys.size===stitches.length&&stitches.length>0;setBatchKeys(allSelected?new Set():new Set(stitches.map(s=>s.key)));}},
+              ].filter(b=>b.show).map(b=>(
+                <button key={b.label} type="button" onClick={b.fn}
+                  style={{display:"flex",flexDirection:"column",alignItems:"center",gap:5,background:"none",border:"none",cursor:"pointer",padding:"0 4px",flex:1}}>
+                  <div style={{...spBtn,background:b.bg,width:48,height:48,border:"1.5px solid rgba(0,0,0,0.06)"}}>{b.icon}</div>
+                  <span style={{fontSize:9,fontWeight:600,color:"#6B7280"}}>{b.label}</span>
+                </button>
+              ))}
+            </div>
+          </>);
+        })()}
+
+        {/* ── Side panel (right overlay – settings only) ── */}
         <div style={{
           position:"absolute",top:0,right:0,bottom:0,
           width:panelOpen?224:0,
@@ -3149,6 +3342,16 @@ function CrochetBuilder({stitches,setStitches,layout,setLayout,yarnColors,onSave
                 </div>
               </div>
 
+              {/* ── DANGER ── */}
+              <div>
+                <span style={ccPanelSecLabel}>DANGER ZONE</span>
+                <button type="button" onClick={clearAll}
+                  style={{width:"100%",padding:"7px 10px",borderRadius:8,border:"1.5px solid #FCA5A5",background:"#FEF2F2",color:"#EF4444",fontSize:11,fontWeight:700,cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center",gap:6}}>
+                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg>
+                  Clear all stitches
+                </button>
+              </div>
+
             </div>
           </div>
         </div>
@@ -3206,10 +3409,12 @@ function PatternMaker({pattern,onSave,onClose,yarnColors,forcedType,onBack}){
   const[saveFlash,setSaveFlash]=useState(false);
 
   const writeDraft=useRef(null);
+  const draftMounted=useRef(false);
   writeDraft.current=()=>{
     try{localStorage.setItem(DRAFT_KEY,JSON.stringify({type,crochetStitches,crochetLayout,knitGrid:knitRef.current,savedAt:Date.now()}));}catch{}
   };
   useEffect(()=>{
+    if(!draftMounted.current){draftMounted.current=true;return;}
     clearTimeout(draftTimer.current);
     draftTimer.current=setTimeout(()=>writeDraft.current(),800);
     return()=>clearTimeout(draftTimer.current);
@@ -9173,10 +9378,12 @@ function useCpmCanvas(svgRef){
         const mx=(t0.clientX+t1.clientX)/2-r.left,my=(t0.clientY+t1.clientY)/2-r.top;
         pState={dist,mx,my};
       } else if(e.touches.length===1&&!pState){
-        e.preventDefault();
+        const tgt=e.target;
+        const isBg=tgt===el||tgt.getAttribute?.("data-bg")==="true";
+        if(!isBg) return;
         const t=e.touches[0];
         const r=el.getBoundingClientRect();const s=Math.min(r.width,r.height)/CPM_SVG_W;const ratio=1/s;
-        touchPan={sx:t.clientX*ratio,sy:t.clientY*ratio};
+        touchPan={sx:t.clientX*ratio,sy:t.clientY*ratio,moved:false};
       }
     };
     const onTM=e=>{
@@ -9190,12 +9397,16 @@ function useCpmCanvas(svgRef){
           setPan(p=>({x:p.x+(pState.mx-r.width/2)*(1/nz-1/z)*z,y:p.y+(pState.my-r.height/2)*(1/nz-1/z)*z}));
           return nz;});
       } else if(e.touches.length===1&&touchPan){
-        e.preventDefault();
         const t=e.touches[0];
         const r=el.getBoundingClientRect();const s=Math.min(r.width,r.height)/CPM_SVG_W;const ratio=1/s;
         const nx=t.clientX*ratio,ny=t.clientY*ratio;
-        setPan(p=>({x:p.x+(nx-touchPan.sx),y:p.y+(ny-touchPan.sy)}));
-        touchPan={sx:nx,sy:ny};
+        const dx=nx-touchPan.sx,dy=ny-touchPan.sy;
+        if(Math.abs(dx)>3||Math.abs(dy)>3){
+          e.preventDefault();
+          touchPan.moved=true;
+          setPan(p=>({x:p.x+dx,y:p.y+dy}));
+          touchPan={sx:nx,sy:ny,moved:true};
+        }
       }
     };
     const onTE=e=>{if(e.touches.length<2)pState=null;if(e.touches.length===0)touchPan=null;};
@@ -9692,10 +9903,6 @@ function CPM_Editor({pattern,setPattern,onPreview,onSave=null,themeColor="#11111
           style={{...panelBtnSt,opacity:cpmFuture.length?1:0.3,cursor:cpmFuture.length?"pointer":"default"}}>
           <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#6B7280" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-.49-3.84"/></svg>
         </button>
-        <button type="button" onClick={clearPattern} title="Clear all"
-          style={{...panelBtnSt}}>
-          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#FCA5A5" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg>
-        </button>
         {/* Right actions */}
         <div style={{marginLeft:"auto",display:"flex",gap:4,alignItems:"center"}}>
           {onPreview&&<button type="button" onClick={onPreview} style={{padding:"4px 10px",borderRadius:7,border:"1.5px solid #E5E7EB",background:"white",cursor:"pointer",fontSize:10,fontWeight:600,color:"#778EE3"}}>Read ›</button>}
@@ -9757,7 +9964,7 @@ function CPM_Editor({pattern,setPattern,onPreview,onSave=null,themeColor="#11111
           onMouseLeave={()=>setGhostPos(null)}
           onClick={handleSvgClick}
         >
-          <rect width={CPM_SVG_W} height={CPM_SVG_W} fill={canvasBg}/>
+          <rect width={CPM_SVG_W} height={CPM_SVG_W} fill={canvasBg} data-bg="true"/>
           <g transform={tfm}>
             {/* Center node — no glow */}
             {pattern.startType==="chain"
@@ -10003,6 +10210,16 @@ function CPM_Editor({pattern,setPattern,onPreview,onSave=null,themeColor="#11111
                     </div>
                   </div>
                 )}
+              </div>
+
+              {/* ── DANGER ── */}
+              <div>
+                <span style={panelSecLabel}>DANGER ZONE</span>
+                <button type="button" onClick={clearPattern}
+                  style={{width:"100%",padding:"7px 10px",borderRadius:8,border:"1.5px solid #FCA5A5",background:"#FEF2F2",color:"#EF4444",fontSize:11,fontWeight:700,cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center",gap:6}}>
+                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg>
+                  Clear all stitches
+                </button>
               </div>
 
             </div>
@@ -10443,8 +10660,10 @@ function CircularPatternMaker({initialPattern=null,onSave=null,onClose=null,yarn
   const cpmDraftTimer=useRef(null);
   const[hasDraft,setHasDraft]=useState(()=>{try{return onSave&&!!localStorage.getItem(CPM_DRAFT_KEY);}catch{return false;}});
 
+  const cpmDraftMounted=useRef(false);
   useEffect(()=>{
-    if(!onSave)return; // standalone explorer — don't draft
+    if(!onSave)return;
+    if(!cpmDraftMounted.current){cpmDraftMounted.current=true;return;}
     clearTimeout(cpmDraftTimer.current);
     cpmDraftTimer.current=setTimeout(()=>{
       try{localStorage.setItem(CPM_DRAFT_KEY,JSON.stringify({...pattern,themeColor,savedAt:Date.now()}));}catch{}
