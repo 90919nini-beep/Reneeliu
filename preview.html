@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -201,7 +202,7 @@ const MAIN_TOOLBAR  =STITCH_LIBRARY.filter(s=>s.category==="basic");
 const MORE_STITCHES =STITCH_LIBRARY.filter(s=>s.category!=="basic");
 
 /* ── Toolbar customisation ─────────────────────────────────────────────────── */
-const TOOLBAR_MAX=8;
+const TOOLBAR_MAX=13;
 // All symbols that can appear on the Rows toolbar (excludes MR and group items)
 const ROWS_ALL_SYMS=STITCH_LIBRARY.filter(s=>s.id!=="mr");
 const ROWS_DEFAULT_PINS=MAIN_TOOLBAR.filter(s=>s.id!=="mr").map(s=>s.id);
@@ -2289,13 +2290,13 @@ function CrochetStitchBtn({id,label,active,activeColor,onClick,desc=""}){
   return(
     <button type="button" onClick={onClick} title={desc||label}
       style={{flexShrink:0,display:"flex",flexDirection:"column",alignItems:"center",
-        justifyContent:"center",padding:"4px 5px",gap:2,borderRadius:8,cursor:"pointer",
+        justifyContent:"center",padding:"3px 4px",gap:2,borderRadius:8,cursor:"pointer",
         border:active?`2px solid ${ac}`:"1.5px solid #E5E7EB",
-        background:active?ac+"22":"white",minWidth:44,height:52}}>
-      <div style={{width:30,height:30,flexShrink:0,display:"flex",alignItems:"center",justifyContent:"center",overflow:"hidden"}}>
-        <CrochetSymIcon id={id} color="#374151" w={30} h={30}/>
+        background:active?ac+"22":"white",minWidth:40,height:47}}>
+      <div style={{width:27,height:27,flexShrink:0,display:"flex",alignItems:"center",justifyContent:"center",overflow:"hidden"}}>
+        <CrochetSymIcon id={id} color="#374151" w={27} h={27}/>
       </div>
-      <span style={{fontSize:8,fontWeight:700,color:active?ac:"#6B7280",lineHeight:1}}>{label}</span>
+      <span style={{fontSize:7,fontWeight:700,color:active?ac:"#6B7280",lineHeight:1}}>{label}</span>
     </button>
   );
 }
@@ -2307,20 +2308,20 @@ function CrochetMoreBtn({showMore,activeGroup,onClick}){
   return(
     <button type="button" onClick={onClick} title="More stitches"
       style={{flexShrink:0,display:"flex",flexDirection:"column",alignItems:"center",
-        justifyContent:"center",padding:"4px 6px",gap:2,borderRadius:8,cursor:"pointer",
-        height:52,border:on?"2px solid #778EE3":"1.5px dashed #3850A6",
-        background:on?"#DDE3F8":"white",minWidth:44}}>
+        justifyContent:"center",padding:"3px 5px",gap:2,borderRadius:8,cursor:"pointer",
+        height:47,border:on?"2px solid #778EE3":"1.5px dashed #3850A6",
+        background:on?"#DDE3F8":"white",minWidth:40}}>
       {activeGroup
         ?<>
-          <CrochetSymIcon id={activeGroup.stitchType} color="#778EE3" w={24} h={24}/>
-          <span style={{fontSize:7,fontWeight:700,color:"#778EE3",lineHeight:1.1,textAlign:"center",maxWidth:44,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{activeGroup.label}</span>
+          <CrochetSymIcon id={activeGroup.stitchType} color="#778EE3" w={22} h={22}/>
+          <span style={{fontSize:7,fontWeight:700,color:"#778EE3",lineHeight:1.1,textAlign:"center",maxWidth:40,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{activeGroup.label}</span>
           <span style={{fontSize:7,fontWeight:800,color:"#778EE3",lineHeight:1.1}}>×{activeGroup.count}</span>
         </>
         :<>
-          <svg width="13" height="13" viewBox="0 0 13 13" fill="none" stroke={showMore?"#778EE3":"#3850A6"} strokeWidth="1.5" strokeLinecap="round">
+          <svg width="12" height="12" viewBox="0 0 13 13" fill="none" stroke={showMore?"#778EE3":"#3850A6"} strokeWidth="1.5" strokeLinecap="round">
             <line x1="6.5" y1="1" x2="6.5" y2="12"/><line x1="1" y1="6.5" x2="12" y2="6.5"/>
           </svg>
-          <span style={{fontSize:8,fontWeight:700,color:showMore?"#778EE3":"#6B7280"}}>More</span>
+          <span style={{fontSize:7,fontWeight:700,color:showMore?"#778EE3":"#6B7280"}}>More</span>
         </>
       }
     </button>
@@ -2993,11 +2994,11 @@ function CrochetBuilder({stitches,setStitches,layout,setLayout,yarnColors,onSave
 
       {/* ── Minimal top bar ── */}
       <div style={{background:"white",borderBottom:"1px solid #EFEFEF",padding:"6px 10px",flexShrink:0,display:"flex",alignItems:"center",gap:4}}>
-        <button type="button" onClick={()=>{setActiveTool("select");setSelectedKey(null);}} title="Select"
+        <button type="button" onClick={()=>{setActiveTool("select");setSelectedKey(null);if(batchMode){setBatchMode(false);setBatchKeys(new Set());setBatchSpacingOpen(false);setBatchColorOpen(false);setBatchAlignOpen(false);}}} title="Select"
           style={{...ccPanelBtnSt,border:`1.5px solid ${activeTool==="select"?"#778EE3":"#E5E7EB"}`,background:activeTool==="select"?"#DDE3F8":"white"}}>
           <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke={activeTool==="select"?"#778EE3":"#6B7280"} strokeWidth="2"><path strokeLinecap="round" strokeLinejoin="round" d="M15 15l-2 5L9 9l11 4-5 2zm0 0l5 5"/></svg>
         </button>
-        <button type="button" onClick={()=>{setActiveTool("eraser");setSelectedKey(null);}} title="Eraser"
+        <button type="button" onClick={()=>{setActiveTool("eraser");setSelectedKey(null);if(batchMode){setBatchMode(false);setBatchKeys(new Set());setBatchSpacingOpen(false);setBatchColorOpen(false);setBatchAlignOpen(false);}}} title="Eraser"
           style={{...ccPanelBtnSt,border:`1.5px solid ${activeTool==="eraser"?"#EF4444":"#E5E7EB"}`,background:activeTool==="eraser"?"#FEF2F2":"white"}}>
           <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke={activeTool==="eraser"?"#EF4444":"#6B7280"} strokeWidth="2"><path strokeLinecap="round" strokeLinejoin="round" d="M20 20H7L3 16l10-10 7 7-3.5 3.5"/><path strokeLinecap="round" strokeLinejoin="round" d="M6.5 17.5l4-4"/></svg>
         </button>
@@ -3035,7 +3036,7 @@ function CrochetBuilder({stitches,setStitches,layout,setLayout,yarnColors,onSave
           return(
             <CrochetStitchBtn key={id} id={id} label={sym.label} desc={sym.desc}
               active={activeSym===id&&!activeGroup&&activeTool==="place"} activeColor={activeColor}
-              onClick={()=>{setActiveSym(id);setActiveGroup(null);setActiveTool("place");}}/>
+              onClick={()=>{setActiveSym(id);setActiveGroup(null);setActiveTool("place");if(batchMode){setBatchMode(false);setBatchKeys(new Set());setBatchSpacingOpen(false);setBatchColorOpen(false);setBatchAlignOpen(false);}}}/>
           );
         })}
         <div ref={moreAnchorRef} className="cc-more-root" style={{position:"relative",flexShrink:0,display:"flex"}}>
@@ -3054,8 +3055,8 @@ function CrochetBuilder({stitches,setStitches,layout,setLayout,yarnColors,onSave
                   .map(s=>({id:s.id,label:s.label,desc:s.desc}))},
               ].filter(g=>g.items.length>0)}
               activeId={activeTool==="place"?activeSym:null} activeGroup={activeTool==="place"?activeGroup:null} activeColor={activeColor}
-              onSelect={id=>{setActiveSym(id);setActiveGroup(null);setActiveTool("place");setShowMore(false);}}
-              onSelectGroup={g=>{setActiveGroup(g);setActiveSym(g.stitchType);setActiveTool("place");setShowMore(false);}}
+              onSelect={id=>{setActiveSym(id);setActiveGroup(null);setActiveTool("place");setShowMore(false);if(batchMode){setBatchMode(false);setBatchKeys(new Set());setBatchSpacingOpen(false);setBatchColorOpen(false);setBatchAlignOpen(false);}}}
+              onSelectGroup={g=>{setActiveGroup(g);setActiveSym(g.stitchType);setActiveTool("place");setShowMore(false);if(batchMode){setBatchMode(false);setBatchKeys(new Set());setBatchSpacingOpen(false);setBatchColorOpen(false);setBatchAlignOpen(false);}}}
               groupCfg={groupCfg} setGroupCfg={setGroupCfg}
               onClearGroup={()=>{setActiveGroup(null);setShowMore(false);}}
               pinnedIds={pinnedIds} onPin={pin} onUnpin={unpin}
@@ -9120,7 +9121,8 @@ function cpmCalcRadii(rounds){
           .filter(st=>cIds.has(st.type)).map(st=>cpmSymH(st.type)));
         return 36+chainH; // outwardOffset + tallest chain symbol
       })();
-      r=Math.max(radii[i-1]+Math.max(maxH,chainFanExtent)+CPM_MIN_GAP,arcMin,stored);
+      const naturalMin=Math.max(radii[i-1]+Math.max(maxH,chainFanExtent)+CPM_MIN_GAP,arcMin,stored);
+      r=naturalMin+(rounds[i].extraGap??0);
     }
     radii.push(r);
   }
@@ -9159,9 +9161,13 @@ function cpmFanPositions(stitches,_prevCount,cx,cy,radius,_prevRadius,layoutMode
   const fanRadii=stitches.map(()=>radius);
   // Explicit x/y overrides for chain groups (set below); bypasses the angle/radius model.
   const overrideXY=new Map();
-  // Fan spread: group stitches by anchorId and spread them symmetrically around the anchor's angle
+  // Fan spread: group by anchorId first, then by angular proximity (≤5°) as fallback
+  const fanGroups=[]; // [{ancAngle, indices[], isChain}]
+  const grouped=new Set();
+
+  // Pass 1 — anchorId groups (require prevStitches)
   if(prevStitches&&prevStitches.length){
-    const anchorMap=new Map(); // anchorId → {ancAngle, indices[]}
+    const anchorMap=new Map();
     stitches.forEach((st,i)=>{
       if(!st.anchorId)return;
       const anc=prevStitches.find(ps=>ps.id===st.anchorId);
@@ -9171,39 +9177,61 @@ function cpmFanPositions(stitches,_prevCount,cx,cy,radius,_prevRadius,layoutMode
       anchorMap.get(st.anchorId).indices.push(i);
     });
     anchorMap.forEach(({ancAngle,indices})=>{
-      const N=indices.length; if(N<2)return;
+      if(indices.length<2)return;
       const allChains=indices.every(idx=>CPM_CHAIN_IDS.has(stitches[idx].type));
-      if(allChains){
-        // Chain-family group: fan OUTWARD from the anchor point, not along the ring.
-        // 1) Find the anchor's position on the ring.
-        // 2) Push each stitch outward from the anchor along a direction fanned around ancAngle.
-        // This keeps all chains clustered at the anchor while spreading away from the ring.
-        const outwardOffset=36; // px outward from the anchor point — clearly visible beyond ring
-        // Angle step: targets ≤10% visual overlap between adjacent chain ovals.
-        // Chain PNGs fill roughly 85–90% of their cell width in practice.
-        // Factor 0.9 ≈ 90% of cell width → arc gap ≥ 90% of visual width → ≤10% overlap.
-        const symWidth=Math.max(...indices.map(idx=>cpmSymW(stitches[idx].type)));
-        const angleStep=symWidth*0.75/outwardOffset;
-        // Anchor point on the ring
-        const ax=cx+Math.cos(ancAngle)*radius;
-        const ay=cy+Math.sin(ancAngle)*radius;
-        indices.forEach((idx,k)=>{
-          const θk=(k-(N-1)/2)*angleStep;
-          const dir=ancAngle+θk; // direction this stitch fans toward
-          // Position: anchor + outward push in dir
-          const sx=ax+Math.cos(dir)*outwardOffset;
-          const sy=ay+Math.sin(dir)*outwardOffset;
-          overrideXY.set(idx,{x:sx,y:sy,rotation:(dir*180/Math.PI)+90,angle:dir});
-        });
-      } else {
-        // Non-chain group: existing behavior — 8° per sibling pair, capped at 30°
-        const totalSpreadRad=Math.min((N-1)*8,30)*Math.PI/180;
-        indices.forEach((idx,k)=>{
-          fanAngles[idx]=ancAngle+(k-(N-1)/2)*totalSpreadRad/(N-1);
-        });
-      }
+      fanGroups.push({ancAngle,indices,isChain:allChains});
+      indices.forEach(i=>grouped.add(i));
     });
   }
+
+  // Pass 2 — proximity groups for ungrouped stitches (≤15° apart)
+  const PROX=15*Math.PI/180;
+  const ungrouped=[...Array(n).keys()].filter(i=>!grouped.has(i));
+  ungrouped.sort((a,b)=>fanAngles[a]-fanAngles[b]);
+  let proxGroup=[ungrouped[0]];
+  for(let k=1;k<=ungrouped.length;k++){
+    const i=ungrouped[k];
+    const last=ungrouped[k-1];
+    const da=Math.abs(((fanAngles[last]-(i!=null?fanAngles[i]:0)+3*Math.PI)%(2*Math.PI))-Math.PI);
+    if(i!=null&&da<PROX){
+      proxGroup.push(i);
+    } else {
+      if(proxGroup.length>=2){
+        const angles=proxGroup.map(idx=>fanAngles[idx]);
+        const ancAngle=angles.reduce((s,a)=>s+a,0)/angles.length;
+        const allChains=proxGroup.every(idx=>CPM_CHAIN_IDS.has(stitches[idx].type));
+        fanGroups.push({ancAngle,indices:proxGroup,isChain:allChains});
+      }
+      proxGroup=i!=null?[i]:[];
+    }
+  }
+
+  // Apply all fan groups
+  fanGroups.forEach(({ancAngle,indices,isChain})=>{
+    const N=indices.length;
+    if(isChain){
+      const outwardOffset=36;
+      const symWidth=Math.max(...indices.map(idx=>cpmSymW(stitches[idx].type)));
+      const angleStep=symWidth*0.75/outwardOffset;
+      const ax=cx+Math.cos(ancAngle)*radius;
+      const ay=cy+Math.sin(ancAngle)*radius;
+      indices.forEach((idx,k)=>{
+        const θk=(k-(N-1)/2)*angleStep;
+        const dir=ancAngle+θk;
+        overrideXY.set(idx,{x:ax+Math.cos(dir)*outwardOffset,y:ay+Math.sin(dir)*outwardOffset,rotation:(dir*180/Math.PI)+90,angle:dir});
+      });
+    } else {
+      // Same-foot fan — mirrors row pattern maker: all stitches share the anchor's
+      // ring position; their heads spread across a fixed 50° arc (matching row mode).
+      const step=N>1?(50*Math.PI/180)/(N-1):0;
+      const ax=cx+Math.cos(ancAngle)*radius;
+      const ay=cy+Math.sin(ancAngle)*radius;
+      indices.forEach((idx,k)=>{
+        const dir=ancAngle+(k-(N-1)/2)*step;
+        overrideXY.set(idx,{x:ax,y:ay,rotation:(dir*180/Math.PI)+90,angle:dir});
+      });
+    }
+  });
   return fanAngles.map((a,i)=>{
     if(overrideXY.has(i))return overrideXY.get(i);
     const r=fanRadii[i];
@@ -9344,7 +9372,7 @@ function sqCornerAwarePositions(stitches,cx,cy,halfSize){
 }
 
 function cpmMakeRound(roundIndex,stitchCount,type="sc"){
-  return{roundIndex,layoutMode:"auto",stitches:Array.from({length:stitchCount},(_,i)=>({type,angle:cpmAngle(i,stitchCount),id:uid()}))};
+  return{roundIndex,layoutMode:"manual",stitches:Array.from({length:stitchCount},(_,i)=>({type,angle:cpmAngle(i,stitchCount),id:uid()}))};
 }
 function cpmInitPattern(startType,stitchCount){
   const r1=cpmMakeRound(1,stitchCount,"sc");
@@ -9516,6 +9544,12 @@ function CPM_Editor({pattern,setPattern,onPreview,onSave=null,themeColor="#11111
   /* ── Eraser tool ── */
   const[eraserActive,setEraserActive]=useState(false);
 
+  /* ── Batch mode ── */
+  const[cpmBatchMode,setCpmBatchMode]=useState(false);
+  const[cpmBatchKeys,setCpmBatchKeys]=useState(new Set());
+  const[cpmBatchColorOpen,setCpmBatchColorOpen]=useState(false);
+  const[cpmBatchSpacingOpen,setCpmBatchSpacingOpen]=useState(false);
+
   /* ── Toast ── */
   const[toast,setToast]=useState(null);
   const toastTimerRef=useRef(null);
@@ -9580,9 +9614,10 @@ function CPM_Editor({pattern,setPattern,onPreview,onSave=null,themeColor="#11111
   const activateTool=(type)=>{
     setShowMore(false);
     setEraserActive(false);
-    setGhostPos(null);       // clear stale ghost
-    setSelectedStitch(null); // clear stale selection ring
-    setHovered(null);        // clear stale hover ring
+    setGhostPos(null);
+    setSelectedStitch(null);
+    setHovered(null);
+    if(cpmBatchMode){setCpmBatchMode(false);setCpmBatchKeys(new Set());setCpmBatchColorOpen(false);setCpmBatchSpacingOpen(false);}
     if(toolActive&&type===selType){setToolActive(false);}
     else{setSelType(type);setToolActive(true);}
   };
@@ -9648,17 +9683,24 @@ function CPM_Editor({pattern,setPattern,onPreview,onSave=null,themeColor="#11111
     let angleSnapped=false;
     let anchorId=null;
     if(snapping){
-      // Priority 1: prev-round stitch anchor snap (R2+) — 15° threshold
-      // Allows free-mode placement that still attaches to a previous-round stitch.
-      if(snapToPrev&&nearestRi>=1){
-        const prevStitches=p.rounds[nearestRi-1]?.stitches??[];
+      // Priority 1: prev-round stitch anchor detection — always runs (15° threshold).
+      // anchorId is assigned regardless of snap mode so fans form in free mode too.
+      // Visual angle snap only happens when snapToPrev is enabled.
+      if(nearestRi>=1){
+        const prevRound=p.rounds[nearestRi-1];
+        const prevRadius=radii[nearestRi-1]??CPM_R1;
+        const prevPos=nearestRi-1===0
+          ?cpmR1Positions(prevRound.stitches,CPM_CX,CPM_CY,prevRadius,prevRound.layoutPreset??"even",prevRound.groupSize??3)
+          :cpmFanPositions(prevRound.stitches,0,CPM_CX,CPM_CY,prevRadius,0,"manual",nearestRi>1?p.rounds[nearestRi-2]?.stitches??null:null);
         const ancThresh=15*Math.PI/180;
         let bestDiff=ancThresh;
-        prevStitches.forEach(pst=>{
-          const pAngle=pst.angle??0;
+        let snapAngle=null;
+        prevRound.stitches.forEach((pst,si)=>{
+          const pAngle=prevPos[si]?.angle??pst.angle??0;
           const d=Math.abs(((pAngle-rawAngle+Math.PI*3)%(Math.PI*2))-Math.PI);
-          if(d<bestDiff){bestDiff=d;anchorId=pst.id;angle=pAngle;angleSnapped=true;}
+          if(d<bestDiff){bestDiff=d;anchorId=pst.id;snapAngle=pAngle;}
         });
+        if(snapToPrev&&snapAngle!=null){angle=snapAngle;angleSnapped=true;}
       }
       // Priority 2: same-ring stitch alignment snap — 8° threshold (only if no anchor found)
       if(!anchorId){
@@ -9693,13 +9735,28 @@ function CPM_Editor({pattern,setPattern,onPreview,onSave=null,themeColor="#11111
           ?Math.max(...prevRound.stitches.map(s=>cpmSymH(s.type)))
           :CPM_CELL*(28/32);
         const commitR=Math.max(prevR+maxH+CPM_MIN_GAP, cpmSymW(selType)/(2*Math.PI));
-        const newRound={roundIndex:newIdx,layoutMode:"auto",stitches:[{type:selType,angle,id:uid()}],r:commitR};
+        const newRound={roundIndex:newIdx,layoutMode:"manual",stitches:[{type:selType,angle,id:uid()}],r:commitR};
         setTimeout(()=>showToast(`Round ${newIdx} added`),0);
         return{...p,rounds:[...p.rounds,newRound]};
       }
       let nearestRi=0,nearestDiff=Infinity;
       radii.forEach((r,ri)=>{const d=Math.abs(dist-r);if(d<nearestDiff){nearestDiff=d;nearestRi=ri;}});
-      // Store anchorId if a prev-round stitch was detected as the anchor
+      // Auto-detect anchorId from nearest prev-round stitch (20° threshold) if not passed in.
+      // Uses actual display angles: cpmR1Positions for R1, cpmFanPositions for R2+.
+      if(!anchorId&&nearestRi>=1){
+        const prevRound=p.rounds[nearestRi-1];
+        const prevRadius=radii[nearestRi-1]??CPM_R1;
+        const prevPos=nearestRi-1===0
+          ?cpmR1Positions(prevRound.stitches,CPM_CX,CPM_CY,prevRadius,prevRound.layoutPreset??"even",prevRound.groupSize??3)
+          :cpmFanPositions(prevRound.stitches,0,CPM_CX,CPM_CY,prevRadius,0,"manual",nearestRi>1?p.rounds[nearestRi-2]?.stitches??null:null);
+        const autoThresh=20*Math.PI/180;
+        let bestD=autoThresh;
+        prevRound.stitches.forEach((pst,si)=>{
+          const pAngle=prevPos[si]?.angle??pst.angle??0;
+          const d=Math.abs(((pAngle-angle+Math.PI*3)%(Math.PI*2))-Math.PI);
+          if(d<bestD){bestD=d;anchorId=pst.id;}
+        });
+      }
       const newStitch={type:selType,angle,id:uid(),...(anchorId&&nearestRi>=1?{anchorId}:{})};
       // Add stitch and commit current radius as floor (prevents later shrinkage causing jumps)
       return{...p,rounds:p.rounds.map((round,ri)=>{
@@ -9753,7 +9810,7 @@ function CPM_Editor({pattern,setPattern,onPreview,onSave=null,themeColor="#11111
   /* ── SVG mouse move → ghost ── */
   const handleSvgMove=(e)=>{
     if(dragging||isDraggingStitch)return;
-    if(!toolActive){setGhostPos(null);return;}
+    if(cpmBatchMode||!toolActive){setGhostPos(null);return;}
     const{cx,cy}=toContent(e.clientX,e.clientY);
     const _g=computeGhost(cx,cy);
     // Bake symbolType into ghostPos so render always uses the tool that was active
@@ -9763,10 +9820,11 @@ function CPM_Editor({pattern,setPattern,onPreview,onSave=null,themeColor="#11111
 
   /* ── SVG click → place or deselect ── */
   const handleSvgClick=(e)=>{
+    if(cpmBatchMode)return;
     if(toolActive){
       if(dragMoved.current)return;
       // Use ghost's snapped position and anchorId so preview = placed position
-      if(ghostPos){placeStitchAt(ghostPos.gx,ghostPos.gy,snapToPrev?(ghostPos.anchorId??null):null);}
+      if(ghostPos){placeStitchAt(ghostPos.gx,ghostPos.gy,ghostPos.anchorId??null);}
       else{const{cx,cy}=toContent(e.clientX,e.clientY);placeStitchAt(cx,cy);}
       setGhostPos(null); // clear ghost immediately after placement
     } else if(!eraserActive){
@@ -9777,6 +9835,11 @@ function CPM_Editor({pattern,setPattern,onPreview,onSave=null,themeColor="#11111
   /* ── Stitch pointer down → drag ── */
   const startStitchDrag=(e,ri,si)=>{
     e.preventDefault();e.stopPropagation();
+    if(cpmBatchMode){
+      const id=patternRef.current.rounds[ri]?.stitches[si]?.id;
+      if(id)setCpmBatchKeys(prev=>{const n=new Set(prev);n.has(id)?n.delete(id):n.add(id);return n;});
+      return;
+    }
     setSelectedStitch({ri,si}); // mark as selected (Feature 5)
     // Record offset from cursor to stitch foot so the grabbed point stays under the pointer.
     const{cx:grabCx,cy:grabCy}=toContent(e.clientX,e.clientY);
@@ -9875,11 +9938,11 @@ function CPM_Editor({pattern,setPattern,onPreview,onSave=null,themeColor="#11111
       {/* ── Minimal top bar ── */}
       <div style={{background:"white",borderBottom:"1px solid #EFEFEF",padding:"6px 10px",flexShrink:0,display:"flex",alignItems:"center",gap:4}}>
         {/* Tool mode buttons */}
-        <button type="button" onClick={()=>{setToolActive(false);setEraserActive(false);setGhostPos(null);setSelectedStitch(null);setHovered(null);}} title="Select"
+        <button type="button" onClick={()=>{setToolActive(false);setEraserActive(false);setGhostPos(null);setSelectedStitch(null);setHovered(null);if(cpmBatchMode){setCpmBatchMode(false);setCpmBatchKeys(new Set());setCpmBatchColorOpen(false);setCpmBatchSpacingOpen(false);}}} title="Select"
           style={{...panelBtnSt,border:`1.5px solid ${!toolActive&&!eraserActive?"#778EE3":"#E5E7EB"}`,background:!toolActive&&!eraserActive?"#DDE3F8":"white"}}>
           <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke={!toolActive&&!eraserActive?"#778EE3":"#6B7280"} strokeWidth="2"><path strokeLinecap="round" strokeLinejoin="round" d="M15 15l-2 5L9 9l11 4-5 2zm0 0l5 5"/></svg>
         </button>
-        <button type="button" onClick={()=>{setEraserActive(v=>!v);setToolActive(false);setGhostPos(null);setSelectedStitch(null);setHovered(null);}} title="Eraser"
+        <button type="button" onClick={()=>{setEraserActive(v=>!v);setToolActive(false);setGhostPos(null);setSelectedStitch(null);setHovered(null);if(cpmBatchMode){setCpmBatchMode(false);setCpmBatchKeys(new Set());setCpmBatchColorOpen(false);setCpmBatchSpacingOpen(false);}}} title="Eraser"
           style={{...panelBtnSt,border:`1.5px solid ${eraserActive?"#EF4444":"#E5E7EB"}`,background:eraserActive?"#FEF2F2":"white"}}>
           <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke={eraserActive?"#EF4444":"#6B7280"} strokeWidth="2"><path strokeLinecap="round" strokeLinejoin="round" d="M20 20H7L3 16l10-10 7 7-3.5 3.5"/><path strokeLinecap="round" strokeLinejoin="round" d="M6.5 17.5l4-4"/></svg>
         </button>
@@ -9902,6 +9965,10 @@ function CPM_Editor({pattern,setPattern,onPreview,onSave=null,themeColor="#11111
         <button type="button" onClick={cpmRedo} disabled={!cpmFuture.length} title="Redo"
           style={{...panelBtnSt,opacity:cpmFuture.length?1:0.3,cursor:cpmFuture.length?"pointer":"default"}}>
           <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#6B7280" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-.49-3.84"/></svg>
+        </button>
+        <button type="button" onClick={()=>{setCpmBatchMode(v=>{const next=!v;if(!next){setCpmBatchKeys(new Set());setCpmBatchColorOpen(false);setCpmBatchSpacingOpen(false);}else{setToolActive(false);setEraserActive(false);setGhostPos(null);setSelectedStitch(null);}return next;});}} title="Batch Actions"
+          style={{...panelBtnSt,border:`1.5px solid ${cpmBatchMode?"#778EE3":"#E5E7EB"}`,background:cpmBatchMode?"#DDE3F8":"white"}}>
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke={cpmBatchMode?"#778EE3":"#6B7280"} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
         </button>
         {/* Right actions */}
         <div style={{marginLeft:"auto",display:"flex",gap:4,alignItems:"center"}}>
@@ -9957,8 +10024,122 @@ function CPM_Editor({pattern,setPattern,onPreview,onSave=null,themeColor="#11111
             {toast}
           </div>
         )}
+        {/* ── Batch overlays ── */}
+        {cpmBatchMode&&(()=>{
+          const allRndSts=pattern.rounds.flatMap(r=>r.stitches);
+          const selCount=cpmBatchKeys.size;
+          const allSel=allRndSts.length>0&&allRndSts.every(s=>cpmBatchKeys.has(s.id));
+          // Rounds with selected stitches, excluding R1 (index 0) from spacing
+          const selRoundsForSpacing=pattern.rounds.map((_,ri)=>ri).filter(ri=>ri>0&&pattern.rounds[ri].stitches.some(s=>cpmBatchKeys.has(s.id)));
+          const spBtn={width:36,height:36,borderRadius:"50%",border:"none",cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0,boxShadow:"0 2px 8px rgba(0,0,0,0.18)"};
+          return(<>
+            {/* Round selector — top-left pill list, hidden when spacing open */}
+            {!cpmBatchSpacingOpen&&(
+              <div style={{position:"absolute",top:8,left:8,zIndex:30,
+                background:"rgba(255,255,255,0.96)",backdropFilter:"blur(8px)",
+                borderRadius:12,boxShadow:"0 2px 12px rgba(0,0,0,0.10)",
+                padding:"6px 5px",display:"flex",flexDirection:"column",gap:3,
+                maxHeight:"55vh",overflowY:"auto"}}>
+                {pattern.rounds.map((round,ri)=>{
+                  const lbl=`R${round.roundIndex}`;
+                  const roundSts=round.stitches;
+                  const allSelRound=roundSts.length>0&&roundSts.every(s=>cpmBatchKeys.has(s.id));
+                  const partSel=!allSelRound&&roundSts.some(s=>cpmBatchKeys.has(s.id));
+                  return(
+                    <button key={round.roundIndex} type="button"
+                      onClick={()=>setCpmBatchKeys(prev=>{const n=new Set(prev);roundSts.forEach(s=>allSelRound?n.delete(s.id):n.add(s.id));return n;})}
+                      style={{minWidth:36,padding:"5px 9px",borderRadius:8,border:"none",
+                        background:allSelRound?"#778EE3":partSel?"rgba(119,142,227,0.25)":"rgba(119,142,227,0.07)",
+                        color:allSelRound?"white":"#778EE3",
+                        fontSize:11,fontWeight:700,cursor:"pointer",textAlign:"center"}}>
+                      {lbl}
+                    </button>
+                  );
+                })}
+              </div>
+            )}
+            {/* Round Spacing panel — top-left, replaces round selector, R1 excluded */}
+            {cpmBatchSpacingOpen&&(
+              <div style={{position:"absolute",top:8,left:8,zIndex:35,
+                background:"white",borderRadius:14,
+                boxShadow:"0 4px 20px rgba(0,0,0,0.13)",width:198,
+                display:"flex",flexDirection:"column",overflow:"hidden",maxHeight:"54vh"}}>
+                <div style={{padding:"12px 14px 9px",display:"flex",justifyContent:"space-between",alignItems:"center",flexShrink:0}}>
+                  <span style={{fontSize:12,fontWeight:700,color:"#1C1C1E"}}>Round Spacing</span>
+                  <button type="button" onClick={()=>setCpmBatchSpacingOpen(false)}
+                    style={{width:22,height:22,borderRadius:"50%",border:"none",background:"#F2F2F7",cursor:"pointer",fontSize:13,color:"#6B7280",display:"flex",alignItems:"center",justifyContent:"center",fontWeight:400}}>×</button>
+                </div>
+                <div style={{overflowY:"auto",padding:"0 14px 12px"}}>
+                  {selRoundsForSpacing.length===0&&<p style={{fontSize:10,color:"#9CA3AF",margin:"7px 0",textAlign:"center"}}>{selCount===0?"Select stitches to adjust spacing":"No rounds"}</p>}
+                  {selRoundsForSpacing.map(ri=>{
+                    const round=pattern.rounds[ri];
+                    const extra=round.extraGap??0;
+                    const lbl=`R${round.roundIndex}`;
+                    return(
+                      <div key={ri} style={{display:"flex",alignItems:"center",justifyContent:"space-between",padding:"10px 0",borderBottom:"1px solid #F2F2F7"}}>
+                        <span style={{fontSize:12,fontWeight:500,color:"#1C1C1E",minWidth:32}}>{lbl}</span>
+                        <div style={{display:"flex",alignItems:"center",gap:14}}>
+                          <button type="button" onClick={()=>commitPattern(p=>{const nr=[...p.rounds];nr[ri]={...nr[ri],extraGap:Math.max(0,(nr[ri].extraGap??0)-4)};return{...p,rounds:nr};})}
+                            style={{width:25,height:25,borderRadius:"50%",border:"1.5px solid #E5E7EB",background:"white",cursor:"pointer",fontSize:14,color:"#374151",display:"flex",alignItems:"center",justifyContent:"center",lineHeight:1}}>−</button>
+                          <span style={{minWidth:18,textAlign:"center",fontSize:13,fontWeight:600,color:"#1C1C1E"}}>{extra}</span>
+                          <button type="button" onClick={()=>commitPattern(p=>{const nr=[...p.rounds];nr[ri]={...nr[ri],extraGap:(nr[ri].extraGap??0)+4};return{...p,rounds:nr};})}
+                            style={{width:25,height:25,borderRadius:"50%",border:"1.5px solid #E5E7EB",background:"white",cursor:"pointer",fontSize:14,color:"#374151",display:"flex",alignItems:"center",justifyContent:"center",lineHeight:1}}>+</button>
+                        </div>
+                      </div>
+                    );
+                  })}
+                  {selRoundsForSpacing.length>0&&<button type="button" onClick={()=>commitPattern(p=>({...p,rounds:p.rounds.map(r=>({...r,extraGap:0}))}))}
+                    style={{width:"100%",marginTop:9,padding:"6px",borderRadius:7,border:"none",background:"#F2F2F7",color:"#778EE3",fontSize:10,fontWeight:600,cursor:"pointer"}}>
+                    Reset all
+                  </button>}
+                </div>
+              </div>
+            )}
+            {/* Color modal */}
+            {cpmBatchColorOpen&&(
+              <div style={{position:"absolute",inset:0,zIndex:40,display:"flex",alignItems:"flex-end",justifyContent:"center",background:"rgba(0,0,0,0.18)"}}
+                onClick={e=>{if(e.target===e.currentTarget)setCpmBatchColorOpen(false);}}>
+                <div style={{background:"white",borderRadius:"18px 18px 0 0",padding:"18px 20px 28px",width:"100%",maxWidth:420,boxShadow:"0 -4px 24px rgba(0,0,0,0.14)"}}>
+                  <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:14}}>
+                    <span style={{fontSize:13,fontWeight:800,color:"#374151"}}>Change Color</span>
+                    <button type="button" onClick={()=>setCpmBatchColorOpen(false)}
+                      style={{width:26,height:26,borderRadius:"50%",border:"none",background:"#F3F4F6",cursor:"pointer",fontSize:14,color:"#6B7280",display:"flex",alignItems:"center",justifyContent:"center"}}>×</button>
+                  </div>
+                  <div style={{display:"flex",flexWrap:"wrap",gap:8,justifyContent:"center"}}>
+                    {(yarnColors?.length?yarnColors.map(y=>y.color):[themeColor,"#E07B8A","#F59E0B","#3B6FD4","#059669","#111111"]).map((c,i)=>(
+                      <button key={i} type="button" onClick={()=>{commitPattern(p=>({...p,rounds:p.rounds.map(r=>({...r,stitches:r.stitches.map(st=>cpmBatchKeys.has(st.id)?{...st,color:c}:st)}))}));setCpmBatchColorOpen(false);}}
+                        style={{width:40,height:40,borderRadius:"50%",background:c,border:"2.5px solid #E5E7EB",cursor:"pointer",boxShadow:c==="#ffffff"?"inset 0 0 0 1px #E5E7EB":""}}/>
+                    ))}
+                    <label style={{width:40,height:40,borderRadius:"50%",border:"2px dashed #DDE3F8",cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center",color:"#778EE3",fontSize:18,fontWeight:700}}>
+                      +<input type="color" defaultValue="#778EE3" style={{width:0,height:0,opacity:0,position:"absolute"}} onChange={e=>{const c=e.target.value;commitPattern(p=>({...p,rounds:p.rounds.map(r=>({...r,stitches:r.stitches.map(st=>cpmBatchKeys.has(st.id)?{...st,color:c}:st)}))}));setCpmBatchColorOpen(false);}}/>
+                    </label>
+                  </div>
+                </div>
+              </div>
+            )}
+            {/* Bottom action bar */}
+            <div style={{position:"absolute",bottom:0,left:0,right:0,zIndex:25,
+              background:"rgba(255,255,255,0.96)",backdropFilter:"blur(12px)",
+              borderTop:"1px solid #EAECF5",padding:"10px 8px 16px",
+              display:"flex",alignItems:"flex-start",justifyContent:"space-around"}}>
+              {[
+                {icon:<svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#E05C7A" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><path d="M3 6h18M8 6V4h8v2M19 6l-1 14H6L5 6"/></svg>,label:"Delete",bg:"#FDE8ED",active:false,disabled:selCount===0,fn:()=>{commitPattern(p=>({...p,rounds:p.rounds.map(r=>({...r,stitches:r.stitches.filter(st=>!cpmBatchKeys.has(st.id))})).filter((r,i)=>i===0||r.stitches.length>0).map((r,i)=>({...r,roundIndex:i+1}))}));setCpmBatchKeys(new Set());}},
+                {icon:<svg width="17" height="17" viewBox="0 0 24 24" fill="#778EE3"><path d="M8.89 15.403a1 1 0 1 0 .243 1.985a1 1 0 0 0-.243-1.985m-3.342-2.614a1 1 0 1 1 1.985-.243a1 1 0 0 1-1.985.243m2.371-5.327a1 1 0 1 0 .243 1.985a1 1 0 0 0-.243-1.985m7.778 1.819a1 1 0 1 1 1.986-.243a1 1 0 0 1-1.986.243m-3.704 1.598a1 1 0 1 0 .242 1.985a1 1 0 0 0-.242-1.985m-.6-3.842a1 1 0 1 1 1.985-.243a1 1 0 0 1-1.985.243"/><path fill="#778EE3" fillRule="evenodd" d="M2.253 11.764c.13-5.384 4.6-9.642 9.983-9.511c5.383.13 9.642 4.6 9.511 9.983a1.47 1.47 0 0 1-.334.91a1.8 1.8 0 0 1-.721.513c-.502.21-1.131.275-1.754.28c-2.689.018-5.024 2.33-5.177 5.058c-.035.636-.144 1.283-.418 1.792a1.9 1.9 0 0 1-.62.695a1.66 1.66 0 0 1-.96.263c-5.382-.13-9.64-4.6-9.51-9.983M12.2 3.752a8.25 8.25 0 0 0-.4 16.496c.068.001.093-.014.106-.021a.4.4 0 0 0 .117-.15c.117-.217.21-.601.24-1.164c.195-3.475 3.142-6.45 6.665-6.475c.562-.003.956-.068 1.186-.163a.5.5 0 0 0 .134-.076A8.25 8.25 0 0 0 12.2 3.752" clipRule="evenodd"/></svg>,label:"Color",bg:cpmBatchColorOpen?"#C7D0F5":"#E8ECFB",active:cpmBatchColorOpen,disabled:selCount===0,fn:()=>{setCpmBatchColorOpen(v=>!v);setCpmBatchSpacingOpen(false);}},
+                {icon:<svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#778EE3" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><path d="M8 3v4M16 3v4M3 9h18M8 17v4M16 17v4M3 15h18"/></svg>,label:"Spacing",bg:cpmBatchSpacingOpen?"#C7D0F5":"#DDE3F8",active:cpmBatchSpacingOpen,disabled:false,fn:()=>{setCpmBatchSpacingOpen(v=>!v);setCpmBatchColorOpen(false);}},
+                {icon:<svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#7C6DD4" strokeWidth="2"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="3" r="1.8" fill="#7C6DD4" stroke="none"/><circle cx="20.1" cy="7.5" r="1.8" fill="#7C6DD4" stroke="none"/><circle cx="20.1" cy="16.5" r="1.8" fill="#7C6DD4" stroke="none"/><circle cx="12" cy="21" r="1.8" fill="#7C6DD4" stroke="none"/><circle cx="3.9" cy="16.5" r="1.8" fill="#7C6DD4" stroke="none"/><circle cx="3.9" cy="7.5" r="1.8" fill="#7C6DD4" stroke="none"/></svg>,label:"Distribute",bg:"#ECEAFC",active:false,disabled:selCount===0,fn:()=>{commitPattern(p=>({...p,rounds:p.rounds.map((r,ri)=>{if(ri===0)return r;if(!r.stitches.some(st=>cpmBatchKeys.has(st.id)))return r;const n=r.stitches.length;return{...r,layoutMode:"manual",stitches:r.stitches.map((st,i)=>({...st,angle:cpmAngle(i,n),anchorId:undefined}))};})}))}},
+                {icon:<svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#5B8AD6" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/></svg>,label:allSel?"Deselect":"Select All",bg:"#E3EEFB",active:false,disabled:false,fn:()=>setCpmBatchKeys(allSel?new Set():new Set(allRndSts.map(s=>s.id)))},
+              ].map(b=>(
+                <button key={b.label} type="button" onClick={b.fn} disabled={b.disabled}
+                  style={{display:"flex",flexDirection:"column",alignItems:"center",gap:5,background:"none",border:"none",cursor:b.disabled?"default":"pointer",padding:"0 4px",flex:1,opacity:b.disabled?0.4:1}}>
+                  <div style={{...spBtn,background:b.bg,width:48,height:48,border:"1.5px solid rgba(0,0,0,0.06)"}}>{b.icon}</div>
+                  <span style={{fontSize:9,fontWeight:600,color:"#6B7280"}}>{b.label}</span>
+                </button>
+              ))}
+            </div>
+          </>);
+        })()}
         <svg ref={svgRef} viewBox={`0 0 ${CPM_SVG_W} ${CPM_SVG_W}`}
-          style={{width:"100%",height:"100%",background:canvasBg,cursor:eraserActive?"cell":toolActive?"crosshair":dragging||isDraggingStitch?"grabbing":"default",touchAction:"none",display:"block"}}
+          style={{width:"100%",height:"100%",background:canvasBg,cursor:cpmBatchMode?"default":eraserActive?"cell":toolActive?"crosshair":dragging||isDraggingStitch?"grabbing":"default",touchAction:"none",display:"block"}}
           onMouseDown={onMD}
           onMouseMove={handleSvgMove}
           onMouseLeave={()=>setGhostPos(null)}
@@ -9978,20 +10159,16 @@ function CPM_Editor({pattern,setPattern,onPreview,onSave=null,themeColor="#11111
             {pattern.rounds.map((round,ri)=>{
               const radius=radii[ri]??CPM_R1;
               const la=-Math.PI/2, lr=radius+18;
-              const layoutMode=round.layoutMode??"auto";
-              // R1 uses layoutPreset; other rounds use layoutMode
-              // prevStitches passed so stitches sharing an anchorId fan out around that anchor
+              // Always use stored angles (manual); distribute via batch action
               const fanPos=isSquare
                 ?sqRolePositions(round.stitches,CPM_CX,CPM_CY,radius)
                 :ri===0
                   ?cpmR1Positions(round.stitches,CPM_CX,CPM_CY,radius,round.layoutPreset??"even",round.groupSize??3)
-                  :cpmFanPositions(round.stitches,0,CPM_CX,CPM_CY,radius,0,layoutMode,pattern.rounds[ri-1]?.stitches??null);
-              // Corner stitch indices for visual emphasis (square mode only)
+                  :cpmFanPositions(round.stitches,0,CPM_CX,CPM_CY,radius,0,"manual",pattern.rounds[ri-1]?.stitches??null);
               const sqN=round.stitches.length;
               const sqCorners=isSquare&&sqN>=4?new Set([0,Math.round(sqN/4),Math.round(sqN/2),Math.round(3*sqN/4)]):new Set();
               const lx=CPM_CX+Math.cos(la)*lr;
               const ly=CPM_CY+Math.sin(la)*lr;
-              const isAuto=layoutMode==="auto";
               return(
                 <g key={round.roundIndex}>
                   {isSquare
@@ -10000,18 +10177,6 @@ function CPM_Editor({pattern,setPattern,onPreview,onSave=null,themeColor="#11111
                   }
                   <text x={lx} y={ly} textAnchor="middle" dominantBaseline="middle"
                     fontSize={10} fontFamily="system-ui" fill="#b0b8d4" style={{userSelect:"none"}}>R{round.roundIndex}</text>
-                  {/* Layout mode toggle badge */}
-                  <g onClick={(e)=>{e.stopPropagation();toggleLayoutMode(ri);}} style={{cursor:"pointer"}} pointerEvents="all">
-                    <rect x={lx-13} y={ly+7} width={26} height={11} rx={4}
-                      fill={isAuto?"#DDE3F8":"#F3F4F6"}
-                      stroke={isAuto?"#778EE3":"#D1D5DB"} strokeWidth={0.8}/>
-                    <text x={lx} y={ly+13.5} textAnchor="middle" dominantBaseline="middle"
-                      fontSize={6.5} fontFamily="system-ui"
-                      fill={isAuto?"#778EE3":"#6B7280"}
-                      style={{userSelect:"none",pointerEvents:"none"}}>
-                      {isAuto?"≡ auto":"· free"}
-                    </text>
-                  </g>
                   {round.stitches.map((st,si)=>{
                     const pos=fanPos[si];
                     const isH=hovered?.ri===ri&&hovered?.si===si;
@@ -10030,6 +10195,8 @@ function CPM_Editor({pattern,setPattern,onPreview,onSave=null,themeColor="#11111
                     return(
                       <g key={st.id||si} transform={`translate(${dispPos.x},${dispPos.y}) rotate(${dispPos.rotation})`} style={{transition:isDragged?"none":"transform 0.25s ease"}}>
                         {isCornerSt&&<circle cy={cpmSymMidY(st.type)} r={CPM_HIT_R+4} fill={themeColor} fillOpacity={0.1} stroke={themeColor} strokeOpacity={0.45} strokeWidth={1.2} pointerEvents="none"/>}
+                        {/* Batch selection ring */}
+                        {cpmBatchMode&&cpmBatchKeys.has(st.id)&&<circle cy={cpmSymMidY(st.type)} r={CPM_HIT_R+3} fill="rgba(119,142,227,0.22)" stroke="#778EE3" strokeWidth={2} pointerEvents="none"/>}
                         {/* Selection ring — solid blue, select/erase mode only */}
                         {showSel&&<circle cy={cpmSymMidY(st.type)} r={CPM_HIT_R+3} fill="none" stroke="#778EE3" strokeWidth={2} pointerEvents="none"/>}
                         {/* Hover ring — solid light ring, mutually exclusive with selection */}
@@ -10043,7 +10210,7 @@ function CPM_Editor({pattern,setPattern,onPreview,onSave=null,themeColor="#11111
                           onContextMenu={(e)=>{e.preventDefault();e.stopPropagation();removeStitch(ri,si);}}
                         />
                         <g opacity={isDragged?0.5:1}>
-                          {ccSym(st.type,28,themeColor)}
+                          {ccSym(st.type,28,st.color??themeColor)}
                         </g>
                       </g>
                     );
