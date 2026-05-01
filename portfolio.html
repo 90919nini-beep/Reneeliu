@@ -1,0 +1,1500 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Renee Liu — Marketing &amp; Social Media Creative</title>
+  <meta name="description" content="Portfolio of Renee Liu — Marketing &amp; Social Media Creative specialising in lifestyle, sustainability, and cultural brand storytelling." />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=Playfair+Display:ital,wght@0,400;0,500;0,600;1,400;1,500&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet" />
+  <style>
+    /* ─── Design Tokens ──────────────────────────────────────── */
+    :root {
+      --cream:        #F7F2EA;
+      --cream-card:   #FFFDF9;
+      --cream-alt:    #EDE5D8;
+      --brick:        #B85C38;
+      --mustard:      #E8C547;
+      --warm-brown:   #7A5C44;
+      --text-primary: #2A1F14;
+      --text-sec:     #7A6A5A;
+      --border:       #D9CEBE;
+      --dark:         #2A1F14;
+    }
+
+    /* ─── Reset ──────────────────────────────────────────────── */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html { scroll-behavior: smooth; }
+    body {
+      background: var(--cream);
+      color: var(--text-primary);
+      font-family: 'Inter', system-ui, sans-serif;
+      -webkit-font-smoothing: antialiased;
+      line-height: 1.6;
+    }
+    a { color: inherit; text-decoration: none; }
+    button { font-family: inherit; }
+
+    /* ─── Layout ─────────────────────────────────────────────── */
+    .wrap { max-width: 1152px; margin: 0 auto; padding: 0 1.5rem; }
+    section { padding: 6rem 1.5rem; }
+
+    /* ─── Section Label ──────────────────────────────────────── */
+    .s-label {
+      display: block;
+      font-size: 0.625rem;
+      letter-spacing: 0.3em;
+      text-transform: uppercase;
+      color: var(--warm-brown);
+      margin-bottom: 3.5rem;
+    }
+
+    /* ─── Section Heading ────────────────────────────────────── */
+    .s-heading {
+      font-family: 'DM Serif Display', Georgia, serif;
+      font-size: clamp(2.75rem, 5.5vw, 4.5rem);
+      color: var(--text-primary);
+      line-height: 1.1;
+      margin-bottom: 3rem;
+    }
+
+    /* ─── Buttons ────────────────────────────────────────────── */
+    .btn {
+      display: inline-block;
+      font-size: 0.65rem;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      padding: 0.875rem 2rem;
+      border-radius: 9999px;
+      cursor: pointer;
+      transition: transform 0.2s, box-shadow 0.2s, background 0.2s, border-color 0.2s;
+      border: 1px solid transparent;
+    }
+    .btn:hover { transform: translateY(-2px); }
+    .btn-brick {
+      background: var(--brick);
+      color: #fff;
+    }
+    .btn-brick:hover { box-shadow: 0 4px 16px rgba(184,92,56,0.3); }
+    .btn-outline-dark {
+      border-color: var(--warm-brown);
+      color: var(--warm-brown);
+      background: transparent;
+    }
+    .btn-outline-dark:hover { background: var(--cream-alt); }
+    .btn-outline-light {
+      border-color: var(--border);
+      color: var(--cream);
+      background: transparent;
+    }
+    .btn-outline-light:hover { border-color: var(--cream); }
+
+    /* ─── Tags / Pills ───────────────────────────────────────── */
+    .pill {
+      display: inline-block;
+      font-size: 0.65rem;
+      padding: 0.3rem 0.75rem;
+      border: 1px solid var(--border);
+      border-radius: 9999px;
+      color: var(--text-sec);
+    }
+    .pill-filled {
+      background: var(--cream-alt);
+      border-color: var(--border);
+      color: var(--warm-brown);
+    }
+
+    /* ─── NAV ────────────────────────────────────────────────── */
+    #nav {
+      position: fixed;
+      top: 0; left: 0; right: 0;
+      z-index: 100;
+      padding: 1.25rem 0;
+      transition: background 0.3s, box-shadow 0.3s;
+    }
+    #nav.scrolled {
+      background: rgba(247,242,234,0.96);
+      backdrop-filter: blur(8px);
+      box-shadow: 0 1px 0 var(--border);
+    }
+    .nav-inner {
+      max-width: 1152px;
+      margin: 0 auto;
+      padding: 0 1.5rem;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .nav-logo {
+      font-family: 'DM Serif Display', Georgia, serif;
+      font-size: 1.25rem;
+      color: var(--text-primary);
+    }
+    .nav-links {
+      display: flex;
+      gap: 2.5rem;
+      list-style: none;
+    }
+    .nav-links a {
+      font-size: 0.625rem;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      color: var(--text-sec);
+      transition: color 0.2s;
+    }
+    .nav-links a:hover { color: var(--text-primary); }
+
+    /* Hamburger */
+    .hamburger {
+      display: none;
+      flex-direction: column;
+      gap: 6px;
+      background: none;
+      border: none;
+      cursor: pointer;
+      padding: 4px;
+    }
+    .hamburger span {
+      display: block;
+      width: 22px;
+      height: 1px;
+      background: var(--text-primary);
+      transition: transform 0.22s, opacity 0.22s;
+    }
+    .hamburger.open span:nth-child(1) { transform: rotate(45deg) translate(4.5px, 4.5px); }
+    .hamburger.open span:nth-child(2) { opacity: 0; }
+    .hamburger.open span:nth-child(3) { transform: rotate(-45deg) translate(4.5px, -4.5px); }
+
+    /* Mobile dropdown */
+    .mobile-menu {
+      display: none;
+      flex-direction: column;
+      gap: 1.25rem;
+      padding: 1.5rem;
+      background: var(--cream);
+      border-top: 1px solid var(--border);
+    }
+    .mobile-menu.open { display: flex; }
+    .mobile-menu a {
+      font-size: 0.625rem;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      color: var(--text-sec);
+    }
+
+    /* ─── HERO ───────────────────────────────────────────────── */
+    #hero {
+      min-height: 100vh;
+      background: var(--cream);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 6rem 1.5rem 3rem;
+      text-align: center;
+      position: relative;
+      overflow: hidden;
+    }
+    .hero-deco-circle {
+      position: absolute;
+      top: 7rem; right: 5rem;
+      width: 9rem; height: 9rem;
+      border-radius: 50%;
+      border: 1px solid var(--border);
+      opacity: 0.4;
+      pointer-events: none;
+    }
+    .hero-deco-sq {
+      position: absolute;
+      bottom: 9rem; left: 4rem;
+      width: 5rem; height: 5rem;
+      border: 1px solid var(--border);
+      opacity: 0.3;
+      transform: rotate(14deg);
+      pointer-events: none;
+    }
+    .hero-inner {
+      max-width: 760px;
+      width: 100%;
+      position: relative;
+      z-index: 1;
+    }
+    .hero-pre {
+      font-size: 0.625rem;
+      letter-spacing: 0.3em;
+      text-transform: uppercase;
+      color: var(--warm-brown);
+      margin-bottom: 2.5rem;
+    }
+    .hero-name-wrap { display: inline-block; margin-bottom: 0.5rem; }
+    .hero-name {
+      font-family: 'DM Serif Display', Georgia, serif;
+      font-size: clamp(5rem, 14vw, 9.5rem);
+      line-height: 1;
+      color: var(--text-primary);
+      display: block;
+    }
+    .hero-underline-svg { width: 100%; margin-top: 0.2rem; }
+    .hero-sub {
+      font-family: 'Playfair Display', Georgia, serif;
+      font-style: italic;
+      font-size: clamp(1rem, 2.5vw, 1.375rem);
+      color: var(--text-sec);
+      margin-top: 1rem;
+      margin-bottom: 1.5rem;
+    }
+    .hero-body {
+      font-size: 1rem;
+      color: var(--text-sec);
+      line-height: 1.8;
+      max-width: 480px;
+      margin: 0 auto 3rem;
+    }
+    .hero-ctas { display: flex; flex-wrap: wrap; gap: 1rem; justify-content: center; }
+    .scroll-cue {
+      margin-top: 5rem;
+      display: flex; flex-direction: column; align-items: center; gap: 0.5rem;
+    }
+    .scroll-cue span {
+      font-size: 0.6rem;
+      letter-spacing: 0.25em;
+      text-transform: uppercase;
+      color: var(--border);
+    }
+    .scroll-line { width: 1px; height: 2.5rem; background: var(--border); }
+
+    /* ─── ABOUT ──────────────────────────────────────────────── */
+    #about { background: var(--cream-alt); }
+    .about-grid {
+      display: grid;
+      gap: 3rem;
+      grid-template-columns: 1fr;
+    }
+    .about-heading {
+      font-family: 'DM Serif Display', Georgia, serif;
+      font-size: clamp(2.5rem, 5vw, 4rem);
+      line-height: 1.15;
+      color: var(--text-primary);
+      margin-bottom: 1.75rem;
+    }
+    .about-heading em { font-style: italic; }
+    .about-copy {
+      font-size: 0.9375rem;
+      color: var(--text-sec);
+      line-height: 1.85;
+    }
+    .about-copy p + p { margin-top: 1.25rem; }
+    .tag-row { display: flex; flex-wrap: wrap; gap: 0.5rem; margin-top: 1.5rem; }
+    .sidebar { display: flex; flex-direction: column; gap: 1rem; }
+    .s-card {
+      background: var(--cream-card);
+      border: 1px solid var(--border);
+      border-radius: 1rem;
+      padding: 1.5rem;
+    }
+    .s-card-label {
+      font-size: 0.6rem;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      color: var(--warm-brown);
+      margin-bottom: 0.75rem;
+    }
+    .s-card-title {
+      font-family: 'Playfair Display', Georgia, serif;
+      font-size: 0.9375rem;
+      font-weight: 500;
+      color: var(--text-primary);
+      line-height: 1.4;
+    }
+    .s-card-sub { font-size: 0.8125rem; color: var(--text-sec); margin-top: 0.4rem; }
+    .focus-list { list-style: none; display: flex; flex-direction: column; gap: 0.625rem; }
+    .focus-list li {
+      font-size: 0.8125rem;
+      color: var(--text-sec);
+      display: flex; gap: 0.625rem;
+    }
+    .focus-list li::before { content: '—'; color: var(--warm-brown); flex-shrink: 0; }
+
+    /* ─── ACHIEVEMENTS ──────────────────────────────────────── */
+    #achievements {
+      background: var(--dark);
+      padding: 4rem 1.5rem;
+    }
+    .ach-strip {
+      display: grid;
+      grid-template-columns: repeat(5, 1fr);
+      gap: 0;
+    }
+    .ach-item {
+      padding: 1.5rem 1.75rem;
+      border-right: 1px solid rgba(217,206,190,0.12);
+      opacity: 0;
+      transform: translateY(16px);
+      transition: opacity 0.55s ease, transform 0.55s ease;
+    }
+    .ach-item.ach-visible {
+      opacity: 1;
+      transform: translateY(0);
+    }
+    .ach-item:last-child { border-right: none; }
+    .ach-num {
+      font-family: 'DM Serif Display', Georgia, serif;
+      font-size: clamp(2rem, 3.5vw, 3rem);
+      color: var(--cream);
+      line-height: 1;
+      margin-bottom: 0.625rem;
+    }
+    .ach-label {
+      font-family: 'Inter', sans-serif;
+      font-size: 0.625rem;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      color: var(--text-sec);
+      line-height: 1.6;
+    }
+    @media (max-width: 900px) {
+      .ach-strip {
+        grid-template-columns: 1fr 1fr;
+      }
+      .ach-item {
+        border-right: none;
+        border-bottom: 1px solid rgba(217,206,190,0.12);
+        padding: 1.5rem 1.25rem;
+      }
+      .ach-item:nth-child(odd) {
+        border-right: 1px solid rgba(217,206,190,0.12);
+      }
+      .ach-item:last-child {
+        border-right: none;
+        border-bottom: none;
+        grid-column: 1 / -1;
+      }
+    }
+    @media (max-width: 480px) {
+      .ach-strip { grid-template-columns: 1fr; }
+      .ach-item {
+        border-right: none !important;
+        border-bottom: 1px solid rgba(217,206,190,0.12);
+        padding: 1.25rem 0;
+      }
+      .ach-item:last-child { border-bottom: none; }
+    }
+
+    /* ─── PROJECTS ───────────────────────────────────────────── */
+    #projects { background: var(--cream); }
+    .proj-grid {
+      display: grid;
+      gap: 1.5rem;
+      grid-template-columns: 1fr;
+    }
+    .proj-card {
+      background: var(--cream-card);
+      border: 1px solid var(--border);
+      border-radius: 1.25rem;
+      padding: 1.75rem;
+      display: flex;
+      flex-direction: column;
+      gap: 1.25rem;
+      transition: transform 0.2s, box-shadow 0.2s;
+    }
+    .proj-card:hover {
+      transform: translateY(-4px);
+      box-shadow: 0 8px 28px -4px rgba(42,31,20,0.12);
+    }
+    /* Featured card overrides */
+    .proj-card.featured {
+      background: #F8EDE0;
+      border-color: #C2A07E;
+    }
+    .proj-card.featured:hover {
+      box-shadow: 0 10px 32px -4px rgba(122,92,68,0.2);
+    }
+    .proj-card.featured .proj-title {
+      font-size: 1.5rem;
+    }
+    .proj-card.featured .impact-block {
+      border-color: rgba(194,160,126,0.5);
+    }
+    /* Featured label */
+    .featured-badge {
+      font-size: 0.58rem;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      color: var(--brick);
+      border: 1px solid rgba(184,92,56,0.45);
+      border-radius: 9999px;
+      padding: 0.2rem 0.65rem;
+    }
+    .proj-cat {
+      font-size: 0.6rem;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      color: var(--warm-brown);
+      background: var(--cream-alt);
+      border: 1px solid var(--border);
+      border-radius: 9999px;
+      padding: 0.25rem 0.75rem;
+      display: inline-block;
+    }
+    .proj-title {
+      font-family: 'Playfair Display', Georgia, serif;
+      font-size: 1.25rem;
+      color: var(--text-primary);
+      line-height: 1.35;
+    }
+    .proj-desc {
+      font-size: 0.875rem;
+      color: var(--text-sec);
+      line-height: 1.75;
+      flex: 1;
+    }
+    .impact-block { border-top: 1px solid var(--border); padding-top: 1rem; }
+    .impact-lbl {
+      font-size: 0.6rem;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      color: var(--warm-brown);
+      margin-bottom: 0.25rem;
+    }
+    .impact-txt { font-size: 0.8125rem; color: var(--text-sec); }
+    .skill-row { display: flex; flex-wrap: wrap; gap: 0.375rem; }
+    .vd-btn {
+      align-self: flex-start;
+      font-size: 0.625rem;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      color: var(--brick);
+      background: none;
+      border: none;
+      border-bottom: 1px solid rgba(184,92,56,0.45);
+      padding-bottom: 2px;
+      cursor: pointer;
+      transition: border-color 0.15s;
+    }
+    .vd-btn:hover { border-color: var(--brick); }
+
+    /* ─── MODAL ──────────────────────────────────────────────── */
+    .modal-overlay {
+      display: none;
+      position: fixed;
+      inset: 0;
+      z-index: 300;
+      background: rgba(42,31,20,0.6);
+      backdrop-filter: blur(4px);
+      align-items: center;
+      justify-content: center;
+      padding: 1rem;
+    }
+    .modal-overlay.open { display: flex; }
+    .modal-box {
+      background: var(--cream-card);
+      border-radius: 1.25rem;
+      max-width: 640px;
+      width: 100%;
+      max-height: 90vh;
+      overflow-y: auto;
+      box-shadow: 0 24px 64px rgba(42,31,20,0.25);
+    }
+    .modal-hdr {
+      position: sticky;
+      top: 0;
+      background: var(--cream-card);
+      border-bottom: 1px solid var(--border);
+      padding: 1.5rem 2rem;
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 1rem;
+      border-radius: 1.25rem 1.25rem 0 0;
+    }
+    .m-cat {
+      font-size: 0.6rem;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      color: var(--warm-brown);
+      margin-bottom: 0.375rem;
+    }
+    .m-title {
+      font-family: 'DM Serif Display', Georgia, serif;
+      font-size: 1.75rem;
+      color: var(--text-primary);
+    }
+    .modal-close-btn {
+      flex-shrink: 0;
+      width: 2rem; height: 2rem;
+      display: flex; align-items: center; justify-content: center;
+      background: none;
+      border: none;
+      font-size: 1.5rem;
+      color: var(--text-sec);
+      cursor: pointer;
+      transition: color 0.2s;
+      line-height: 1;
+    }
+    .modal-close-btn:hover { color: var(--text-primary); }
+    .modal-body { padding: 2rem; display: flex; flex-direction: column; gap: 1.75rem; }
+    .m-desc { font-size: 0.9rem; color: var(--text-sec); line-height: 1.8; }
+    .m-sec-lbl {
+      font-size: 0.6rem;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      color: var(--warm-brown);
+      margin-bottom: 0.875rem;
+    }
+    .m-detail-list { list-style: none; display: flex; flex-direction: column; gap: 0.625rem; }
+    .m-detail-list li {
+      font-size: 0.875rem;
+      color: var(--text-sec);
+      display: flex; gap: 0.75rem;
+    }
+    .m-detail-list li::before { content: '—'; color: var(--warm-brown); flex-shrink: 0; margin-top: 0.1rem; }
+    .m-hr { border: none; border-top: 1px solid var(--border); }
+
+    /* ─── SKILLS ─────────────────────────────────────────────── */
+    #skills { background: var(--cream-alt); }
+    .skill-grid {
+      display: grid;
+      gap: 1.25rem;
+      grid-template-columns: 1fr;
+    }
+    .skill-card {
+      background: var(--cream-card);
+      border: 1px solid var(--border);
+      border-radius: 1.25rem;
+      padding: 1.5rem;
+      transition: transform 0.2s, box-shadow 0.15s;
+    }
+    .skill-card:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 4px 14px rgba(42,31,20,0.07);
+    }
+    .sk-lbl {
+      font-size: 0.6rem;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      color: var(--warm-brown);
+      margin-bottom: 0.875rem;
+    }
+    .sk-pills { display: flex; flex-wrap: wrap; gap: 0.375rem; }
+    .sk-pill {
+      font-size: 0.7rem;
+      padding: 0.3rem 0.75rem;
+      border: 1px solid var(--border);
+      border-radius: 9999px;
+      color: var(--text-sec);
+      background: var(--cream-alt);
+    }
+
+    /* ─── CONTACT ────────────────────────────────────────────── */
+    #contact { background: var(--dark); }
+    .contact-heading {
+      font-family: 'DM Serif Display', Georgia, serif;
+      font-size: clamp(2.5rem, 5vw, 4rem);
+      color: var(--cream);
+      line-height: 1.15;
+      margin-bottom: 2rem;
+    }
+    .contact-heading em { font-style: italic; }
+    .contact-body {
+      font-size: 0.9375rem;
+      color: var(--text-sec);
+      line-height: 1.75;
+      max-width: 400px;
+      margin-bottom: 3rem;
+    }
+    .contact-actions { display: flex; flex-wrap: wrap; gap: 1rem; margin-bottom: 4rem; }
+    .footer-hr { border: none; border-top: 1px solid rgba(122,92,68,0.25); margin-bottom: 2rem; }
+    .footer-bar { display: flex; align-items: center; justify-content: space-between; }
+    .footer-name {
+      font-family: 'DM Serif Display', Georgia, serif;
+      font-size: 1.25rem;
+      color: var(--cream);
+    }
+    .footer-copy { font-size: 0.7rem; color: var(--text-sec); letter-spacing: 0.05em; }
+
+    /* ─── Parallax (GPU-composited) ──────────────────────────── */
+    .hero-name-wrap,
+    .hero-pre,
+    .hero-sub,
+    .hero-body,
+    .hero-ctas { will-change: transform; }
+
+    /* ─── Responsive ─────────────────────────────────────────── */
+    @media (min-width: 640px) {
+      .skill-grid { grid-template-columns: 1fr 1fr; }
+    }
+    @media (min-width: 768px) {
+      .about-grid  { grid-template-columns: 2fr 1fr; }
+      .proj-grid   { grid-template-columns: 1fr 1fr; }
+      .proj-card.featured { grid-column: 1 / -1; }
+    }
+    @media (min-width: 1024px) {
+      .skill-grid { grid-template-columns: 1fr 1fr 1fr; }
+    }
+    @media (max-width: 639px) {
+      .nav-links { display: none; }
+      .hamburger { display: flex; }
+      .hero-deco-circle, .hero-deco-sq { display: none; }
+    }
+    @media (min-width: 640px) {
+      .hamburger { display: none; }
+      .mobile-menu { display: none !important; }
+    }
+
+    /* ─── Chatbot ────────────────────────────────────────────── */
+    .chat-btn {
+      position: fixed;
+      bottom: 2rem;
+      right: 2rem;
+      z-index: 250;
+      width: 3.25rem;
+      height: 3.25rem;
+      border-radius: 50%;
+      background: var(--brick);
+      border: none;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 4px 16px rgba(184,92,56,0.35);
+      transition: transform 0.2s, box-shadow 0.2s;
+    }
+    .chat-btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 20px rgba(184,92,56,0.45);
+    }
+    .chat-panel {
+      position: fixed;
+      bottom: 6rem;
+      right: 2rem;
+      z-index: 250;
+      width: min(360px, calc(100vw - 2rem));
+      background: var(--cream-card);
+      border: 1px solid var(--border);
+      border-radius: 1.25rem;
+      box-shadow: 0 16px 48px rgba(42,31,20,0.16);
+      display: flex;
+      flex-direction: column;
+      max-height: 480px;
+      transform: translateY(12px);
+      opacity: 0;
+      pointer-events: none;
+      transition: transform 0.25s, opacity 0.25s;
+    }
+    .chat-panel.open {
+      transform: translateY(0);
+      opacity: 1;
+      pointer-events: all;
+    }
+    .chat-hdr {
+      padding: 1rem 1.25rem;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      border-radius: 1.25rem 1.25rem 0 0;
+      flex-shrink: 0;
+    }
+    .chat-hdr-name {
+      font-family: 'Playfair Display', Georgia, serif;
+      font-size: 0.9375rem;
+      color: var(--text-primary);
+    }
+    .chat-hdr-sub {
+      font-size: 0.575rem;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      color: var(--text-sec);
+      margin-top: 0.15rem;
+    }
+    .chat-close {
+      background: none;
+      border: none;
+      color: var(--text-sec);
+      cursor: pointer;
+      font-size: 1.375rem;
+      line-height: 1;
+      padding: 0.2rem 0.35rem;
+      transition: color 0.15s;
+    }
+    .chat-close:hover { color: var(--text-primary); }
+    .chat-messages {
+      flex: 1;
+      overflow-y: auto;
+      padding: 1rem;
+      display: flex;
+      flex-direction: column;
+      gap: 0.625rem;
+    }
+    .chat-msg {
+      max-width: 86%;
+      padding: 0.575rem 0.875rem;
+      border-radius: 1rem;
+      font-size: 0.8125rem;
+      line-height: 1.6;
+    }
+    .chat-msg.bot {
+      background: var(--cream-alt);
+      color: var(--text-primary);
+      border-bottom-left-radius: 0.2rem;
+      align-self: flex-start;
+    }
+    .chat-msg.user {
+      background: var(--brick);
+      color: #fff;
+      border-bottom-right-radius: 0.2rem;
+      align-self: flex-end;
+    }
+    .chat-typing {
+      display: flex;
+      gap: 0.3rem;
+      align-items: center;
+      padding: 0.625rem 0.875rem;
+      background: var(--cream-alt);
+      border-radius: 1rem;
+      border-bottom-left-radius: 0.2rem;
+      align-self: flex-start;
+    }
+    .chat-dot {
+      width: 6px; height: 6px;
+      border-radius: 50%;
+      background: var(--warm-brown);
+      animation: chatDot 1.2s ease-in-out infinite;
+    }
+    .chat-dot:nth-child(2) { animation-delay: 0.2s; }
+    .chat-dot:nth-child(3) { animation-delay: 0.4s; }
+    @keyframes chatDot {
+      0%, 80%, 100% { opacity: 0.3; transform: scale(0.85); }
+      40%           { opacity: 1;   transform: scale(1.1);  }
+    }
+    .chat-input-row {
+      padding: 0.75rem 1rem;
+      border-top: 1px solid var(--border);
+      display: flex;
+      gap: 0.5rem;
+      align-items: center;
+      flex-shrink: 0;
+    }
+    .chat-input {
+      flex: 1;
+      border: 1px solid var(--border);
+      border-radius: 9999px;
+      padding: 0.5rem 0.875rem;
+      font-size: 0.8125rem;
+      font-family: 'Inter', sans-serif;
+      background: var(--cream);
+      color: var(--text-primary);
+      outline: none;
+      transition: border-color 0.2s;
+    }
+    .chat-input:focus { border-color: var(--warm-brown); }
+    .chat-input::placeholder { color: var(--text-sec); }
+    .chat-send {
+      width: 2.25rem; height: 2.25rem;
+      border-radius: 50%;
+      background: var(--brick);
+      border: none;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      transition: opacity 0.2s;
+    }
+    .chat-send:hover { opacity: 0.82; }
+  </style>
+</head>
+<body>
+
+<!-- ─── NAV ───────────────────────────────────────────────────── -->
+<nav id="nav">
+  <div class="nav-inner">
+    <a href="#" class="nav-logo">Renee Liu</a>
+    <ul class="nav-links">
+      <li><a href="#about">About</a></li>
+      <li><a href="#projects">Work</a></li>
+      <li><a href="#skills">Skills</a></li>
+      <li><a href="#contact">Contact</a></li>
+    </ul>
+    <button class="hamburger" id="hamburger" aria-label="Toggle navigation">
+      <span></span><span></span><span></span>
+    </button>
+  </div>
+  <div class="mobile-menu" id="mobileMenu">
+    <a href="#about"   onclick="closeMenu()">About</a>
+    <a href="#projects" onclick="closeMenu()">Work</a>
+    <a href="#skills"  onclick="closeMenu()">Skills</a>
+    <a href="#contact" onclick="closeMenu()">Contact</a>
+  </div>
+</nav>
+
+<!-- ─── HERO ──────────────────────────────────────────────────── -->
+<section id="hero">
+  <div class="hero-deco-circle" aria-hidden="true"></div>
+  <div class="hero-deco-sq"     aria-hidden="true"></div>
+
+  <div class="hero-inner">
+    <p class="hero-pre">Portfolio &nbsp;&mdash;&nbsp; 2026</p>
+
+    <div class="hero-name-wrap">
+      <span class="hero-name">Renee Liu</span>
+      <svg class="hero-underline-svg" viewBox="0 0 520 18" aria-hidden="true" preserveAspectRatio="none">
+        <path d="M4 10 Q130 3, 260 10 Q390 17, 516 9"
+              stroke="#E8C547" stroke-width="3.5" fill="none" stroke-linecap="round"/>
+      </svg>
+    </div>
+
+    <p class="hero-sub">Marketing &amp; Social Creative with a focus on lifestyle, sustainability, and culture</p>
+
+    <p class="hero-body">
+      I create content, campaigns, and brand stories that connect lifestyle,
+      sustainability, and culture.
+    </p>
+
+    <div class="hero-ctas">
+      <a href="#projects" class="btn btn-brick">View Projects</a>
+      <a href="#contact"  class="btn btn-outline-dark">Contact Me</a>
+    </div>
+
+    <div class="scroll-cue" aria-hidden="true">
+      <span>Scroll</span>
+      <div class="scroll-line"></div>
+    </div>
+  </div>
+</section>
+
+<!-- ─── ABOUT ─────────────────────────────────────────────────── -->
+<section id="about">
+  <div class="wrap">
+    <span class="s-label">01 &nbsp;&mdash;&nbsp; About</span>
+    <div class="about-grid">
+
+      <!-- Copy -->
+      <div>
+        <h2 class="about-heading">Telling stories<br><em>that matter.</em></h2>
+        <div class="about-copy">
+          <p>I'm a marketing and social media creative with an MSc in International Marketing
+             from SOAS, University of London. My background spans content creation, campaign
+             strategy, performance analysis, and brand storytelling — across lifestyle,
+             sustainability, and cultural sectors.</p>
+          <p>Whether I'm planning a month of content for a luxury Lake District retreat,
+             supporting strategy for global brands at an agency, or designing an independent
+             product from scratch — I bring the same care for craft and clarity of vision to
+             everything I do.</p>
+          <p>I'm drawn to brands that have something genuine to say. I care about work that feels intentional — not just visible. If that sounds like the
+             kind of work you're building, I'd love to be part of it.</p>
+        </div>
+        <div class="tag-row">
+          <span class="pill">Social Media</span>
+          <span class="pill">Brand Storytelling</span>
+          <span class="pill">ESG Marketing</span>
+          <span class="pill">Campaign Research</span>
+          <span class="pill">Content Creation</span>
+          <span class="pill">Performance Analysis</span>
+        </div>
+      </div>
+
+      <!-- Sidebar -->
+      <div class="sidebar">
+        <div class="s-card">
+          <p class="s-card-label">Education</p>
+          <p class="s-card-title">MSc International Marketing</p>
+          <p class="s-card-sub">SOAS, University of London</p>
+        </div>
+        <div class="s-card">
+          <p class="s-card-label">Focus Areas</p>
+          <ul class="focus-list">
+            <li>Lifestyle &amp; Hospitality Brands</li>
+            <li>Sustainability &amp; ESG</li>
+            <li>Cultural &amp; Creative Strategy</li>
+            <li>Digital Content &amp; Social</li>
+          </ul>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<!-- ─── ACHIEVEMENTS ──────────────────────────────────────────── -->
+<section id="achievements" aria-label="Selected achievements">
+  <div class="wrap">
+    <div class="ach-strip">
+
+      <div class="ach-item">
+        <div class="ach-num" data-target="10" data-suffix="k+">10k+</div>
+        <div class="ach-label">Highest reel reach<br>organic Instagram content</div>
+      </div>
+
+      <div class="ach-item">
+        <div class="ach-num" data-target="18" data-suffix="">18</div>
+        <div class="ach-label">Instagram Reels planned,<br>produced &amp; posted</div>
+      </div>
+
+      <div class="ach-item">
+        <div class="ach-num" data-target="10" data-suffix="+">10+</div>
+        <div class="ach-label">REDnote posts adapted<br>for Chinese-speaking audiences</div>
+      </div>
+
+      <div class="ach-item">
+        <div class="ach-num" data-target="5" data-suffix="+">5+</div>
+        <div class="ach-label">Campaign contexts across<br>Ogilvy Taiwan</div>
+      </div>
+
+      <div class="ach-item">
+        <div class="ach-num">Merit</div>
+        <div class="ach-label">MSc International Marketing<br>SOAS, University of London</div>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<!-- ─── PROJECTS ──────────────────────────────────────────────── -->
+<section id="projects">
+  <div class="wrap">
+    <span class="s-label">02 &nbsp;&mdash;&nbsp; Selected Work</span>
+    <h2 class="s-heading">Projects</h2>
+
+    <div class="proj-grid">
+
+      <!-- 1. Bracken House -->
+      <article class="proj-card">
+        <div><span class="proj-cat">Social Media Management</span></div>
+        <h3 class="proj-title">Bracken House Social Media</h3>
+        <p class="proj-desc">Instagram, Facebook, TikTok and REDnote content planning, creation,
+           caption writing, performance tracking and reporting for a luxury holiday rental in the
+           Lake District.</p>
+        <div class="impact-block">
+          <p class="impact-lbl">Outcome</p>
+          <p class="impact-txt">Increased reel reach up to 10k views through content direction and collaboration.</p>
+        </div>
+        <div class="skill-row">
+          <span class="pill">Content Creation</span>
+          <span class="pill">Caption Writing</span>
+          <span class="pill">Performance Tracking</span>
+          <span class="pill">Multi-platform Strategy</span>
+        </div>
+        <button class="vd-btn" onclick="openModal('bracken')">View details</button>
+      </article>
+
+      <!-- 2. Ogilvy -->
+      <article class="proj-card">
+        <div><span class="proj-cat">Campaign Strategy</span></div>
+        <h3 class="proj-title">Ogilvy Taiwan Strategy Internship</h3>
+        <p class="proj-desc">Audience insight research, competitor analysis, and campaign strategy
+           support for global brands including IKEA, Cathay Bank and Coca-Cola Georgia.</p>
+        <div class="impact-block">
+          <p class="impact-lbl">Outcome</p>
+          <p class="impact-txt">Supported campaign strategy through audience insight research and competitor analysis.</p>
+        </div>
+        <div class="skill-row">
+          <span class="pill">Audience Research</span>
+          <span class="pill">Competitor Analysis</span>
+          <span class="pill">Campaign Strategy</span>
+          <span class="pill">Brand Consulting</span>
+        </div>
+        <button class="vd-btn" onclick="openModal('ogilvy')">View details</button>
+      </article>
+
+      <!-- 3. Africa No Filter -->
+      <article class="proj-card">
+        <div><span class="proj-cat">Impact &amp; Storytelling</span></div>
+        <h3 class="proj-title">Africa No Filter Industry Project</h3>
+        <p class="proj-desc">Impact measurement, social media analysis, storytelling strategy and
+           NGO communication recommendations for the Africa No Filter initiative.</p>
+        <div class="impact-block">
+          <p class="impact-lbl">Outcome</p>
+          <p class="impact-txt">Proposed impact measurement framework and content alignment strategy.</p>
+        </div>
+        <div class="skill-row">
+          <span class="pill">Impact Measurement</span>
+          <span class="pill">Social Media Analysis</span>
+          <span class="pill">Storytelling Strategy</span>
+          <span class="pill">NGO Communication</span>
+        </div>
+        <button class="vd-btn" onclick="openModal('anf')">View details</button>
+      </article>
+
+      <!-- 4. Dissertation -->
+      <article class="proj-card">
+        <div><span class="proj-cat">Academic Research</span></div>
+        <h3 class="proj-title">MSc Dissertation</h3>
+        <p class="proj-desc">Comparative study of sustainable brand market entry strategies across
+           Taiwan and the UK, examining consumer behaviour, cultural positioning, and ESG
+           communication.</p>
+        <div class="impact-block">
+          <p class="impact-lbl">Outcome</p>
+          <p class="impact-txt">Comparative analysis of sustainable brand entry strategies across Taiwan and the UK.</p>
+        </div>
+        <div class="skill-row">
+          <span class="pill">Market Research</span>
+          <span class="pill">ESG Strategy</span>
+          <span class="pill">Cross-cultural Analysis</span>
+          <span class="pill">Academic Writing</span>
+        </div>
+        <button class="vd-btn" onclick="openModal('dissertation')">View details</button>
+      </article>
+
+      <!-- 5. miiitime yarn — featured (full width) -->
+      <article class="proj-card featured">
+
+<div style="display:flex; gap:0.5rem; align-items:center; flex-wrap:wrap">
+          <span class="proj-cat">Product Concept &amp; Creative Tech</span>
+          <span class="featured-badge">Featured</span>
+        </div>
+        <h3 class="proj-title">miiitime yarn</h3>
+        <p class="proj-desc">A self-initiated product exploring how digital tools can translate physical craft into intuitive, visual experiences.</p>
+        <div class="impact-block">
+          <p class="impact-lbl">Outcome</p>
+          <p class="impact-txt">Designed end-to-end product concept from pattern creation to user workflow.</p>
+        </div>
+        <div class="skill-row">
+          <span class="pill">Product Thinking</span>
+          <span class="pill">UX/UI Design</span>
+          <span class="pill">Creative Direction</span>
+          <span class="pill">Brand Identity</span>
+          <span class="pill">AI-assisted Prototyping</span>
+          <span class="pill">User Journey Design</span>
+          <span class="pill">Feature Planning</span>
+        </div>
+        <button class="vd-btn" onclick="openModal('miiitime')">View details</button>
+      </article>
+
+    </div>
+  </div>
+</section>
+
+<!-- ─── SKILLS ────────────────────────────────────────────────── -->
+<section id="skills">
+  <div class="wrap">
+    <span class="s-label">03 &nbsp;&mdash;&nbsp; Skills</span>
+    <h2 class="s-heading">What I bring</h2>
+
+    <div class="skill-grid">
+
+      <div class="skill-card">
+        <p class="sk-lbl">Social Media &amp; Content</p>
+        <div class="sk-pills">
+          <span class="sk-pill">Content Creation</span>
+          <span class="sk-pill">Caption Writing</span>
+          <span class="sk-pill">Content Planning</span>
+          <span class="sk-pill">TikTok</span>
+          <span class="sk-pill">Instagram</span>
+          <span class="sk-pill">REDnote</span>
+          <span class="sk-pill">Facebook</span>
+          <span class="sk-pill">Community Management</span>
+          <span class="sk-pill">Trend Research</span>
+        </div>
+      </div>
+
+      <div class="skill-card">
+        <p class="sk-lbl">Marketing Strategy</p>
+        <div class="sk-pills">
+          <span class="sk-pill">Campaign Strategy</span>
+          <span class="sk-pill">Brand Storytelling</span>
+          <span class="sk-pill">Market Entry Strategy</span>
+          <span class="sk-pill">Competitor Analysis</span>
+          <span class="sk-pill">Cross-cultural Marketing</span>
+          <span class="sk-pill">Hospitality Marketing</span>
+        </div>
+      </div>
+
+      <div class="skill-card">
+        <p class="sk-lbl">Research &amp; Insights</p>
+        <div class="sk-pills">
+          <span class="sk-pill">Audience Research</span>
+          <span class="sk-pill">Performance Tracking</span>
+          <span class="sk-pill">Impact Measurement</span>
+          <span class="sk-pill">Consumer Behaviour Analysis</span>
+          <span class="sk-pill">Market Research</span>
+        </div>
+      </div>
+
+      <div class="skill-card">
+        <p class="sk-lbl">Sustainability &amp; ESG</p>
+        <div class="sk-pills">
+          <span class="sk-pill">ESG Communication</span>
+          <span class="sk-pill">Sustainability Marketing</span>
+          <span class="sk-pill">Impact Measurement</span>
+          <span class="sk-pill">NGO Communication</span>
+          <span class="sk-pill">Responsible Brand Strategy</span>
+        </div>
+      </div>
+
+      <div class="skill-card">
+        <p class="sk-lbl">Tools</p>
+        <div class="sk-pills">
+          <span class="sk-pill">Canva</span>
+          <span class="sk-pill">Google Analytics</span>
+          <span class="sk-pill">Meta Business Suite</span>
+          <span class="sk-pill">Later / Planoly</span>
+          <span class="sk-pill">Notion</span>
+          <span class="sk-pill">PowerPoint</span>
+          <span class="sk-pill">Excel</span>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<!-- ─── CONTACT ───────────────────────────────────────────────── -->
+<section id="contact">
+  <div class="wrap">
+    <span class="s-label">04 &nbsp;&mdash;&nbsp; Contact</span>
+
+    <h2 class="contact-heading">Let&rsquo;s work<br><em>together.</em></h2>
+
+    <p class="contact-body">
+      Open to opportunities in marketing, social media, creative strategy, and ESG
+      communication. Always happy to chat about brand, craft, and culture.
+    </p>
+
+    <div class="contact-actions">
+      <a href="mailto:reneejn.liu@gmail.com" class="btn btn-brick">Email Me</a>
+      <a href="https://www.linkedin.com/in/renee-liu-a89b72270/" target="_blank" rel="noopener noreferrer" class="btn btn-outline-light">LinkedIn</a>
+      <a href="#" class="btn btn-outline-light">Download CV</a>
+    </div>
+
+    <hr class="footer-hr">
+    <div class="footer-bar">
+      <span class="footer-name">Renee Liu</span>
+      <span class="footer-copy">&copy; 2026</span>
+    </div>
+  </div>
+</section>
+
+<!-- ─── MODAL ─────────────────────────────────────────────────── -->
+<div class="modal-overlay" id="modalOverlay" onclick="backdropClose(event)" role="dialog" aria-modal="true">
+  <div class="modal-box" id="modalBox">
+    <div class="modal-hdr">
+      <div>
+        <p class="m-cat"  id="mCat"></p>
+        <h3 class="m-title" id="mTitle"></h3>
+      </div>
+      <button class="modal-close-btn" onclick="closeModal()" aria-label="Close">&times;</button>
+    </div>
+    <div class="modal-body">
+      <p class="m-desc" id="mDesc"></p>
+      <div id="mDetailsWrap" style="display:none">
+        <p class="m-sec-lbl">What I built</p>
+        <ul class="m-detail-list" id="mDetails"></ul>
+      </div>
+      <hr class="m-hr">
+      <div>
+        <p class="m-sec-lbl">Outcome</p>
+        <p class="impact-txt" id="mImpact"></p>
+      </div>
+      <div>
+        <p class="m-sec-lbl">Skills</p>
+        <div class="skill-row" id="mSkills"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+  /* ── Project data ──────────────────────────────────────────── */
+  const PROJECTS = {
+    bracken: {
+      cat:    'Social Media Management',
+      title:  'Bracken House Social Media',
+      desc:   'Instagram, Facebook, TikTok and REDnote content planning, creation, caption writing, performance tracking and reporting for a luxury holiday rental in the Lake District.',
+      impact: 'Increased reel reach up to 10k views through content direction and collaboration.',
+      skills: ['Content Creation','Caption Writing','Performance Tracking','Multi-platform Strategy'],
+    },
+    ogilvy: {
+      cat:    'Campaign Strategy',
+      title:  'Ogilvy Taiwan Strategy Internship',
+      desc:   'Audience insight research, competitor analysis, and campaign strategy support for global brands including IKEA, Cathay Bank and Coca-Cola Georgia.',
+      impact: 'Supported campaign strategy through audience insight research and competitor analysis.',
+      skills: ['Audience Research','Competitor Analysis','Campaign Strategy','Brand Consulting'],
+    },
+    anf: {
+      cat:    'Impact & Storytelling',
+      title:  'Africa No Filter Industry Project',
+      desc:   'Impact measurement, social media analysis, storytelling strategy and NGO communication recommendations for the Africa No Filter initiative.',
+      impact: 'Proposed impact measurement framework and content alignment strategy.',
+      skills: ['Impact Measurement','Social Media Analysis','Storytelling Strategy','NGO Communication'],
+    },
+    dissertation: {
+      cat:    'Academic Research',
+      title:  'MSc Dissertation',
+      desc:   'Comparative study of sustainable brand market entry strategies across Taiwan and the UK, examining consumer behaviour, cultural positioning, and ESG communication.',
+      impact: 'Comparative analysis of sustainable brand entry strategies across Taiwan and the UK.',
+      skills: ['Market Research','ESG Strategy','Cross-cultural Analysis','Academic Writing'],
+    },
+    miiitime: {
+      cat:    'Product Concept & Creative Tech',
+      title:  'miiitime yarn',
+      desc:   'A self-initiated product exploring how digital tools can translate physical craft into intuitive, visual experiences.',
+      impact: 'Designed end-to-end product concept from pattern creation to user workflow.',
+      details: [
+        'Product concept and feature planning',
+        'Crochet and knitting pattern maker',
+        'Pattern library and project cards',
+        'Pattern read mode with progress tags and notes',
+        'Brand identity direction: quiet, personal, slightly poetic, playful but not childish',
+        'AI-assisted prototyping using Claude Code',
+        'User experience thinking around onboarding, sign-in, craft type, language, country, and project workflow',
+      ],
+      skills: ['Product Thinking','UX/UI Design','Creative Direction','Brand Identity','AI-assisted Prototyping','User Journey Design','Feature Planning'],
+    },
+  };
+
+  /* ── Nav scroll ────────────────────────────────────────────── */
+  const nav = document.getElementById('nav');
+
+  /* ── Hero parallax ─────────────────────────────────────────── */
+  const pxNameWrap = document.querySelector('.hero-name-wrap');
+  const pxPre      = document.querySelector('.hero-pre');
+  const pxSub      = document.querySelector('.hero-sub');
+  const pxBody     = document.querySelector('.hero-body');
+  const pxCtas     = document.querySelector('.hero-ctas');
+  const heroSection = document.getElementById('hero');
+
+  let rafPending = false;
+
+  function runParallax() {
+    const y = window.scrollY;
+    // Only apply while hero is in view — avoids offscreen paint
+    if (y < heroSection.offsetHeight) {
+      pxNameWrap.style.transform = `translateY(${y * -0.13}px)`;
+      pxSub.style.transform      = `translateY(${y * -0.07}px)`;
+      pxBody.style.transform     = `translateY(${y * -0.055}px)`;
+      pxCtas.style.transform     = `translateY(${y * -0.04}px)`;
+      pxPre.style.transform      = `translateY(${y * -0.03}px)`;
+    }
+    nav.classList.toggle('scrolled', y > 40);
+    rafPending = false;
+  }
+
+  window.addEventListener('scroll', () => {
+    if (!rafPending) {
+      rafPending = true;
+      requestAnimationFrame(runParallax);
+    }
+  }, { passive: true });
+
+  /* ── Mobile menu ───────────────────────────────────────────── */
+  const hamburger  = document.getElementById('hamburger');
+  const mobileMenu = document.getElementById('mobileMenu');
+  hamburger.addEventListener('click', () => {
+    hamburger.classList.toggle('open');
+    mobileMenu.classList.toggle('open');
+  });
+  function closeMenu() {
+    hamburger.classList.remove('open');
+    mobileMenu.classList.remove('open');
+  }
+
+  /* ── Modal ─────────────────────────────────────────────────── */
+  const overlay = document.getElementById('modalOverlay');
+
+  function openModal(key) {
+    const p = PROJECTS[key];
+    document.getElementById('mCat').textContent   = p.cat;
+    document.getElementById('mTitle').textContent = p.title;
+    document.getElementById('mDesc').textContent  = p.desc;
+    document.getElementById('mImpact').textContent = p.impact;
+
+    const wrap = document.getElementById('mDetailsWrap');
+    const list = document.getElementById('mDetails');
+    if (p.details && p.details.length) {
+      list.innerHTML = p.details.map(d => `<li>${d}</li>`).join('');
+      wrap.style.display = 'block';
+    } else {
+      wrap.style.display = 'none';
+    }
+
+    document.getElementById('mSkills').innerHTML =
+      p.skills.map(s => `<span class="pill">${s}</span>`).join('');
+
+    overlay.classList.add('open');
+    document.body.style.overflow = 'hidden';
+  }
+
+  function closeModal() {
+    overlay.classList.remove('open');
+    document.body.style.overflow = '';
+  }
+
+  function backdropClose(e) {
+    if (e.target === overlay) closeModal();
+  }
+
+  document.addEventListener('keydown', e => {
+    if (e.key === 'Escape') { closeModal(); if (typeof closeChat === 'function') closeChat(); }
+  });
+
+</script>
+
+<!-- ─── CHATBOT ───────────────────────────────────────────────── -->
+<button class="chat-btn" id="chatBtn" aria-label="Open portfolio chat">
+  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
+  </svg>
+</button>
+
+<div class="chat-panel" id="chatPanel" role="dialog" aria-label="Portfolio chat">
+  <div class="chat-hdr">
+    <div>
+      <div class="chat-hdr-name">Ask about Renee</div>
+      <div class="chat-hdr-sub">Portfolio assistant</div>
+    </div>
+    <button class="chat-close" id="chatClose" aria-label="Close chat">&times;</button>
+  </div>
+  <div class="chat-messages" id="chatMessages"></div>
+  <div class="chat-input-row">
+    <input class="chat-input" id="chatInput" type="text" placeholder="Ask me anything..." autocomplete="off" />
+    <button class="chat-send" id="chatSend" aria-label="Send">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+        <line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/>
+      </svg>
+    </button>
+  </div>
+</div>
+
+<script>
+  /* ── Achievement animations ────────────────────────────────── */
+  (function () {
+    const items   = document.querySelectorAll('.ach-item');
+    const section = document.getElementById('achievements');
+    if (!section || !items.length) return;
+
+    function countUp(el) {
+      const target   = parseInt(el.dataset.target, 10);
+      const suffix   = el.dataset.suffix || '';
+      const duration = 900;
+      const start    = performance.now();
+      (function step(now) {
+        const p = Math.min((now - start) / duration, 1);
+        const eased = 1 - Math.pow(1 - p, 3);       // ease-out cubic
+        el.textContent = Math.round(eased * target) + suffix;
+        if (p < 1) requestAnimationFrame(step);
+      })(start);
+    }
+
+    const observer = new IntersectionObserver(function(entries) {
+      if (!entries[0].isIntersecting) return;
+      items.forEach(function(item, i) {
+        setTimeout(function() {
+          item.classList.add('ach-visible');
+          const num = item.querySelector('.ach-num[data-target]');
+          if (num) countUp(num);
+        }, i * 110);
+      });
+      observer.disconnect();
+    }, { threshold: 0.25 });
+
+    observer.observe(section);
+  })();
+
+  /* ── Chatbot — runs AFTER chatbot HTML is in the DOM ────────── */
+  const INTENTS = [
+    { keys: ['hi','hello','hey','hiya'],
+      reply: "Hi! I'm here to help you explore Renee's portfolio. Ask me about her background, projects, skills, or how to get in touch." },
+    { keys: ['who','about','background','herself'],
+      reply: "Renee Liu is a marketing and social media creative with an MSc in International Marketing from SOAS, University of London. Her work sits at the intersection of lifestyle, sustainability, and culture — spanning content creation, campaign strategy, brand storytelling, and performance analysis." },
+    { keys: ['education','degree','soas','msc','masters','university','study','studied'],
+      reply: "Renee holds an MSc in International Marketing from SOAS, University of London. Her dissertation focused on sustainable brand market entry strategies, comparing consumer behaviour and ESG communication across Taiwan and the UK." },
+    { keys: ['projects','work','portfolio','experience','worked on'],
+      reply: "Renee has five key projects:\n\n• Bracken House Social Media — luxury Lake District retreat\n• Ogilvy Taiwan Internship — campaign strategy for global brands\n• Africa No Filter — NGO impact and storytelling\n• MSc Dissertation — sustainable brand research\n• miiitime yarn — self-initiated product concept\n\nAsk me about any of them!" },
+    { keys: ['bracken','lake district','holiday','rental'],
+      reply: "Bracken House is a luxury holiday rental in the Lake District. Renee managed their social presence across Instagram, Facebook, TikTok, and REDnote — handling content planning, creation, caption writing, and performance reporting. One reel reached up to 10k views." },
+    { keys: ['ogilvy','taiwan','ikea','cathay','coca-cola','coca cola','agency','internship'],
+      reply: "At Ogilvy Taiwan, Renee supported campaign strategy for global brands including IKEA, Cathay Bank, and Coca-Cola Georgia. Her work covered audience insight research and competitor analysis to inform creative direction." },
+    { keys: ['africa','anf','filter','ngo'],
+      reply: "For the Africa No Filter industry project, Renee worked on impact measurement, social media analysis, and storytelling strategy. She proposed an impact measurement framework and content alignment strategy for NGO communications." },
+    { keys: ['dissertation','thesis'],
+      reply: "Renee's MSc dissertation compared sustainable brand market entry strategies across Taiwan and the UK — exploring consumer behaviour, cultural positioning, and ESG communication approaches in each market." },
+    { keys: ['miiitime','yarn','crochet','knitting','craft','pattern'],
+      reply: "miiitime yarn is Renee's self-initiated product concept exploring how digital tools can translate physical craft into intuitive, visual experiences. It features a pattern maker, pattern library, project cards, and a read mode with progress tracking. The brand direction is quiet, personal, and slightly poetic." },
+    { keys: ['skills','good at','expertise','capabilities'],
+      reply: "Renee's skills span five areas:\n\n• Social Media & Content — TikTok, Instagram, REDnote, content planning\n• Marketing Strategy — campaign strategy, brand storytelling, competitor analysis\n• Research & Insights — audience research, performance tracking\n• Sustainability & ESG — ESG communication, impact measurement\n• Tools — Canva, Google Analytics, Meta Business Suite, Notion" },
+    { keys: ['social','tiktok','instagram','rednote','facebook','content','caption'],
+      reply: "Renee has hands-on experience across TikTok, Instagram, REDnote, and Facebook — covering content planning, creation, caption writing, community management, and performance reporting." },
+    { keys: ['esg','sustainability','sustainable','environment','impact'],
+      reply: "Sustainability and ESG are core to Renee's work. She's focused on ESG communication strategy, impact measurement, and responsible brand positioning — backed by her dissertation research and projects like Africa No Filter." },
+    { keys: ['contact','email','reach','linkedin','hire','cv','resume'],
+      reply: "You can reach Renee at reneejn.liu@gmail.com or connect on LinkedIn: linkedin.com/in/renee-liu-a89b72270/ — scroll down to the Contact section for direct links." },
+  ];
+  const FALLBACK = "I'm not sure about that one! Try asking about Renee's projects, skills, background, or how to get in touch.";
+
+  function match(text) {
+    const t = text.toLowerCase();
+    for (const intent of INTENTS) {
+      if (intent.keys.some(k => t.includes(k))) return intent.reply;
+    }
+    return FALLBACK;
+  }
+
+  const chatPanel = document.getElementById('chatPanel');
+  const chatBtn   = document.getElementById('chatBtn');
+  const chatClose = document.getElementById('chatClose');
+  const chatInput = document.getElementById('chatInput');
+  const chatSend  = document.getElementById('chatSend');
+  const chatMsgs  = document.getElementById('chatMessages');
+  let greeted = false;
+  let typingEl = null;
+
+  function addMsg(text, role) {
+    const el = document.createElement('div');
+    el.className = 'chat-msg ' + role;
+    el.textContent = text;
+    chatMsgs.appendChild(el);
+    chatMsgs.scrollTop = chatMsgs.scrollHeight;
+  }
+
+  function showTyping() {
+    typingEl = document.createElement('div');
+    typingEl.className = 'chat-typing';
+    typingEl.innerHTML = '<div class="chat-dot"></div><div class="chat-dot"></div><div class="chat-dot"></div>';
+    chatMsgs.appendChild(typingEl);
+    chatMsgs.scrollTop = chatMsgs.scrollHeight;
+  }
+
+  function hideTyping() {
+    if (typingEl) { typingEl.remove(); typingEl = null; }
+  }
+
+  function sendMessage() {
+    const text = chatInput.value.trim();
+    if (!text) return;
+    chatInput.value = '';
+    addMsg(text, 'user');
+    showTyping();
+    setTimeout(function() {
+      hideTyping();
+      addMsg(match(text), 'bot');
+    }, 680);
+  }
+
+  function openChat() {
+    chatPanel.classList.add('open');
+    if (!greeted) {
+      greeted = true;
+      setTimeout(function() {
+        addMsg("Hi! Ask me about Renee's projects, skills, background, or how to get in touch.", 'bot');
+      }, 200);
+    }
+    setTimeout(function() { chatInput.focus(); }, 300);
+  }
+
+  function closeChat() {
+    chatPanel.classList.remove('open');
+  }
+
+  chatBtn.addEventListener('click', function() {
+    chatPanel.classList.contains('open') ? closeChat() : openChat();
+  });
+  chatClose.addEventListener('click', closeChat);
+  chatSend.addEventListener('click', sendMessage);
+  chatInput.addEventListener('keydown', function(e) {
+    if (e.key === 'Enter') sendMessage();
+  });
+</script>
+</body>
+</html>
