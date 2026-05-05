@@ -19,6 +19,7 @@
   <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/@iconify/iconify@3/dist/iconify.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
   <style>
@@ -3030,16 +3031,19 @@ function CrochetBuilder({stitches,setStitches,layout,setLayout,yarnColors,onSave
       </div>
 
       {/* ── Stitch palette ── */}
-      <div style={{background:"white",borderBottom:"1px solid #EFEFEF",padding:"4px 10px",flexShrink:0,display:"flex",gap:3,overflowX:"auto",paddingBottom:4,alignItems:"stretch",position:"relative",zIndex:100}}>
-        {pinnedIds.map(id=>{
-          const sym=ROWS_ALL_SYMS.find(s=>s.id===id);if(!sym)return null;
-          return(
-            <CrochetStitchBtn key={id} id={id} label={sym.label} desc={sym.desc}
-              active={activeSym===id&&!activeGroup&&activeTool==="place"} activeColor={activeColor}
-              onClick={()=>{setActiveSym(id);setActiveGroup(null);setActiveTool("place");if(batchMode){setBatchMode(false);setBatchKeys(new Set());setBatchSpacingOpen(false);setBatchColorOpen(false);setBatchAlignOpen(false);}}}/>
-          );
-        })}
-        <div ref={moreAnchorRef} className="cc-more-root" style={{position:"relative",flexShrink:0,display:"flex"}}>
+      <div style={{background:"white",borderBottom:"1px solid #EFEFEF",flexShrink:0,display:"flex",alignItems:"stretch",position:"relative",zIndex:100}}>
+        {/* Scrollable symbols — More button stays outside so it's always reachable */}
+        <div style={{display:"flex",gap:3,overflowX:"auto",flex:1,padding:"4px 4px 4px 10px",alignItems:"stretch"}}>
+          {pinnedIds.map(id=>{
+            const sym=ROWS_ALL_SYMS.find(s=>s.id===id);if(!sym)return null;
+            return(
+              <CrochetStitchBtn key={id} id={id} label={sym.label} desc={sym.desc}
+                active={activeSym===id&&!activeGroup&&activeTool==="place"} activeColor={activeColor}
+                onClick={()=>{setActiveSym(id);setActiveGroup(null);setActiveTool("place");if(batchMode){setBatchMode(false);setBatchKeys(new Set());setBatchSpacingOpen(false);setBatchColorOpen(false);setBatchAlignOpen(false);}}}/>
+            );
+          })}
+        </div>
+        <div ref={moreAnchorRef} className="cc-more-root" style={{position:"relative",flexShrink:0,display:"flex",padding:"4px 6px 4px 2px",borderLeft:"1px solid #EFEFEF"}}>
           <CrochetMoreBtn showMore={showMore} activeGroup={activeGroup} onClick={openMore}/>
           {showMore&&(
             <CrochetMorePanel
@@ -4894,6 +4898,7 @@ function YarnLibPage({yarnLib,setYarnLib,projects}){
   const[filterWeight,setFilterWeight]=useState("All");
   const[editingBalls,setEditingBalls]=useState(null);
   const[editingYarn,setEditingYarn]=useState(null);
+  const[confirmDelete,setConfirmDelete]=useState(null);
 
   const usedMap={};
   projects.forEach(p=>(p.yarns||[]).forEach(y=>{if(y.libId)usedMap[y.libId]=(usedMap[y.libId]||0)+(Number(y.balls)||0);}));
@@ -4966,13 +4971,23 @@ function YarnLibPage({yarnLib,setYarnLib,projects}){
                       yarn.fibre&&<div style={{fontSize:10,color:"#6B7280",marginTop:2}}>{yarn.fibre}</div>
                     )}
                   </div>
-                  <div style={{display:"flex",gap:2}}>
-                    <button onClick={()=>setEditingYarn(yarn)} style={{color:"#3850A6",background:"none",border:"none",cursor:"pointer",padding:4}}>
-                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path strokeLinecap="round" strokeLinejoin="round" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg>
-                    </button>
-                    <button onClick={()=>setYarnLib(p=>p.filter(y=>y.id!==yarn.id))} style={{color:"#FCA5A5",background:"none",border:"none",cursor:"pointer",padding:4}}>
-                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path strokeLinecap="round" strokeLinejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
-                    </button>
+                  <div style={{display:"flex",gap:2,alignItems:"center"}}>
+                    {confirmDelete===yarn.id?(
+                      <>
+                        <span style={{fontSize:10,fontWeight:700,color:"#EF4444",marginRight:2}}>Delete?</span>
+                        <button onClick={()=>{setYarnLib(p=>p.filter(y=>y.id!==yarn.id));setConfirmDelete(null);}} style={{fontSize:10,fontWeight:800,color:"white",background:"#EF4444",border:"none",borderRadius:6,cursor:"pointer",padding:"3px 8px"}}>Yes</button>
+                        <button onClick={()=>setConfirmDelete(null)} style={{fontSize:10,fontWeight:700,color:"#6B7280",background:"#F3F4F6",border:"none",borderRadius:6,cursor:"pointer",padding:"3px 8px"}}>No</button>
+                      </>
+                    ):(
+                      <>
+                        <button onClick={()=>setEditingYarn(yarn)} style={{color:"#3850A6",background:"none",border:"none",cursor:"pointer",padding:4}}>
+                          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path strokeLinecap="round" strokeLinejoin="round" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg>
+                        </button>
+                        <button onClick={()=>setConfirmDelete(yarn.id)} style={{color:"#FCA5A5",background:"none",border:"none",cursor:"pointer",padding:4}}>
+                          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path strokeLinecap="round" strokeLinejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
+                        </button>
+                      </>
+                    )}
                   </div>
                 </div>
                 <div style={{display:"grid",gridTemplateColumns:"1fr 1fr 1fr",marginTop:12,borderTop:"1px solid #F3F4F6",paddingTop:10}}>
@@ -5072,7 +5087,7 @@ function ToolsLibPage({tools,setTools}){
     <div style={{flex:1,overflowY:"auto",padding:"4px 16px 80px"}}>
       <div style={{maxWidth:360,margin:"0 auto 12px",display:"flex",justifyContent:"space-between",alignItems:"center"}}>
         <div style={{fontSize:13,color:"#6B7280"}}>{filtered.length} / {tools.length} tools</div>
-        <button onClick={()=>setShowAdd(true)} style={{width:36,height:36,borderRadius:11,background:"linear-gradient(135deg,#059669,#10B981)",border:"none",cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center",boxShadow:"0 4px 14px #05996944"}}>
+        <button onClick={()=>setShowAdd(true)} style={{width:36,height:36,borderRadius:11,background:"linear-gradient(135deg,#778EE3,#6183FF)",border:"none",cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center",boxShadow:"0 4px 14px #778EE344"}}>
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.5"><path strokeLinecap="round" strokeLinejoin="round" d="M12 4v16m8-8H4"/></svg>
         </button>
       </div>
@@ -5189,6 +5204,7 @@ function PatternFormModal({onClose,onSave,initial,yarnLib=[],initialMethod}){
   const[layout,setLayout]=useState((editing&&initial?.designData?.type==="rounds")?"rounds":"rows");
   const[creationMethod,setCreationMethod]=useState(initialMethod||(editing&&initial?.designData?.type==="imported"?"import":"design"));
   const[generatedCount,setGeneratedCount]=useState(0);
+  const[pdfLoading,setPdfLoading]=useState(false);
   const s=(k,v)=>setForm(f=>({...f,[k]:v}));
   const iS={width:"100%",padding:"9px 12px",borderRadius:10,border:"1.5px solid #E5E7EB",fontSize:14,color:"#111",background:"#FAFAFA"};
   const save=()=>{
@@ -5299,7 +5315,6 @@ function PatternFormModal({onClose,onSave,initial,yarnLib=[],initialMethod}){
                   {id:"rows",ico:"basil:clipboard-outline",label:"Rows",sub:"Back-and-forth rows — standard flat chart"}].map(opt=>(
                   <button key={opt.id} type="button" onClick={()=>setLayout(opt.id)}
                     style={{flex:1,padding:"10px 8px",borderRadius:12,border:`2px solid ${layout===opt.id?"#778EE3":"#E5E7EB"}`,background:layout===opt.id?"#EBEEFB":"#FAFAFA",color:layout===opt.id?"#778EE3":"#6B7280",cursor:"pointer",textAlign:"left",transition:"all 0.15s ease"}}>
-                    <div style={{marginBottom:2}}><Ico n={opt.ico} sz={16}/></div>
                     <div style={{fontSize:12,fontWeight:700}}>{opt.label}</div>
                     <div style={{fontSize:10,opacity:0.65,marginTop:1,lineHeight:1.3}}>{opt.sub}</div>
                   </button>
@@ -5331,9 +5346,11 @@ function PatternFormModal({onClose,onSave,initial,yarnLib=[],initialMethod}){
           {/* Paste text */}
           <div style={{marginBottom:12}}>
             <label style={{display:"block",fontSize:12,fontWeight:600,color:"#6B7280",marginBottom:6}}>Paste Pattern Text</label>
-            <textarea value={form.importText} onChange={e=>s("importText",e.target.value)}
+            <textarea value={form.importText}
+              onChange={e=>{s("importText",e.target.value);e.target.style.height="auto";e.target.style.height=e.target.scrollHeight+"px";}}
+              onInput={e=>{e.target.style.height="auto";e.target.style.height=e.target.scrollHeight+"px";}}
               placeholder={"Paste row-by-row instructions here (one step per line)...\n\nExample:\nFoundation chain: ch 30\nRow 1: sc in each ch across (30 sts)\nRow 2: ch 1, turn, sc in each st across"}
-              style={{width:"100%",minHeight:130,borderRadius:10,border:"1.5px solid #E5E7EB",padding:"10px 12px",fontSize:13,resize:"vertical",boxSizing:"border-box",background:"#FAFAFA",lineHeight:1.5}}/>
+              style={{width:"100%",minHeight:130,borderRadius:10,border:"1.5px solid #E5E7EB",padding:"10px 12px",fontSize:13,resize:"vertical",boxSizing:"border-box",background:"#FAFAFA",lineHeight:1.5,overflow:"hidden"}}/>
           </div>
           {/* Upload pattern image */}
           <div style={{marginBottom:12}}>
@@ -5347,18 +5364,50 @@ function PatternFormModal({onClose,onSave,initial,yarnLib=[],initialMethod}){
           {/* Upload PDF */}
           <div style={{marginBottom:14}}>
             <label style={{display:"block",fontSize:12,fontWeight:600,color:"#6B7280",marginBottom:6}}>Upload PDF</label>
-            <label style={{display:"flex",alignItems:"center",gap:8,padding:"10px 14px",borderRadius:10,border:"1.5px dashed #BBC7F1",background:"#FAFAFA",cursor:"pointer",color:form.importPdf?"#16A34A":"#6B7280",fontSize:13,fontWeight:600}}>
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path strokeLinecap="round" strokeLinejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
-              {form.importPdf?`${form.importPdf} ✓`:"Choose PDF file"}
-              <input type="file" accept=".pdf" style={{display:"none"}} onChange={e=>{const f=e.target.files[0];if(!f)return;s("importPdf",f.name);}}/>
+            <label style={{display:"flex",alignItems:"center",gap:8,padding:"10px 14px",borderRadius:10,border:"1.5px dashed #BBC7F1",background:"#FAFAFA",cursor:pdfLoading?"default":"pointer",color:form.importPdf?"#16A34A":pdfLoading?"#778EE3":"#6B7280",fontSize:13,fontWeight:600}}>
+              {pdfLoading
+                ?<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" style={{animation:"spin 1s linear infinite"}}><path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"/></svg>
+                :<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path strokeLinecap="round" strokeLinejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+              }
+              {pdfLoading?"Reading PDF…":form.importPdf?`${form.importPdf} ✓`:"Choose PDF file"}
+              <input type="file" accept=".pdf" disabled={pdfLoading} style={{display:"none"}} onChange={async e=>{
+                const f=e.target.files[0];
+                if(!f)return;
+                s("importPdf",f.name);
+                setPdfLoading(true);
+                try{
+                  const lib=window.pdfjsLib;
+                  lib.GlobalWorkerOptions.workerSrc="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js";
+                  const buf=await f.arrayBuffer();
+                  const pdf=await lib.getDocument({data:buf}).promise;
+                  const pages=[];
+                  for(let i=1;i<=pdf.numPages;i++){
+                    const pg=await pdf.getPage(i);
+                    const tc=await pg.getTextContent();
+                    pages.push(tc.items.map(it=>it.str).join(" "));
+                  }
+                  const extracted=pages.join("\n").replace(/[ \t]+/g," ").trim();
+                  s("importText",extracted);
+                  const lines=extracted.split('\n').map(l=>l.trim()).filter(Boolean);
+                  if(lines.length){
+                    setForm(f=>({...f,designData:{type:'imported',steps:lines.map((text,i)=>({id:`s${i}`,text}))}}));
+                    setGeneratedCount(lines.length);
+                  }
+                }catch(err){
+                  console.error("PDF read error",err);
+                  alert("Could not read PDF. Try pasting the text manually.");
+                }finally{
+                  setPdfLoading(false);
+                }
+              }}/>
             </label>
           </div>
           {/* Generate Steps */}
-          <button onClick={generateSteps} disabled={!form.importText.trim()}
+          <button onClick={generateSteps} disabled={!form.importText.trim()||pdfLoading}
             style={{width:"100%",marginBottom:6,padding:"11px",borderRadius:12,border:"none",
-              background:form.importText.trim()?"#778EE3":"#E5E7EB",
-              color:form.importText.trim()?"white":"#6B7280",
-              fontWeight:700,fontSize:13,cursor:form.importText.trim()?"pointer":"default",
+              background:form.importText.trim()&&!pdfLoading?"#778EE3":"#E5E7EB",
+              color:form.importText.trim()&&!pdfLoading?"white":"#6B7280",
+              fontWeight:700,fontSize:13,cursor:form.importText.trim()&&!pdfLoading?"pointer":"default",
               display:"flex",alignItems:"center",justifyContent:"center",gap:6}}>
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path strokeLinecap="round" strokeLinejoin="round" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4"/></svg>
             Generate Steps from Text
@@ -5620,6 +5669,25 @@ function StepReader({steps=[],patName="",onBack,progressMarker=null,onSaveProgre
   /* force re-render for pop animation */
   const[,forceRender]=useState(0);
 
+  const storageKey=`sc:${patName||"__imp"}`;
+  const[tokenColors,setTokenColors]=useState(()=>{try{return JSON.parse(localStorage.getItem(storageKey)||"{}");}catch{return{};}});
+  const[colorPickerFor,setColorPickerFor]=useState(null);
+  const setTokenColor=(key,hex)=>{
+    setTokenColors(prev=>{
+      const next=hex?{...prev,[key]:hex}:Object.fromEntries(Object.entries(prev).filter(([k])=>k!==key));
+      try{localStorage.setItem(storageKey,JSON.stringify(next));}catch{}
+      return next;
+    });
+    setColorPickerFor(null);
+  };
+  const STEP_PALETTE=["#FAFAF9","#FCD34D","#FCA5A5","#F97316","#EF4444","#EC4899","#C084FC","#778EE3","#60A5FA","#34D399","#A3E635","#D97706","#9CA3AF","#374151"];
+  const yarnColors=useMemo(()=>{
+    try{
+      const lib=JSON.parse(localStorage.getItem("sc_yarn_lib")||"[]");
+      return lib.filter(y=>y.color).map(y=>({color:y.color,name:[y.brand,y.name,y.colorway].filter(Boolean).join(" ")||"Yarn"}));
+    }catch{return[];}
+  },[]);
+
   const checkedCount=stepItems.filter(s=>checked[s.id]).length;
   const total=stepItems.length;
   const pct=total?Math.round((checkedCount/total)*100):0;
@@ -5642,14 +5710,33 @@ function StepReader({steps=[],patName="",onBack,progressMarker=null,onSaveProgre
   };
   const adj=(id,delta)=>setCounts(c=>({...c,[id]:Math.max(0,(c[id]||0)+delta)}));
 
-  /* Bold text inside parentheses — highlights stitch counts like (30 sc) */
-  const fmtText=text=>{
-    const parts=text.split(/(\([^)]+\))/g);
-    return parts.map((p,i)=>
-      /^\([^)]+\)$/.test(p)
-        ?<strong key={i} style={{fontWeight:700,color:"#778EE3"}}>{p}</strong>
-        :p
-    );
+  /* Render step text: stitch abbreviations → tappable colored spans; (count) → bold purple */
+  const STITCH_RE=/\b(sl\s*st|sc[2-9]tog|dc[2-9]tog|hdc[2-9]tog|hdc|dtr|dc|sc|tr|ch|sk(?:ip)?|sp|yo|sts?|inc|dec)\b/gi;
+  const renderText=(text,stepId)=>{
+    const out=[];let last=0;let ti=0;let m;
+    STITCH_RE.lastIndex=0;
+    const pushPlain=(chunk,prefix)=>{
+      chunk.split(/(\([^)]+\))/g).forEach((seg,j)=>{
+        if(/^\([^)]+\)$/.test(seg)) out.push(<strong key={`${prefix}_p${j}`} style={{fontWeight:700,color:"#778EE3"}}>{seg}</strong>);
+        else if(seg) out.push(<span key={`${prefix}_t${j}`}>{seg}</span>);
+      });
+    };
+    while((m=STITCH_RE.exec(text))!==null){
+      if(m.index>last) pushPlain(text.slice(last,m.index),`${stepId}_${ti}`);
+      const key=`${stepId}_${ti++}`;
+      const col=tokenColors[key];
+      out.push(
+        <span key={key} onClick={e=>{e.stopPropagation();setColorPickerFor(key);}}
+          style={{color:col||"inherit",fontWeight:700,cursor:"pointer",
+            background:col?`${col}28`:"transparent",borderRadius:4,padding:col?"1px 3px":"0",
+            outline:col?"none":"none",transition:"background .1s",userSelect:"none"}}>
+          {m[0]}
+        </span>
+      );
+      last=m.index+m[0].length;
+    }
+    if(last<text.length) pushPlain(text.slice(last),`${stepId}_end`);
+    return out;
   };
 
   if(!steps.length) return(
@@ -5768,7 +5855,7 @@ function StepReader({steps=[],patName="",onBack,progressMarker=null,onSaveProgre
                   WebkitBoxOrient:isDone?"vertical":undefined,
                   transition:"font-size .2s",
                 }}>
-                  {isDone?item.text:fmtText(item.text)}
+                  {isDone?item.text:renderText(item.text,item.id)}
                 </p>
 
                 {/* Repeat counter */}
@@ -5792,6 +5879,7 @@ function StepReader({steps=[],patName="",onBack,progressMarker=null,onSaveProgre
                   );
                 })()}
               </div>
+
             </div>
           );
         })}
@@ -5831,6 +5919,60 @@ function StepReader({steps=[],patName="",onBack,progressMarker=null,onSaveProgre
           boxShadow:"0 4px 16px rgba(0,0,0,0.18)",pointerEvents:"none",whiteSpace:"nowrap",
           animation:"sr-pop .2s ease"}}>
           ✓ {pinToast}
+        </div>
+      )}
+
+      {/* ── Yarn Color Picker (per stitch token) ── */}
+      {colorPickerFor&&(
+        <div style={{position:"fixed",inset:0,zIndex:300,background:"rgba(0,0,0,.4)"}} onClick={()=>setColorPickerFor(null)}>
+          <div style={{position:"absolute",bottom:0,left:0,right:0,background:"white",borderRadius:"20px 20px 0 0",padding:"20px 20px 32px",maxWidth:420,margin:"0 auto",maxHeight:"72vh",overflowY:"auto"}} onClick={e=>e.stopPropagation()}>
+            <div style={{fontSize:14,fontWeight:800,color:"#111",marginBottom:4}}>Yarn Color</div>
+            <div style={{fontSize:11,color:"#9CA3AF",marginBottom:14}}>Pick the yarn color for this stitch</div>
+
+            {/* ── My Yarns ── */}
+            {yarnColors.length>0&&(
+              <>
+                <div style={{fontSize:10,fontWeight:800,color:"#9CA3AF",letterSpacing:"0.08em",textTransform:"uppercase",marginBottom:10}}>My Yarns</div>
+                <div style={{display:"flex",flexWrap:"wrap",gap:10,marginBottom:18}}>
+                  {yarnColors.map((y,i)=>{
+                    const sel=tokenColors[colorPickerFor]===y.color;
+                    return(
+                      <button key={i} onClick={()=>setTokenColor(colorPickerFor,y.color)}
+                        style={{display:"flex",flexDirection:"column",alignItems:"center",gap:3,background:"none",border:"none",cursor:"pointer",padding:0,width:40}}>
+                        <div style={{width:34,height:34,borderRadius:999,background:y.color,flexShrink:0,
+                          border:`2px solid ${sel?"#778EE3":"rgba(0,0,0,0.1)"}`,
+                          boxShadow:sel?"0 0 0 3px #778EE344":"none",transition:"box-shadow .12s"}}/>
+                        <span style={{fontSize:8,color:"#6B7280",width:40,textAlign:"center",lineHeight:1.2,
+                          overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{y.name}</span>
+                      </button>
+                    );
+                  })}
+                </div>
+              </>
+            )}
+
+            {/* ── Other Colors ── */}
+            <div style={{fontSize:10,fontWeight:800,color:"#9CA3AF",letterSpacing:"0.08em",textTransform:"uppercase",marginBottom:10}}>Other Colors</div>
+            <div style={{display:"flex",flexWrap:"wrap",gap:10}}>
+              {STEP_PALETTE.map(hex=>{
+                const sel=tokenColors[colorPickerFor]===hex;
+                return(
+                  <button key={hex} onClick={()=>setTokenColor(colorPickerFor,hex)}
+                    style={{width:34,height:34,borderRadius:999,background:hex,cursor:"pointer",padding:0,
+                      border:`2px solid ${sel?"#778EE3":"rgba(0,0,0,0.1)"}`,
+                      boxShadow:sel?"0 0 0 3px #778EE344":"none",
+                      outline:"none",transition:"box-shadow .12s"}}/>
+                );
+              })}
+            </div>
+
+            {tokenColors[colorPickerFor]&&(
+              <button onClick={()=>setTokenColor(colorPickerFor,null)}
+                style={{width:"100%",marginTop:14,padding:"11px",borderRadius:12,background:"#FEF2F2",border:"none",color:"#EF4444",fontWeight:700,fontSize:13,cursor:"pointer"}}>
+                Remove Color
+              </button>
+            )}
+          </div>
         </div>
       )}
     </div>
@@ -8377,7 +8519,7 @@ function BottomNav({page,setPage,t,onAdd}){
   return(
     <div style={{position:"fixed",bottom:0,left:0,right:0,background:"rgba(255,255,255,.94)",backdropFilter:"blur(14px)",borderTop:"1px solid #EEF0FD",zIndex:40,paddingBottom:"env(safe-area-inset-bottom)"}}>
       <div style={{height:83}}>
-        <div style={{height:49,display:"flex",alignItems:"flex-start",paddingTop:4}}>
+        <div style={{height:49,display:"flex",alignItems:"flex-start",paddingTop:2}}>
           {left.map(tab=><NavBtn key={tab.id} tab={tab}/>)}
 
           {/* Center FAB — floats above the bar */}
