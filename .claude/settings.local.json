@@ -7,7 +7,17 @@
       "Bash(gh auth:*)",
       "Bash(git add *)",
       "Bash(git commit *)",
-      "Bash(git push *)"
+      "Bash(git push *)",
+      "WebFetch(domain:icon-sets.iconify.design)",
+      "WebSearch",
+      "WebFetch(domain:raw.githubusercontent.com)",
+      "WebFetch(domain:icones.js.org)",
+      "WebFetch(domain:www.figma.com)",
+      "WebFetch(domain:www.npmjs.com)",
+      "WebFetch(domain:iconbuddy.com)",
+      "PowerShell(Test-Path \"C:\\\\Program Files\\\\nodejs\\\\npx.cmd\"; Test-Path \"$env:APPDATA\\\\npm\\\\npx.cmd\"; Get-ChildItem \"C:\\\\Program Files\\\\nodejs\" -ErrorAction SilentlyContinue | Select-Object -First 5)",
+      "Bash(powershell -Command ' *)",
+      "Bash(node -e ' *)"
     ]
   }
 }
