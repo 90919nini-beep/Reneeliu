@@ -1741,6 +1741,26 @@ const KNIT_SYMS=[
 const KNIT_SYM_BY_ID=Object.fromEntries(KNIT_SYMS.map(s=>[s.id,s]));
 const KNIT_SYM_SRC={};
 KNIT_SYMS.forEach(s=>{KNIT_SYM_SRC[s.id]=KNIT_SYM_B64[s.file];});
+
+/* ─── Color Grid Underlay Renderer ────────────────────────────────────────── */
+function renderColorGridUnderlay(ctx,grid,panX,panY,cellW,cellH,opacity,zoom,cxOff,cyOff){
+  if(!grid?.length||opacity<=0)return;
+  const z=zoom??1,cx=cxOff??0,cy=cyOff??0;
+  ctx.save();
+  ctx.globalAlpha=opacity;
+  for(let r=0;r<grid.length;r++){
+    const sy=z*(panY+r*cellH-cy)+cy;
+    const sh=z*cellH;
+    for(let c=0;c<(grid[r]?.length||0);c++){
+      const hex=grid[r][c];
+      if(!hex)continue;
+      ctx.fillStyle=hex;
+      ctx.fillRect(z*(panX+c*cellW-cx)+cx,sy,z*cellW,sh);
+    }
+  }
+  ctx.restore();
+}
+
 /* ─── Knit Tint Cache ──────────────────────────────────────────────────────── */
 const _knitTintCache={};
 function _tintKnitSvg(id,W,H,color){
@@ -1909,12 +1929,50 @@ function KnitMorePanel({pos,activeId,activeColor,onSelect,pinnedIds,onPin,onUnpi
   );
 }
 
+/* ─── Color Grid Picker Modal ────────────────────────────────────────────── */
+function ColorGridPickerModal({patterns,onClose,onPick}){
+  const grids=patterns.filter(p=>p.designData?.type==="knit"&&p.designData?.grid?.length);
+  return createPortal(
+    <div onClick={onClose} style={{position:"fixed",inset:0,background:"rgba(0,0,0,0.45)",zIndex:9000,display:"flex",alignItems:"flex-end",justifyContent:"center"}}>
+      <div onClick={e=>e.stopPropagation()} style={{width:"100%",maxWidth:420,background:"white",borderRadius:"20px 20px 0 0",maxHeight:"75vh",display:"flex",flexDirection:"column",boxShadow:"0 -8px 40px rgba(0,0,0,0.18)"}}>
+        <div style={{padding:"14px 18px 10px",borderBottom:"1px solid #F3F4F6",display:"flex",alignItems:"center",justifyContent:"space-between",flexShrink:0}}>
+          <span style={{fontSize:14,fontWeight:800,color:"#111"}}>Choose Color Grid Background</span>
+          <button onClick={onClose} style={{width:28,height:28,borderRadius:8,background:"#F3F4F6",border:"none",cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center"}}>
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#6B7280" strokeWidth="2.5"><path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12"/></svg>
+          </button>
+        </div>
+        <div style={{overflowY:"auto",padding:"12px 14px",display:"flex",flexDirection:"column",gap:8}}>
+          <div onClick={()=>{onPick(null);onClose();}} style={{padding:"10px 12px",borderRadius:12,border:"1.5px dashed #E5E7EB",cursor:"pointer",fontSize:12,color:"#6B7280",fontWeight:600,textAlign:"center"}}>
+            No background / Remove
+          </div>
+          {grids.length===0&&(
+            <div style={{textAlign:"center",padding:"28px 0",color:"#9CA3AF",fontSize:13}}>No Color Grid patterns in library yet.<br/>Create one under Pattern Library → Knitting → Color Grid.</div>
+          )}
+          {grids.map(p=>(
+            <div key={p.id} onClick={()=>{onPick(p);onClose();}} style={{display:"flex",gap:10,alignItems:"center",padding:"8px",borderRadius:12,border:"1.5px solid #E5E7EB",cursor:"pointer",background:"#FAFAFA"}}>
+              <div style={{width:72,height:54,borderRadius:8,overflow:"hidden",flexShrink:0,border:"1px solid #E5E7EB"}}>
+                <PatternCardPreview patData={p.designData} accent="#778EE3" height={54} showDots={false} showRowLabels={false}/>
+              </div>
+              <div style={{flex:1,minWidth:0}}>
+                <div style={{fontSize:13,fontWeight:700,color:"#111",overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{p.name}</div>
+                <div style={{fontSize:10,color:"#6B7280",marginTop:2}}>
+                  {p.designData?.grid?.length||0} rows × {p.designData?.grid?.[0]?.length||0} cols
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+    </div>,document.body
+  );
+}
+
 /* ─── Knit Pattern Maker ─────────────────────────────────────────────────────
    Stitch data: [{key, id, color, col, row}]
    col/row are integer grid coordinates (0-based, row increases downward).
    Multi-cell symbols occupy [col..col+w-1] × [row..row+h-1].
    ─────────────────────────────────────────────────────────────────────────── */
-function KnitPatternMaker({initialStitches,onStitchesChange,yarnColors,onSave}){
+function KnitPatternMaker({initialStitches,onStitchesChange,yarnColors,onSave,patterns=[],initialUnderlay=null,onUnderlayChange}){
   const canvasRef=useRef(null);
   const containerRef=useRef(null);
   const[stitches,setStitches]=useState(()=>initialStitches||[]);
@@ -1939,6 +1997,9 @@ function KnitPatternMaker({initialStitches,onStitchesChange,yarnColors,onSave}){
   const stRef=useRef(stitches);
   stRef.current=stitches;
   const{pinnedIds,pin,unpin,moveLeft,moveRight,isPinned,isFull}=useToolbarPins('knt_pins',KNIT_DEFAULT_PINS);
+  const[underlay,setUnderlay]=useState(initialUnderlay);
+  const[showUnderlayPicker,setShowUnderlayPicker]=useState(false);
+  useEffect(()=>{onUnderlayChange?.(underlay);},[underlay]);
 
   useEffect(()=>_onSvgLoad(()=>_setImgTick(t=>t+1)),[]);
 
@@ -2011,6 +2072,7 @@ function KnitPatternMaker({initialStitches,onStitchesChange,yarnColors,onSave}){
     ctx.setTransform(dpr,0,0,dpr,0,0);
     ctx.clearRect(0,0,W,H);
     ctx.fillStyle='#FFFFFF';ctx.fillRect(0,0,W,H);
+    if(underlay?.visible!==false&&underlay?.gridData){renderColorGridUnderlay(ctx,underlay.gridData,pan.x,pan.y,KNIT_CELL_W,KNIT_CELL_H,underlay.opacity??0.45);}
 
     // Grid lines
     if(showGridLinesRef.current){
@@ -2067,7 +2129,7 @@ function KnitPatternMaker({initialStitches,onStitchesChange,yarnColors,onSave}){
       ctx.fillStyle='rgba(119,142,227,0.12)';ctx.fillRect(sx+1,sy+1,sw-2,sh-2);
     });
 
-  },[stitches,pan,activeSymId,activeColor,activeTool,hoverCell,selectedKey,showGridLines,_imgTick]);
+  },[stitches,pan,activeSymId,activeColor,activeTool,hoverCell,selectedKey,showGridLines,_imgTick,underlay]);
 
   // ── Resize observer ───────────────────────────────────────────────────────
   useEffect(()=>{
@@ -2331,6 +2393,38 @@ function KnitPatternMaker({initialStitches,onStitchesChange,yarnColors,onSave}){
                     ))}
                   </div>}
                 </>}
+              </div>
+
+              {/* ── UNDERLAY ── */}
+              <div>
+                <span style={kSecLabel}>UNDERLAY</span>
+                <button type="button" onClick={()=>setShowUnderlayPicker(true)}
+                  style={{width:'100%',padding:'7px 10px',borderRadius:8,border:'1.5px solid #C7D2FE',background:underlay?'#EEF2FF':'#F5F7FF',color:'#778EE3',fontSize:11,fontWeight:700,cursor:'pointer',marginBottom:underlay?8:0}}>
+                  {underlay?'⊞ Change Grid':'⊞ Add Color Grid Background'}
+                </button>
+                {underlay&&(<>
+                  <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',marginBottom:6}}>
+                    <span style={{fontSize:11,color:'#4B5563',fontWeight:500}}>Opacity</span>
+                    <span style={{fontSize:10,color:'#778EE3',fontWeight:700}}>{Math.round((underlay.opacity??0.45)*100)}%</span>
+                  </div>
+                  <input type="range" min="0.05" max="1" step="0.05" value={underlay.opacity??0.45}
+                    onChange={e=>setUnderlay(u=>({...u,opacity:parseFloat(e.target.value)}))}
+                    style={{width:'100%',marginBottom:8}}/>
+                  <div style={{display:'flex',gap:6}}>
+                    <button type="button" onClick={()=>setUnderlay(u=>({...u,visible:!(u.visible??true)}))}
+                      style={{flex:1,padding:'5px',borderRadius:7,border:'1.5px solid #E5E7EB',background:(underlay.visible??true)?'#F0FDF4':'#F3F4F6',color:(underlay.visible??true)?'#059669':'#6B7280',fontSize:10,fontWeight:700,cursor:'pointer'}}>
+                      {(underlay.visible??true)?'Visible':'Hidden'}
+                    </button>
+                    <button type="button" onClick={()=>setUnderlay(null)}
+                      style={{flex:1,padding:'5px',borderRadius:7,border:'1.5px solid #FCA5A5',background:'#FEF2F2',color:'#EF4444',fontSize:10,fontWeight:700,cursor:'pointer'}}>
+                      Remove
+                    </button>
+                  </div>
+                </>)}
+                {showUnderlayPicker&&<ColorGridPickerModal patterns={patterns} onClose={()=>setShowUnderlayPicker(false)} onPick={p=>{
+                  if(!p){setUnderlay(null);}
+                  else{setUnderlay({patternId:p.id,gridData:p.designData.grid,opacity:underlay?.opacity??0.45,visible:true});}
+                }}/>}
               </div>
 
               {/* ── GRID ── */}
@@ -3460,7 +3554,7 @@ function CrochetMorePanel({pos,groups,activeId,activeGroup,activeColor,
   );
 }
 const SYM_COLS=["#778EE3","#E07B8A","#F59E0B","#3B6FD4","#059669","#111111"];
-function CrochetBuilder({stitches,setStitches,layout,setLayout,yarnColors,onSave}){
+function CrochetBuilder({stitches,setStitches,layout,setLayout,yarnColors,onSave,patterns=[],initialUnderlay=null,onUnderlayChange}){
   const{t}=useLang();
   const{canvasBg="#FDFAF6",chartHighlightRow=true}=useSettings();
   const[showGridLines,setShowGridLines]=useState(()=>localStorage.getItem('cc_showGrid')!=='false');
@@ -3493,6 +3587,9 @@ function CrochetBuilder({stitches,setStitches,layout,setLayout,yarnColors,onSave
   const[lassoRect,setLassoRect]=useState(null);
   const[rowGaps,setRowGaps]=useState(()=>layout?.rowGaps??{});
   const[_imgTick,_setImgTick]=useState(0);
+  const[underlay,setUnderlay]=useState(initialUnderlay);
+  const[showUnderlayPicker,setShowUnderlayPicker]=useState(false);
+  useEffect(()=>{onUnderlayChange?.(underlay);},[underlay]);
   const canvasRef=useRef(null);
   const containerRef=useRef(null);
   // Center the canvas origin once layout is rendered (after layout selection).
@@ -3733,19 +3830,46 @@ function CrochetBuilder({stitches,setStitches,layout,setLayout,yarnColors,onSave
     // Use the shared rowRenderOff ref (kept in sync by its own useEffect)
     const rowRenderOff=rowRenderOffRef.current;
     ctx.fillStyle="#F8F8F8";ctx.fillRect(0,0,W,H);
+    if(underlay?.visible!==false&&underlay?.gridData){const uH=(underlay.fitMode==="stretch")?CELL_H:CELL;const uRows=underlay.gridData.length;renderColorGridUnderlay(ctx,underlay.gridData,pan.x,pan.y-uRows*uH,CELL,uH,underlay.opacity??0.45,zoom,W/2,H/2);}
     autoScaleRef.current=zoom;
-    // Grid drawn in screen space so lines stay visible at any zoom level
+    // Grid drawn in screen space so line weights stay constant at any zoom level
     if(showGridLines){
       const sx0=zoom*(p.x-W/2)+W/2, sxStep=zoom*CELL;
-      const sy0=zoom*(p.y-H/2)+H/2, syStep=zoom*CELL_H;
-      ctx.strokeStyle="rgba(0,0,0,0.13)";ctx.lineWidth=0.5;ctx.setLineDash([]);
+      const allRowYs=[...new Set(stitches.map(s=>Math.round(s.y)))].sort((a,b)=>b-a);
+      // Alternating row tints — very subtle, every other row
+      allRowYs.forEach((ry,i)=>{
+        if(i%2===0)return;
+        const rPx=rowRenderOff[ry]!==undefined?rowRenderOff[ry]:ry*CELL_H;
+        const sy=zoom*(p.y+rPx-H/2)+H/2;
+        ctx.fillStyle="rgba(119,142,227,0.035)";
+        ctx.fillRect(0,sy-zoom*CELL_H/2,W,zoom*CELL_H);
+      });
+      // Vertical guides — faint dotted, secondary
+      ctx.strokeStyle="rgba(0,0,0,0.05)";ctx.lineWidth=0.5;ctx.setLineDash([2,6]);
       const vx0=((sx0%sxStep)+sxStep)%sxStep-sxStep;
       for(let sx=vx0;sx<=W;sx+=sxStep){ctx.beginPath();ctx.moveTo(sx,0);ctx.lineTo(sx,H);ctx.stroke();}
-      const hy0=((sy0%syStep)+syStep)%syStep-syStep;
-      for(let sy=hy0;sy<=H;sy+=syStep){ctx.beginPath();ctx.moveTo(0,sy);ctx.lineTo(W,sy);ctx.stroke();}
-      ctx.strokeStyle="rgba(124,58,237,0.1)";ctx.lineWidth=1;ctx.setLineDash([4,7]);
+      ctx.setLineDash([]);
+      // Horizontal row guides — solid, primary, at actual row positions
+      if(allRowYs.length>0){
+        allRowYs.forEach(ry=>{
+          const rPx=rowRenderOff[ry]!==undefined?rowRenderOff[ry]:ry*CELL_H;
+          const sy=zoom*(p.y+rPx-H/2)+H/2;
+          if(sy<-2||sy>H+2)return;
+          const isFC=ry===0;
+          ctx.strokeStyle=isFC?"rgba(180,120,30,0.22)":"rgba(0,0,0,0.10)";
+          ctx.lineWidth=isFC?1:0.75;
+          ctx.beginPath();ctx.moveTo(0,sy);ctx.lineTo(W,sy);ctx.stroke();
+        });
+      }else{
+        // No stitches yet — tiled horizontal guides as positional reference
+        const sy0=zoom*(p.y-H/2)+H/2,syStep=zoom*CELL_H;
+        ctx.strokeStyle="rgba(0,0,0,0.09)";ctx.lineWidth=0.75;
+        const hy0=((sy0%syStep)+syStep)%syStep-syStep;
+        for(let sy=hy0;sy<=H;sy+=syStep){ctx.beginPath();ctx.moveTo(0,sy);ctx.lineTo(W,sy);ctx.stroke();}
+      }
+      // Origin x-axis marker
+      ctx.strokeStyle="rgba(124,58,237,0.08)";ctx.lineWidth=1;ctx.setLineDash([4,8]);
       ctx.beginPath();ctx.moveTo(sx0,0);ctx.lineTo(sx0,H);ctx.stroke();
-      ctx.beginPath();ctx.moveTo(0,sy0);ctx.lineTo(W,sy0);ctx.stroke();
       ctx.setLineDash([]);
     }
     ctx.save();
@@ -3892,7 +4016,7 @@ function CrochetBuilder({stitches,setStitches,layout,setLayout,yarnColors,onSave
     }
     // Empty hint (not scaled — always centered in canvas)
     if(stitches.length===0){ctx.globalAlpha=0.15;drawSymOnCanvas(ctx,"mr",W/2,H/2,40,"#6B7280");ctx.globalAlpha=1;ctx.font="11px Inter,system-ui,sans-serif";ctx.textAlign="center";ctx.textBaseline="middle";ctx.fillStyle="#BBBBBB";ctx.fillText("Tap to place · near existing = snaps as child · drag to move",W/2,H/2+26);}
-  },[stitches,pan,guides,hoverCell,dragSt,layout,_contSz,zoom,showGridLines,chartHighlightRow,snapEnabled,batchKeys,batchMode,rowGaps,_imgTick]);
+  },[stitches,pan,guides,hoverCell,dragSt,layout,_contSz,zoom,showGridLines,chartHighlightRow,snapEnabled,batchKeys,batchMode,rowGaps,_imgTick,underlay]);
 
   const onMouseDown=e=>{
     if(e.touches!==undefined){lastTouchRef.current=Date.now();}
@@ -4397,6 +4521,51 @@ function CrochetBuilder({stitches,setStitches,layout,setLayout,yarnColors,onSave
                 </div>
               </div>
 
+              {/* ── UNDERLAY ── */}
+              <div>
+                <span style={ccPanelSecLabel}>UNDERLAY</span>
+                <button type="button" onClick={()=>setShowUnderlayPicker(true)}
+                  style={{width:"100%",padding:"7px 10px",borderRadius:8,border:"1.5px solid #C7D2FE",background:underlay?"#EEF2FF":"#F5F7FF",color:"#778EE3",fontSize:11,fontWeight:700,cursor:"pointer",marginBottom:underlay?8:0}}>
+                  {underlay?"⊞ Change Grid":"⊞ Add Color Grid Background"}
+                </button>
+                {underlay&&(<>
+                  <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:6}}>
+                    <span style={{fontSize:11,color:"#4B5563",fontWeight:500}}>Opacity</span>
+                    <span style={{fontSize:10,color:"#778EE3",fontWeight:700}}>{Math.round((underlay.opacity??0.45)*100)}%</span>
+                  </div>
+                  <input type="range" min="0.05" max="1" step="0.05" value={underlay.opacity??0.45}
+                    onChange={e=>setUnderlay(u=>({...u,opacity:parseFloat(e.target.value)}))}
+                    style={{width:"100%",marginBottom:8}}/>
+                  <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:4}}>
+                    <span style={{fontSize:11,color:"#4B5563",fontWeight:500}}>Fit Mode</span>
+                  </div>
+                  <div style={{display:"flex",gap:6,marginBottom:8}}>
+                    <button type="button" onClick={()=>setUnderlay(u=>({...u,fitMode:"preserve"}))}
+                      style={{flex:1,padding:"5px",borderRadius:7,border:`1.5px solid ${(underlay.fitMode??"preserve")==="preserve"?"#C7D2FE":"#E5E7EB"}`,background:(underlay.fitMode??"preserve")==="preserve"?"#EEF2FF":"#F3F4F6",color:(underlay.fitMode??"preserve")==="preserve"?"#778EE3":"#6B7280",fontSize:10,fontWeight:700,cursor:"pointer"}}>
+                      1:1 Ratio
+                    </button>
+                    <button type="button" onClick={()=>setUnderlay(u=>({...u,fitMode:"stretch"}))}
+                      style={{flex:1,padding:"5px",borderRadius:7,border:`1.5px solid ${(underlay.fitMode??"preserve")==="stretch"?"#C7D2FE":"#E5E7EB"}`,background:(underlay.fitMode??"preserve")==="stretch"?"#EEF2FF":"#F3F4F6",color:(underlay.fitMode??"preserve")==="stretch"?"#778EE3":"#6B7280",fontSize:10,fontWeight:700,cursor:"pointer"}}>
+                      Stretch
+                    </button>
+                  </div>
+                  <div style={{display:"flex",gap:6}}>
+                    <button type="button" onClick={()=>setUnderlay(u=>({...u,visible:!(u.visible??true)}))}
+                      style={{flex:1,padding:"5px",borderRadius:7,border:"1.5px solid #E5E7EB",background:(underlay.visible??true)?"#F0FDF4":"#F3F4F6",color:(underlay.visible??true)?"#059669":"#6B7280",fontSize:10,fontWeight:700,cursor:"pointer"}}>
+                      {(underlay.visible??true)?"Visible":"Hidden"}
+                    </button>
+                    <button type="button" onClick={()=>setUnderlay(null)}
+                      style={{flex:1,padding:"5px",borderRadius:7,border:"1.5px solid #FCA5A5",background:"#FEF2F2",color:"#EF4444",fontSize:10,fontWeight:700,cursor:"pointer"}}>
+                      Remove
+                    </button>
+                  </div>
+                </>)}
+                {showUnderlayPicker&&<ColorGridPickerModal patterns={patterns} onClose={()=>setShowUnderlayPicker(false)} onPick={p=>{
+                  if(!p){setUnderlay(null);}
+                  else{setUnderlay({patternId:p.id,gridData:p.designData.grid,opacity:underlay?.opacity??0.45,visible:true,fitMode:underlay?.fitMode??"preserve"});}
+                }}/>}
+              </div>
+
               {/* ── GRID ── */}
               <div>
                 <span style={ccPanelSecLabel}>GRID</span>
@@ -4459,7 +4628,7 @@ function CrochetBuilder({stitches,setStitches,layout,setLayout,yarnColors,onSave
 }
 
 /* ─── Pattern Maker Modal ──────────────────────────────────────────────────── */
-function PatternMaker({pattern,onSave,onClose,yarnColors,forcedType,forcedKnitMode,onBack}){
+function PatternMaker({pattern,onSave,onClose,yarnColors,forcedType,forcedKnitMode,onBack,patterns=[]}){
   const{t}=useLang();
   const[type,setType]=useState(forcedType||pattern?.type||"knit");
   const[knitMode,setKnitMode]=useState(forcedKnitMode||(pattern?.knitStitches?.length?"symbols":"grid"));
@@ -4471,6 +4640,13 @@ function PatternMaker({pattern,onSave,onClose,yarnColors,forcedType,forcedKnitMo
   const[crochetStitches,setCrochetStitches]=useState(initStitches);
   const[crochetLayout,setCrochetLayout]=useState(pattern?.crochetLayout||"rows");
   const crochetRoundsRef=useRef(pattern?.crochetRoundsData||null);
+  const underlayRef=useRef(null);
+  const resolvedUnderlay=useMemo(()=>{
+    if(!pattern?.underlay)return null;
+    const src=patterns.find(p=>p.id===pattern.underlay.patternId);
+    if(!src?.designData?.grid)return null;
+    return{...pattern.underlay,gridData:src.designData.grid};
+  },[]);
   const headerLabel=forcedType==="knit"?"Knit Chart":forcedType==="crochet"?"Rows":t.patternMaker;
 
   // ── Draft auto-save ────────────────────────────────────────────────────────
@@ -4509,7 +4685,9 @@ function PatternMaker({pattern,onSave,onClose,yarnColors,forcedType,forcedKnitMo
 
   // ── Save (no auto-close) ──────────────────────────────────────────────────
   const handleSave=()=>{
-    onSave({type,grid:knitRef.current,knitStitches:knitStRef.current,crochetStitches,crochetLayout,crochetRoundsData:crochetRoundsRef.current});
+    const u=underlayRef.current;
+    const underlayToSave=u?{patternId:u.patternId,opacity:u.opacity,visible:u.visible,fitMode:u.fitMode??"preserve"}:null;
+    onSave({type,grid:knitRef.current,knitStitches:knitStRef.current,crochetStitches,crochetLayout,crochetRoundsData:crochetRoundsRef.current,underlay:underlayToSave});
     localStorage.removeItem(DRAFT_KEY);
     setSaveFlash(true);
     setTimeout(()=>setSaveFlash(false),2000);
@@ -4579,8 +4757,8 @@ function PatternMaker({pattern,onSave,onClose,yarnColors,forcedType,forcedKnitMo
         {type==="knit"&&knitMode==="grid"
           ?<KnitGrid key={knitKey} initialGrid={knitRef.current} onGridChange={g=>{knitRef.current=g;clearTimeout(draftTimer.current);draftTimer.current=setTimeout(()=>writeDraft.current(),800);}} yarnColors={yarnColors}/>
           :type==="knit"&&knitMode==="symbols"
-          ?<KnitPatternMaker key={knitKey} initialStitches={knitStRef.current} onStitchesChange={s=>{knitStRef.current=s;clearTimeout(draftTimer.current);draftTimer.current=setTimeout(()=>writeDraft.current(),800);}} yarnColors={yarnColors} onSave={handleSave}/>
-          :<CrochetBuilder stitches={crochetStitches} setStitches={setCrochetStitches} layout={crochetLayout} setLayout={setCrochetLayout} yarnColors={yarnColors} onSave={handleSave}/>
+          ?<KnitPatternMaker key={knitKey} initialStitches={knitStRef.current} onStitchesChange={s=>{knitStRef.current=s;clearTimeout(draftTimer.current);draftTimer.current=setTimeout(()=>writeDraft.current(),800);}} yarnColors={yarnColors} onSave={handleSave} patterns={patterns} initialUnderlay={resolvedUnderlay} onUnderlayChange={u=>{underlayRef.current=u;}}/>
+          :<CrochetBuilder stitches={crochetStitches} setStitches={setCrochetStitches} layout={crochetLayout} setLayout={setCrochetLayout} yarnColors={yarnColors} onSave={handleSave} patterns={patterns} initialUnderlay={resolvedUnderlay} onUnderlayChange={u=>{underlayRef.current=u;}}/>
         }
       </div>
     </div>
@@ -5771,7 +5949,7 @@ function ProjectModal({onClose,onSave,yarnLib,patterns=[],editMode=false,initial
       </div>
     </div>
     {showPatternPicker&&<PickPatternModal patterns={patterns} onClose={()=>setShowPatternPicker(false)} onPick={pat=>{setLinkedPattern({id:pat.id,name:pat.name});setShowPatternPicker(false);}}/>}
-    {showPattern&&<PatternMaker pattern={pattern} onSave={p=>setPattern(p)} onClose={()=>setShowPattern(false)}/>}
+    {showPattern&&<PatternMaker pattern={pattern} onSave={p=>setPattern(p)} onClose={()=>setShowPattern(false)} patterns={patterns}/>}
     </>
   );
 }
@@ -6438,7 +6616,7 @@ function imgPick(cb){
 }
 
 /* ── Pattern Form (Add + Edit) ── */
-function PatternFormModal({onClose,onSave,initial,yarnLib=[],initialMethod}){
+function PatternFormModal({onClose,onSave,initial,yarnLib=[],initialMethod,patterns=[]}){
   useBodyScrollLock();
   const editing=!!initial;
   const{t}=useLang();
@@ -6487,6 +6665,7 @@ function PatternFormModal({onClose,onSave,initial,yarnLib=[],initialMethod}){
       onBack={()=>setOpenMaker(null)}
       onClose={onClose}
       yarnColors={yarnColors.length?yarnColors:undefined}
+      patterns={patterns}
     />
   );
   if(openMaker==="rounds") return(
@@ -7289,7 +7468,7 @@ function StepReader({steps=[],patName="",onBack,progressMarker=null,onSaveProgre
 }
 
 /* ── Pattern Detail Modal ── */
-function PatternDetailModal({pat,onClose,onEdit,onDelete,onUpdate,yarnLib=[]}){
+function PatternDetailModal({pat,onClose,onEdit,onDelete,onUpdate,yarnLib=[],patterns=[]}){
   useBodyScrollLock();
   const{t}=useLang();
   const[openMaker,setOpenMaker]=useState(false);
@@ -7319,6 +7498,7 @@ function PatternDetailModal({pat,onClose,onEdit,onDelete,onUpdate,yarnLib=[]}){
       onBack={()=>setOpenMaker(false)}
       onClose={()=>setOpenMaker(false)}
       yarnColors={yarnColors.length?yarnColors:undefined}
+      patterns={patterns}
     />
   );
   if(openRoundsMaker) return(
@@ -7985,8 +8165,8 @@ function PatternLibPage({patterns,setPatterns,projects=[],yarnLib=[]}){
       onClose={()=>setReadingRounds(null)}
       onUpdate={updated=>{update(updated);setReadingRounds(updated);}}
     />}
-    {showAdd&&<PatternFormModal onClose={()=>setShowAdd(false)} onSave={p=>setPatterns(prev=>[...prev,p])} yarnLib={yarnLib}/>}
-    {editing&&<PatternFormModal onClose={()=>setEditing(null)} initial={editing} onSave={updated=>{update(updated);setEditing(null);setViewing(updated);}} yarnLib={yarnLib}/>}
+    {showAdd&&<PatternFormModal onClose={()=>setShowAdd(false)} onSave={p=>setPatterns(prev=>[...prev,p])} yarnLib={yarnLib} patterns={patterns}/>}
+    {editing&&<PatternFormModal onClose={()=>setEditing(null)} initial={editing} onSave={updated=>{update(updated);setEditing(null);setViewing(updated);}} yarnLib={yarnLib} patterns={patterns}/>}
     {viewing&&!viewing._fromProject&&<PatternDetailModal
       pat={patterns.find(p=>p.id===viewing.id)||viewing}
       onClose={()=>setViewing(null)}
@@ -7994,6 +8174,7 @@ function PatternLibPage({patterns,setPatterns,projects=[],yarnLib=[]}){
       onDelete={()=>{setPatterns(p=>p.filter(x=>x.id!==viewing.id));setViewing(null);}}
       onUpdate={updated=>{update(updated);setViewing(updated);}}
       yarnLib={yarnLib}
+      patterns={patterns}
     />}
     </div>
   );
@@ -10111,6 +10292,7 @@ function CreatePage({yarnLib,patterns,setPatterns,setPage}){
           yarnLib={yarnLib}
           onClose={()=>setShowPatternForm(null)}
           onSave={p=>{setPatterns(prev=>[p,...prev]);setShowPatternForm(null);}}
+          patterns={patterns}
         />
       )}
       {showColorPalette&&(
@@ -10158,7 +10340,7 @@ function BottomNav({page,setPage,t,onAdd}){
   const right=tabs.slice(2);
 
   return(
-    <div style={{position:"fixed",bottom:0,left:0,right:0,background:"rgba(255,255,255,.94)",backdropFilter:"blur(14px)",borderTop:"1px solid #EEF0FD",zIndex:40,paddingBottom:"env(safe-area-inset-bottom)"}}>
+    <div style={{position:"fixed",bottom:0,left:0,right:0,background:"rgba(255,255,255,.94)",backdropFilter:"blur(14px)",borderTop:"1px solid #EEF0FD",zIndex:40}}>
       <div style={{height:83}}>
         <div style={{height:49,display:"flex",alignItems:"flex-start",paddingTop:2}}>
           {left.map(tab=><NavBtn key={tab.id} tab={tab}/>)}
